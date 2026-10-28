@@ -25,28 +25,23 @@ if (length(missing_packages) > 0) {
   )
 }
 library(shiny)
+library(plotly)
+library(DT)
 ```
 
 # Purpose and scope
 
-This document is intended to explain the assumptions and mathematics behind sample-size calculations for group testing when disease prevalence is very low, and to let readers explore how results change as assumptions change.
+This document is intended to explain the assumptions and mathematics behind sample-size calculations MX pre and post-validation surveillance
 
 The document is an **interactive R Markdown document**. It uses Shiny inputs and outputs, **DT** for interactive tables, and **plotly** for interactive figures. It is an initial scaffold: the calculation below is a simple probability illustration, not yet the final group-testing sample-size method.
 
-# Why group testing?
+# Pre-validation surveillance
 
-When prevalence is low, testing individuals one at a time can require many tests that are expected to be negative. Group testing combines specimens into pools. A negative pool can rule out infection in all members of that pool, subject to the test's sensitivity and specificity. Positive pools may need follow-up testing, depending on the protocol.
+```{r PreVSFigure, include=FALSE}
+knitr::include_graphics("./Prevalidation decision framework.png")
+```
 
-The design therefore depends on more than prevalence alone. Important assumptions to make explicit include:
-
-- the target prevalence and the population or sampling frame;
-- the pool size and how pools are formed;
-- assay sensitivity and specificity, including any dependence on pool size;
-- the decision rule or surveillance objective (for example, detecting at least one infection with a specified probability);
-- whether positive pools trigger individual follow-up tests; and
-- practical constraints such as the number of available specimens and the total testing budget.
-
-These assumptions will be developed alongside the calculations as the tool takes shape.
+The idea
 
 # Explore the assumptions
 
@@ -71,11 +66,11 @@ numericInput(
 )
 ```
 
-Under independent sampling, with true prevalence \(p\), the probability that a sample of \(n\) individuals contains at least one infected individual is
+Under independent sampling, with true prevalence $p$, the probability that a sample of $n$ individuals contains at least one infected individual is
 
-\[
+$$
 P(\text{at least one infected}) = 1 - (1-p)^n.
-\]
+$$
 
 This is a useful baseline for explaining detection probability. It is **not** the same as the probability that a group-testing protocol detects infection: that also depends on pool size, assay performance and the testing algorithm.
 
@@ -152,9 +147,9 @@ DT::renderDataTable({
 
 The next development step is to define the exact group-testing design and target quantity before implementing its sample-size calculation. In particular, we should distinguish:
 
-1. **Sampling objective:** for example, a required probability of detecting infection at a specified prevalence.
-2. **Pool-testing protocol:** pool size, assay sensitivity/specificity, and any confirmatory or individual retesting.
-3. **Meaning of sample size:** number of individuals sampled, number of pools tested, or total number of assays including follow-up.
-4. **Design assumptions:** independent infection status, a fixed or finite population, and any clustering or other departures from independence.
+1.  **Sampling objective:** for example, a required probability of detecting infection at a specified prevalence.
+2.  **Pool-testing protocol:** pool size, assay sensitivity/specificity, and any confirmatory or individual retesting.
+3.  **Meaning of sample size:** number of individuals sampled, number of pools tested, or total number of assays including follow-up.
+4.  **Design assumptions:** independent infection status, a fixed or finite population, and any clustering or other departures from independence.
 
 Once these are settled, the illustrative calculation can be replaced by the target method while retaining the same interactive inputs, tables and figures.
