@@ -126,12 +126,12 @@ prob_estimate_above_threshold <- function(p, p_t, s, m) {
 output$design_prevalence_ui <- renderUI({
   p_t <- as.numeric(input$threshold_species)
   numericInput(
-    "design_prevalence",
-    "Design prevalence (p)",
-    value = min(2 * p_t, 0.99),
+    "design_prevalence_percent",
+    "Design prevalence (%)",
+    value = 200 * p_t,
     min = 0,
-    max = 0.99,
-    step = max(p_t / 10, 0.000001)
+    max = 99,
+    step = max(10 * p_t, 0.001)
   )
 })
 ```
@@ -139,7 +139,7 @@ output$design_prevalence_ui <- renderUI({
 ```{r prevalidation-probability-plot}
 renderPlotly({
   p_t <- as.numeric(input$threshold_species)
-  p <- input$design_prevalence
+  p <- input$design_prevalence_percent / 100
   s <- input$pool_size
   max_pools <- input$max_pools
 
@@ -185,7 +185,7 @@ renderPlotly({
 ```{r prevalidation-current-result}
 renderUI({
   p_t <- as.numeric(input$threshold_species)
-  p <- input$design_prevalence
+  p <- input$design_prevalence_percent / 100
   s <- input$pool_size
   max_pools <- input$max_pools
   validate(
@@ -204,7 +204,7 @@ renderUI({
                     format(m * as.integer(s), big.mark = ","), 100 * probability)),
     tags$p(sprintf(
       "Threshold = %.3g; design prevalence = %.3g; pool size = %d; pools = %s.",
-      p_t, p, as.integer(s), format(m, big.mark = ",")
+      100 * p_t, 100 * p, as.integer(s), format(m, big.mark = ",")
     ))
   )
 })
