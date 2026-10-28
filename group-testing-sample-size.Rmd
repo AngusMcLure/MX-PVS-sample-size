@@ -31,9 +31,9 @@ library(DT)
 
 # Purpose and scope
 
-This document is intended to explain the assumptions and mathematics behind sample-size calculations MX pre and post-validation surveillance
+This document is intended to explain the assumptions behind sample-size calculations MX pre and post-validation surveillance
 
-The document is an **interactive R Markdown document**. It uses Shiny inputs and outputs, **DT** for interactive tables, and **plotly** for interactive figures. It is an initial scaffold: the calculation below is a simple probability illustration, not yet the final group-testing sample-size method.
+The document is an **interactive R Markdown document**. It uses with interactive tables and figures.
 
 # Pre-validation surveillance
 
