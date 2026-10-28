@@ -31,9 +31,9 @@ library(DT)
 
 # Purpose and scope
 
-This document is intended to explain the assumptions behind sample-size calculations MX pre and post-validation surveillance
+This document is intended to explain the assumptions behind sample-size calculations for MX pre- and post-validation surveillance.
 
-The document is an **interactive R Markdown document**. It uses with interactive tables and figures.
+The document is an **interactive R Markdown document**. It uses interactive tables and figures.
 
 # Pre-validation surveillance
 
@@ -41,22 +41,30 @@ The document is an **interactive R Markdown document**. It uses with interactive
 knitr::include_graphics("./Prevalidation decision framework.png")
 ```
 
-The above figure is from the LF MX PVS meeting in London in 2024. I think there was some broad agreement that this was the approach we were going to recommend for Pre-validation surveillance efforts. The consequence of the above approach is that the main action/decision trigger is when the *point estimate* of prevalence is above the appropriate threshold.
+The above figure is from the LF MX PVS meeting in London in 2024. I think there was some broad agreement that this was the approach we were going to recommend for pre-validation surveillance efforts. The consequence of the above approach is that the main action/decision trigger is when the *point estimate* of prevalence is above the appropriate threshold.
 
 Since we want the decisions to act (namely consider EU-wide action) to be adequately powered, to my mind this means setting up the power calculations as follows.
 
-The sample design needs to be sufficiently generous such that if the true prevalence in the population is higher than the provisional threshold, then the probability that the point estimate of prevalence is above the threshold needs to be sufficiently high. We might define sufficiently high in a few ways, but the simplest is to say that the probability that the EU-wide prevalence estimate is above the threshold is $>75\%$ Now, if the true prevalence is only barely higher than the threshold, then even large sample sizes will have a roughly $50\%$ probability of getting a point estimate above the threshold, so we need to assume some design prevalence that is somewhat above the threshold prevalence, e.g. double.
+The sample design needs to be sufficiently generous such that if the true prevalence in the population is higher than the provisional threshold, then the probability that the point estimate of prevalence is above the threshold needs to be sufficiently high. We might define sufficiently high in a few ways, but the simplest is to say that the probability that the EU-wide prevalence estimate is above the threshold is >75%. Now, if the true prevalence is only barely higher than the threshold, then even large sample sizes will have a roughly 50% probability of getting a point estimate above the threshold, so we need to assume some design prevalence that is somewhat above the threshold prevalence, e.g. double.
 
-I've got some tables for sample size below under various assumptions (which you change as you like). But the basic maths is this.
+I've got some tables for sample size below under various assumptions (which you can change as you like). But the basic maths is this.
 
-For now we ignore clustering and say that a randomly distributed proportion $p$ of mosquitoes are positive and that these are tested in pools of size $s$. Then then probability that a pool tests positive is $q = 1-(1-p)^s$. If there are $m$ pools across the EU (for a total of $n = sm$ mosquitoes tested) then the number of positive pools $X$ is distributed as a binomial random variable with size $m$ and probability $q$. The maximum likelihood estimate of the prevalence is simply
+For now, we ignore clustering and assume that each mosquito independently tests positive with probability $p$, with mosquitoes tested in pools of size $s$. Then the probability that a pool tests positive is $q = 1-(1-p)^s$. If there are $m$ pools across the EU (for a total of $n = sm$ mosquitoes tested), then the number of positive pools $X$ is distributed as a binomial random variable with size $m$ and probability $q$. The maximum likelihood estimate of the prevalence is simply
+
 $$
-\hat{p} = 1 - (1-\frac{X}{m})^{frac{1}{s}}
+\hat{p} = 1 - \left(1-\frac{X}{m}\right)^{\frac{1}{s}}.
 $$
-Consequently the probability that $\hat{p}$ is above some threshold value $p_t$ satisfies:
+
+Consequently, the probability that $\hat{p}$ is above some threshold value $p_t$ satisfies
+
 $$
-P(X > )
+P(\hat{p}>p_t)=P\left(X>m\left[1-(1-p_t)^s\right]\right).
 $$
+
+$$
+P(\hat{p}>p_t)=\sum_{x=\lfloor m[1-(1-p_t)^s]\rfloor+1}^{m}\binom{m}{x}\left[1-(1-p)^s\right]^x(1-p)^{s(m-x)}.
+$$
+
 # Explore the assumptions
 
 Use the controls to see how prevalence and the number of sampled individuals affect the probability of observing at least one infected individual under a simple independent-sampling model.
