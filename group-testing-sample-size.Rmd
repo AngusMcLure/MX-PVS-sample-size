@@ -58,12 +58,14 @@ $$
 Consequently, the probability that $\hat{p}$ is above some threshold value $p_t$ satisfies
 
 $$
-P(\hat{p}>p_t)=P\left(X>m\left[1-(1-p_t)^s\right]\right).
+\begin{align*}
+P(\hat{p}>p_t)
+& = P\left(X>m\left[1-(1-p_t)^s\right]\right)\\
+& = \sum_{x=\lfloor m[1-(1-p_t)^s]\rfloor+1}^{m}\binom{m}{x}\left[1-(1-p)^s\right]^x(1-p)^{s(m-x)}.
+\end{align*}
 $$
 
-$$
-P(\hat{p}>p_t)=\sum_{x=\lfloor m[1-(1-p_t)^s]\rfloor+1}^{m}\binom{m}{x}\left[1-(1-p)^s\right]^x(1-p)^{s(m-x)}.
-$$
+Then 
 
 # Explore the assumptions
 
