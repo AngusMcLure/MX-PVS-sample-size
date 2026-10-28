@@ -65,6 +65,149 @@ $$
 P(\hat{p}>p_t)=\sum_{x=\lfloor m[1-(1-p_t)^s]\rfloor+1}^{m}\binom{m}{x}\left[1-(1-p)^s\right]^x(1-p)^{s(m-x)}.
 $$
 
+# Explore the pre-validation surveillance probability
+
+Choose a threshold, a design prevalence, and a pool size to explore the probability that the maximum-likelihood prevalence estimate exceeds the selected threshold. The design prevalence defaults to twice the selected threshold, and can be edited independently.
+
+The available thresholds are *Aedes* (0.1%), *Anopheles* (1%), *Culex* (0.25%), and *Mansonia* (0.5%).
+
+The calculation assumes independent mosquito infection status and perfect pool classification. It uses the exact binomial probability, with the number of pools as the binomial sample size. The plotted total sample sizes are multiples of the selected pool size.
+
+```{r prevalidation-controls}
+selectInput(
+  "threshold_species",
+  "Threshold",
+  choices = c(
+    "Aedes (0.1%)" = "0.001",
+    "Anopheles (1%)" = "0.01",
+    "Culex (0.25%)" = "0.0025",
+    "Mansonia (0.5%)" = "0.005"
+  ),
+  selected = "0.001"
+)
+uiOutput("design_prevalence_ui")
+numericInput(
+  "pool_size",
+  "Pool size (mosquitoes per pool)",
+  value = 25,
+  min = 1,
+  max = 1000,
+  step = 1
+)
+numericInput(
+  "max_pools",
+  "Maximum number of pools shown in the figure",
+  value = 400,
+  min = 1,
+  max = 10000,
+  step = 50
+)
+```
+
+```{r prevalidation-function}
+# Exact probability that the prevalence MLE exceeds the threshold.
+prob_estimate_above_threshold <- function(p, p_t, s, m) {
+  stopifnot(
+    length(p) == 1L, is.finite(p), p >= 0, p < 1,
+    length(p_t) == 1L, is.finite(p_t), p_t >= 0, p_t < 1,
+    length(s) == 1L, is.finite(s), s >= 1, s == as.integer(s),
+    length(m) == 1L, is.finite(m), m >= 1, m == as.integer(m)
+  )
+
+  q <- -expm1(s * log1p(-p))
+  q_t <- -expm1(s * log1p(-p_t))
+  pbinom(floor(m * q_t), size = m, prob = q, lower.tail = FALSE)
+}
+```
+
+```{r prevalidation-design-input}
+output$design_prevalence_ui <- renderUI({
+  p_t <- as.numeric(input$threshold_species)
+  numericInput(
+    "design_prevalence",
+    "Design prevalence (p)",
+    value = min(2 * p_t, 0.99),
+    min = 0,
+    max = 0.99,
+    step = max(p_t / 10, 0.000001)
+  )
+})
+```
+
+```{r prevalidation-probability-plot}
+renderPlotly({
+  p_t <- as.numeric(input$threshold_species)
+  p <- input$design_prevalence
+  s <- input$pool_size
+  max_pools <- input$max_pools
+
+  validate(
+    need(is.finite(p) && p >= 0 && p < 1,
+         "Design prevalence must be at least 0 and less than 1."),
+    need(is.finite(s) && s >= 1 && s == as.integer(s),
+         "Pool size must be a positive integer."),
+    need(is.finite(max_pools) && max_pools >= 1,
+         "Maximum number of pools must be at least 1.")
+  )
+
+  m_values <- seq_len(as.integer(max_pools))
+  probabilities <- vapply(
+    m_values,
+    function(m) prob_estimate_above_threshold(p, p_t, as.integer(s), m),
+    numeric(1)
+  )
+  plotly::plot_ly(
+    x = m_values * as.integer(s),
+    y = probabilities,
+    type = "scatter",
+    mode = "lines",
+    hovertemplate = paste0(
+      "Total mosquitoes: %{x:,}<br>",
+      "Pools: %{customdata}<br>",
+      "Probability: %{y:.1%}<extra></extra>"
+    ),
+    customdata = m_values
+  ) |>
+    plotly::layout(
+      xaxis = list(title = "Total sample size (n = s × m)"),
+      yaxis = list(
+        title = "P(prevalence estimate > threshold)",
+        tickformat = ".0%",
+        range = c(0, 1)
+      ),
+      margin = list(b = 70, l = 75)
+    )
+})
+```
+
+```{r prevalidation-current-result}
+renderUI({
+  p_t <- as.numeric(input$threshold_species)
+  p <- input$design_prevalence
+  s <- input$pool_size
+  max_pools <- input$max_pools
+  validate(
+    need(is.finite(p) && p >= 0 && p < 1,
+         "Design prevalence must be at least 0 and less than 1."),
+    need(is.finite(s) && s >= 1 && s == as.integer(s),
+         "Pool size must be a positive integer."),
+    need(is.finite(max_pools) && max_pools >= 1,
+         "Maximum number of pools must be at least 1.")
+  )
+  m <- as.integer(max_pools)
+  probability <- prob_estimate_above_threshold(p, p_t, as.integer(s), m)
+  tags$div(
+    class = "well",
+    tags$h4(sprintf("Probability at n = %s: %.1f%%",
+                    format(m * as.integer(s), big.mark = ","), 100 * probability)),
+    tags$p(sprintf(
+      "Threshold = %.3g; design prevalence = %.3g; pool size = %d; pools = %s.",
+      p_t, p, as.integer(s), format(m, big.mark = ",")
+    ))
+  )
+})
+```
+
 # Explore the assumptions
 
 Use the controls to see how prevalence and the number of sampled individuals affect the probability of observing at least one infected individual under a simple independent-sampling model.
