@@ -1,0 +1,160 @@
+---
+title: "Group-testing sample size at very low prevalence"
+subtitle: "Assumptions, calculations and interactive exploration"
+author: " "
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+    theme: readable
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+required_packages <- c("shiny", "DT", "plotly")
+missing_packages <- required_packages[
+  !vapply(required_packages, requireNamespace, logical(1), quietly = TRUE)
+]
+if (length(missing_packages) > 0) {
+  stop(
+    "Please install the following packages before running this document: ",
+    paste(missing_packages, collapse = ", ")
+  )
+}
+library(shiny)
+```
+
+# Purpose and scope
+
+This document is intended to explain the assumptions and mathematics behind sample-size calculations for group testing when disease prevalence is very low, and to let readers explore how results change as assumptions change.
+
+The document is an **interactive R Markdown document**. It uses Shiny inputs and outputs, **DT** for interactive tables, and **plotly** for interactive figures. It is an initial scaffold: the calculation below is a simple probability illustration, not yet the final group-testing sample-size method.
+
+# Why group testing?
+
+When prevalence is low, testing individuals one at a time can require many tests that are expected to be negative. Group testing combines specimens into pools. A negative pool can rule out infection in all members of that pool, subject to the test's sensitivity and specificity. Positive pools may need follow-up testing, depending on the protocol.
+
+The design therefore depends on more than prevalence alone. Important assumptions to make explicit include:
+
+- the target prevalence and the population or sampling frame;
+- the pool size and how pools are formed;
+- assay sensitivity and specificity, including any dependence on pool size;
+- the decision rule or surveillance objective (for example, detecting at least one infection with a specified probability);
+- whether positive pools trigger individual follow-up tests; and
+- practical constraints such as the number of available specimens and the total testing budget.
+
+These assumptions will be developed alongside the calculations as the tool takes shape.
+
+# Explore the assumptions
+
+Use the controls to see how prevalence and the number of sampled individuals affect the probability of observing at least one infected individual under a simple independent-sampling model.
+
+```{r controls}
+numericInput(
+  "prevalence",
+  "Assumed prevalence",
+  value = 0.001,
+  min = 0.000001,
+  max = 0.5,
+  step = 0.001
+)
+numericInput(
+  "n_individuals",
+  "Number of individuals sampled",
+  value = 1000,
+  min = 1,
+  max = 1000000,
+  step = 100
+)
+```
+
+Under independent sampling, with true prevalence \(p\), the probability that a sample of \(n\) individuals contains at least one infected individual is
+
+\[
+P(\text{at least one infected}) = 1 - (1-p)^n.
+\]
+
+This is a useful baseline for explaining detection probability. It is **not** the same as the probability that a group-testing protocol detects infection: that also depends on pool size, assay performance and the testing algorithm.
+
+```{r probability-result}
+renderUI({
+  p <- input$prevalence
+  n <- input$n_individuals
+  validate(
+    need(is.finite(p) && p > 0 && p < 1, "Prevalence must be between 0 and 1."),
+    need(is.finite(n) && n >= 1, "Sample size must be at least 1.")
+  )
+  probability <- -expm1(n * log1p(-p))
+  tags$div(
+    class = "well",
+    tags$h4(sprintf("Probability of including at least one infected individual: %.1f%%",
+                    100 * probability)),
+    tags$p(sprintf("Assumptions: prevalence = %.4g; individuals sampled = %s.",
+                   p, format(n, big.mark = ",")))
+  )
+})
+```
+
+## Interactive figure
+
+The curve shows the same probability over a range of sample sizes for the selected prevalence. Hover over the curve for values.
+
+```{r probability-plot}
+renderPlotly({
+  p <- input$prevalence
+  validate(need(is.finite(p) && p > 0 && p < 1, "Choose a prevalence between 0 and 1."))
+  n_max <- max(100, min(100000, input$n_individuals * 2))
+  n_values <- unique(round(seq(1, n_max, length.out = 250)))
+  probability <- -expm1(n_values * log1p(-p))
+  plotly::plot_ly(
+    x = n_values,
+    y = probability,
+    type = "scatter",
+    mode = "lines",
+    hovertemplate = "Individuals sampled: %{x:,}<br>Probability: %{y:.1%}<extra></extra>"
+  ) |>
+    plotly::layout(
+      xaxis = list(title = "Number of individuals sampled"),
+      yaxis = list(title = "Probability of including at least one infected individual",
+                    tickformat = ".0%"),
+      margin = list(b = 70, l = 70)
+    )
+})
+```
+
+# Interactive tables
+
+The table below is an example of the interactive table capability. It compares the baseline probability across several sample sizes at the currently selected prevalence. The table can be searched, sorted and paginated.
+
+```{r probability-table}
+DT::renderDataTable({
+  p <- input$prevalence
+  sample_sizes <- c(100, 250, 500, 1000, 2000, 5000, 10000)
+  results <- data.frame(
+    `Individuals sampled` = sample_sizes,
+    `Probability of at least one infected individual` =
+      sprintf("%.1f%%", 100 * (-expm1(sample_sizes * log1p(-p)))),
+    check.names = FALSE
+  )
+  DT::datatable(
+    results,
+    rownames = FALSE,
+    options = list(pageLength = 7, searching = FALSE, lengthChange = FALSE),
+    caption = "Baseline probability under independent sampling"
+  )
+})
+```
+
+# Next steps
+
+The next development step is to define the exact group-testing design and target quantity before implementing its sample-size calculation. In particular, we should distinguish:
+
+1. **Sampling objective:** for example, a required probability of detecting infection at a specified prevalence.
+2. **Pool-testing protocol:** pool size, assay sensitivity/specificity, and any confirmatory or individual retesting.
+3. **Meaning of sample size:** number of individuals sampled, number of pools tested, or total number of assays including follow-up.
+4. **Design assumptions:** independent infection status, a fixed or finite population, and any clustering or other departures from independence.
+
+Once these are settled, the illustrative calculation can be replaced by the target method while retaining the same interactive inputs, tables and figures.
