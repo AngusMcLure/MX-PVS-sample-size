@@ -27,6 +27,14 @@ if (length(missing_packages) > 0) {
 library(shiny)
 library(plotly)
 library(DT)
+
+# Responsive rows for related controls: inputs wrap onto another line on
+# narrower screens rather than forcing a fixed multi-column layout.
+tags$head(tags$style(HTML(paste0(
+  ".controls-row { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 12px 18px; }\\n",
+  ".controls-row > .form-group, .controls-row > .shiny-input-container, .controls-row > .shiny-html-output { flex: 1 1 220px; min-width: 220px; margin-bottom: 8px; }\\n",
+  ".controls-row .shiny-input-container { width: 100% !important; max-width: 100%; }"
+))))
 ```
 
 # Purpose and scope
@@ -221,9 +229,10 @@ Choose the required probability that the prevalence estimate exceeds the thresho
 The search is limited by the maximum number of pools below. If the target is not met within that limit, the plotted value is unavailable; this does not necessarily mean that no sample size could ever meet the target.
 
 ```{r sample-size-calculator-controls}
+div(class = "controls-row",
 selectInput(
   "calculator_threshold_species",
-  "Threshold (for this calculator)",
+  "Threshold",
   choices = c(
     "Aedes (0.1%)" = "0.001",
     "Anopheles (1%)" = "0.01",
@@ -244,7 +253,7 @@ sliderInput(
 )
 numericInput(
   "calculator_pool_size",
-  "Pool size (mosquitoes per pool, for this calculator)",
+  "Pool size (mosquitoes per pool)",
   value = 25,
   min = 1,
   max = 1000,
@@ -265,6 +274,7 @@ radioButtons(
   selected = "linear",
   inline = TRUE
 )
+)
 ```
 
 ```{r sample-size-calculator-design-input}
@@ -272,7 +282,7 @@ output$calculator_design_prevalence_ui <- renderUI({
   p_t <- as.numeric(input$calculator_threshold_species)
   numericInput(
     "calculator_design_prevalence_percent",
-    "Design prevalence for the result below (%)",
+    "Design prevalence (%)",
     value = 200 * p_t,
     min = 0,
     max = 99,
