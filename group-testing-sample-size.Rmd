@@ -743,7 +743,7 @@ renderDataTable({
     rownames = FALSE,
     options = list(
       pageLength = 10,
-      lengthMenu = c(5, 10, 25, 50, 100),
+      lengthChange = FALSE,
       searching = FALSE,
       scrollX = TRUE,
       columnDefs = list(list(className = "dt-right", targets = "_all"))
