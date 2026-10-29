@@ -648,7 +648,7 @@ renderDataTable({
 
 ## What about false discovery?
 
-This figure shows the probability that the prevalence MLE exceeds the threshold across a range of true prevalences, using the unclustered sample size recommended in the table above. Design effects are ignored. The red region corresponds to true prevalences below the threshold (false discovery), and the green region to true prevalences at or above the threshold.
+The sample sizes recommended above do not have any consideration for false discovery --- i.e. the probability that the MLE will be above the threshold (leading to potential EU-wide action) when the true prevalence is in fact below the threshold value. How big a problem is this? The figure below shows the probabilities for the recommended sample sizes in the table above (Note: changing the assumptions for the table above also updates the figure below).
 
 ```{r false-discovery-controls}
 div(
