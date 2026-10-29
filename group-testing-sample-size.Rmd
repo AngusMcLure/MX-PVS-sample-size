@@ -27,6 +27,7 @@ if (length(missing_packages) > 0) {
 library(shiny)
 library(plotly)
 library(DT)
+
 ```
 
 # Purpose and scope
@@ -41,13 +42,21 @@ The document is an **interactive R Markdown document**. It uses interactive tabl
 knitr::include_graphics("./Prevalidation decision framework.png")
 ```
 
-The above figure is from the LF MX PVS meeting in London in 2024. I think there was some broad agreement that this was the approach we were going to recommend for pre-validation surveillance efforts. The consequence of the above approach is that the main action/decision trigger is when the *point estimate* of prevalence is above the appropriate threshold.
+## What are we aiming for?
+The above figure is from the LF MX PVS meeting in London in 2024. I think there was some broad agreement that this was the approach we were going to recommend for pre-validation surveillance efforts. Consequently the main action/decision trigger is when the *point estimate* of prevalence is *above* the appropriate threshold.
 
-Since we want the decisions to act (namely consider EU-wide action) to be adequately powered, to my mind this means setting up the power calculations as follows.
+Since we want the decisions to act to be adequately powered, to my mind this means defining 'power' and 'sufficient sample size' as follows:
 
-The sample design needs to be sufficiently generous such that if the true prevalence in the population is higher than the provisional threshold, then the probability that the point estimate of prevalence is above the threshold needs to be sufficiently high. We might define sufficiently high in a few ways, but the simplest is to say that the probability that the EU-wide prevalence estimate is above the threshold is >75%. Now, if the true prevalence is only barely higher than the threshold, then even large sample sizes will have a roughly 50% probability of getting a point estimate above the threshold, so we need to assume some design prevalence that is somewhat above the threshold prevalence, e.g. double.
+The 'power' of a survey design is the probability that the *point estimate* of the EU-wide prevalence that is calculated from a population representative random survey will be above the threshold.
 
-I've got some tables for sample size below under various assumptions (which you can change as you like). But the basic maths is this.
+The sample size needs to be large enough that if the true prevalence population is higher than the provisional threshold, then the power is at least 75\% (or some other defined value).
+
+Now, if the true prevalence is only barely higher than the threshold, then even large sample sizes will have a roughly 50% power of getting a point estimate above the threshold, so we need to choose some *design prevalence* that is our lowest true prevalence at which we have the desired power.
+
+The choice of this 'design prevalence' and 'power' are both non-trivial and not really a statistical problems. They should somehow relate to some notion of risk tolerance. If the design prevalence is too low or the power too high then the survey requirements are immense. If the design prevalence is too high or the power to small, then we risk EUs failing to detect resurgence for a long time.
+
+## Statistical framework for power calculations
+I've got some tables and figures for sample size below under various assumptions (which you can change as you like). But the basic maths is this.
 
 For now, we ignore clustering and assume that each mosquito independently tests positive with probability $p$, with mosquitoes tested in pools of size $s$. Then the probability that a pool tests positive is $q = 1-(1-p)^s$. If there are $m$ pools across the EU (for a total of $n = sm$ mosquitoes tested), then the number of positive pools $X$ is distributed as a binomial random variable with size $m$ and probability $q$. The maximum likelihood estimate of the prevalence is simply
 
@@ -65,44 +74,59 @@ P(\hat{p}>p_t)
 \end{align*}
 $$
 
-Then 
 
-# Explore the pre-validation surveillance probability
+## Power of a single survey
 
-Choose a threshold, a design prevalence, and a pool size to explore the probability that the maximum-likelihood prevalence estimate exceeds the selected threshold. The design prevalence defaults to twice the selected threshold, and can be edited independently.
+<details>
+<summary>Details</summary>
 
-The available thresholds are *Aedes* (0.1%), *Anopheles* (1%), *Culex* (0.25%), and *Mansonia* (0.5%).
+<p>Choose a threshold, a design prevalence, and a pool size to explore the probability that the maximum-likelihood prevalence estimate exceeds the selected threshold. The design prevalence defaults to twice the selected threshold, and can be edited independently.</p>
 
-The calculation assumes independent mosquito infection status and perfect pool classification. It uses the exact binomial probability, with the number of pools as the binomial sample size. The plotted total sample sizes are multiples of the selected pool size.
+<p>The available thresholds are <em>Aedes</em> (0.1%), <em>Anopheles</em> (1%), <em>Culex</em> (0.25%), and <em>Mansonia</em> (0.5%).</p>
+
+<p>The calculation assumes independent mosquito infection status and perfect pool classification. It uses the exact binomial probability, with the number of pools as the binomial sample size. The plotted total sample sizes are multiples of the selected pool size.</p>
+
+</details>
+
+```{r responsive-controls-css, echo=FALSE}
+tags$style(HTML(paste0(
+  ".controls-row { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 12px 18px; } ",
+  ".controls-row > .form-group, .controls-row > .shiny-input-container, .controls-row > .shiny-html-output { flex: 1 1 220px; min-width: 220px; margin-bottom: 8px; } ",
+  ".controls-row .shiny-input-container { width: 100% !important; max-width: 100%; }"
+)))
+```
 
 ```{r prevalidation-controls}
-selectInput(
-  "threshold_species",
-  "Threshold",
-  choices = c(
-    "Aedes (0.1%)" = "0.001",
-    "Anopheles (1%)" = "0.01",
-    "Culex (0.25%)" = "0.0025",
-    "Mansonia (0.5%)" = "0.005"
+div(
+  class = "controls-row",
+  selectInput(
+    "threshold_species",
+    "Threshold",
+    choices = c(
+      "Aedes (0.1%)" = "0.001",
+      "Anopheles (1%)" = "0.01",
+      "Culex (0.25%)" = "0.0025",
+      "Mansonia (0.5%)" = "0.005"
+    ),
+    selected = "0.001"
   ),
-  selected = "0.001"
-)
-uiOutput("design_prevalence_ui")
-numericInput(
-  "pool_size",
-  "Pool size (mosquitoes per pool)",
-  value = 25,
-  min = 1,
-  max = 1000,
-  step = 1
-)
-numericInput(
-  "max_pools",
-  "Maximum number of pools shown in the figure",
-  value = 400,
-  min = 1,
-  max = 10000,
-  step = 50
+  uiOutput("design_prevalence_ui"),
+  numericInput(
+    "pool_size",
+    "Pool size (mosquitoes per pool)",
+    value = 25,
+    min = 1,
+    max = 1000,
+    step = 1
+  ),
+  numericInput(
+    "max_pools",
+    "Maximum number of pools shown in the figure",
+    value = 400,
+    min = 1,
+    max = 10000,
+    step = 50
+  )
 )
 ```
 
@@ -182,6 +206,9 @@ renderPlotly({
 })
 ```
 
+*The saw-tooth shape occurs because the number of positive pools is discrete: as the number of pools increases, the minimum number of positive pools needed to exceed the threshold sometimes jumps up by one.*  
+*At each jump the probability drops, then rises again as more pools are added without changing that minimum.*
+
 ```{r prevalidation-current-result}
 renderUI({
   p_t <- as.numeric(input$threshold_species)
@@ -207,6 +234,270 @@ renderUI({
       100 * p_t, 100 * p, as.integer(s), format(m, big.mark = ",")
     ))
   )
+})
+```
+
+
+## Minimum sample size for a desired power
+
+<details>
+<summary>Details</summary>
+
+<p>Choose the required probability that the prevalence estimate exceeds the threshold. The calculator searches over integer numbers of pools and returns the <strong>larger crossing</strong>: the first sample size after which the required power remains satisfied over the search range. This avoids choosing an earlier sample size that meets the target but is followed by a saw-tooth dip.</p>
+
+<p>The search is limited by the maximum number of pools below. If the target is not met within that limit, the plotted value is unavailable; this does not necessarily mean that no sample size could ever meet the target.</p>
+
+</details>
+
+```{r sample-size-calculator-controls}
+div(
+  class = "controls-row",
+  selectInput(
+    "calculator_threshold_species",
+    "Threshold",
+    choices = c(
+      "Aedes (0.1%)" = "0.001",
+      "Anopheles (1%)" = "0.01",
+      "Culex (0.25%)" = "0.0025",
+      "Mansonia (0.5%)" = "0.005"
+    ),
+    selected = "0.001"
+  ),
+  uiOutput("calculator_design_prevalence_ui"),
+  sliderInput(
+    "required_power",
+    "Required power",
+    min = 50,
+    max = 99,
+    value = 75,
+    step = 0.01,
+    post = "%"
+  ),
+  numericInput(
+    "calculator_pool_size",
+    "Pool size (mosquitoes per pool)",
+    value = 25,
+    min = 1,
+    max = 1000,
+    step = 1
+  ),
+  numericInput(
+    "calculator_max_pools",
+    "Maximum number of pools searched",
+    value = 200,
+    min = 100,
+    max = 10000,
+    step = 10
+  ),
+  radioButtons(
+    "sample_size_y_scale",
+    "Sample-size axis",
+    choices = c("Linear scale" = "linear", "Log scale" = "log"),
+    selected = "linear",
+    inline = TRUE
+  )
+)
+```
+
+```{r sample-size-calculator-design-input}
+output$calculator_design_prevalence_ui <- renderUI({
+  p_t <- as.numeric(input$calculator_threshold_species)
+  numericInput(
+    "calculator_design_prevalence_percent",
+    "Design prevalence (%)",
+    value = 200 * p_t,
+    min = 0,
+    max = 99,
+    step = max(10 * p_t, 0.001)
+  )
+})
+```
+
+```{r sample-size-calculator-function}
+# Return the minimum pool count after the final below-target dip in the
+# searched range. This selects the larger crossing when power is non-monotone.
+minimum_pools_for_power <- function(p, p_t, s, required_power, max_pools) {
+  stopifnot(
+    length(p) == 1L, is.finite(p), p >= 0, p < 1,
+    length(p_t) == 1L, is.finite(p_t), p_t >= 0, p_t < 1,
+    length(s) == 1L, is.finite(s), s >= 1, s == as.integer(s),
+    length(required_power) == 1L, is.finite(required_power),
+    required_power > 0, required_power < 1,
+    length(max_pools) == 1L, is.finite(max_pools),
+    max_pools >= 1, max_pools == as.integer(max_pools)
+  )
+
+  m <- seq_len(as.integer(max_pools))
+  q <- -expm1(as.integer(s) * log1p(-p))
+  q_t <- -expm1(as.integer(s) * log1p(-p_t))
+  power <- pbinom(floor(m * q_t), size = m, prob = q,
+                  lower.tail = FALSE)
+  below <- which(power < required_power)
+
+  if (length(below) == 0L) return(1L)
+  last_below <- max(below)
+  if (last_below >= length(m)) return(NA_integer_)
+  as.integer(last_below + 1L)
+}
+```
+
+```{r sample-size-calculator-plot}
+renderPlotly({
+  p_t <- as.numeric(input$calculator_threshold_species)
+  s <- input$calculator_pool_size
+  required_power <- input$required_power / 100
+  max_pools <- input$calculator_max_pools
+
+  validate(
+    need(is.finite(s) && s >= 1 && s == as.integer(s),
+         "Pool size must be a positive integer."),
+    need(is.finite(required_power) && required_power > 0 && required_power < 1,
+         "Required power must be between 0% and 100%."),
+    need(is.finite(max_pools) && max_pools >= 100 &&
+           max_pools == as.integer(max_pools),
+         "Maximum number of pools must be an integer of at least 100.")
+  )
+
+  design_prevalences <- seq(p_t, 5 * p_t, length.out = 100)
+
+  # Use a rounded tick interval targeting around 5-10 x-axis labels.
+  # The axis is displayed in percent, so calculate the interval on that scale.
+  prevalence_range_percent <- 100 * (5 * p_t - p_t)
+  raw_tick <- prevalence_range_percent / 8
+  tick_magnitude <- 10^floor(log10(raw_tick))
+  tick_fraction <- raw_tick / tick_magnitude
+  nice_fraction <- if (tick_fraction <= 1) {
+    1
+  } else if (tick_fraction <= 2) {
+    2
+  } else if (tick_fraction <= 5) {
+    5
+  } else {
+    10
+  }
+  prevalence_tick <- nice_fraction * tick_magnitude
+
+  pool_counts <- vapply(
+    design_prevalences,
+    function(p) minimum_pools_for_power(
+      p, p_t, as.integer(s), required_power, as.integer(max_pools)
+    ),
+    integer(1)
+  )
+  sample_sizes <- pool_counts * as.integer(s)
+  plot_data <- data.frame(
+    design_prevalence = 100 * design_prevalences,
+    sample_size = sample_sizes,
+    pools = pool_counts
+  )
+
+  p <- plotly::plot_ly(
+    data = plot_data,
+    x = ~design_prevalence,
+    y = ~sample_size,
+    type = "scatter",
+    mode = "lines+markers",
+    connectgaps = FALSE,
+    customdata = ~pools,
+    hovertemplate = paste0(
+      "Design prevalence: %{x:.4g}%<br>",
+      "Total mosquitoes: %{y:,}<br>",
+      "Pools: %{customdata}<extra></extra>"
+    )
+  )
+
+  # The exact threshold is the theoretical boundary. Near it, required
+  # sample sizes may exceed the finite search limit.
+  shapes <- list()
+  annotations <- list()
+  if (required_power > 0.5) {
+    shapes <- append(shapes, list(list(
+      type = "line", xref = "x", yref = "paper",
+      x0 = 100 * p_t, x1 = 100 * p_t,
+      y0 = 0, y1 = 1,
+      line = list(color = "rgba(200, 50, 50, 0.8)", dash = "dash", width = 2)
+    )))
+    annotations <- append(annotations, list(list(
+      x = 100 * p_t, y = -0.18, xref = "x", yref = "paper",
+      text = "Threshold",
+      showarrow = FALSE, xanchor = "center", yanchor = "top",
+      font = list(size = 10)
+    )))
+  }
+
+  p |>
+    plotly::layout(
+      xaxis = list(
+        title = "Design prevalence (%)",
+        tickmode = "linear",
+        tick0 = 0,
+        dtick = prevalence_tick
+      ),
+      yaxis = if (input$sample_size_y_scale == "log") {
+        list(title = "Required total sample size (mosquitoes)", type = "log")
+      } else {
+        list(title = "Required total sample size (mosquitoes)", type = "linear")
+      },
+      shapes = shapes,
+      annotations = annotations,
+      margin = list(b = 70, l = 85)
+    )
+})
+```
+
+```{r sample-size-calculator-result}
+renderUI({
+  p_t <- as.numeric(input$calculator_threshold_species)
+  s <- input$calculator_pool_size
+  required_power <- input$required_power / 100
+  max_pools <- input$calculator_max_pools
+  validate(
+    need(is.finite(s) && s >= 1 && s == as.integer(s),
+         "Pool size must be a positive integer."),
+    need(is.finite(required_power) && required_power > 0 && required_power < 1,
+         "Required power must be between 0% and 100%."),
+    need(is.finite(max_pools) && max_pools >= 1 &&
+           max_pools == as.integer(max_pools),
+         "Maximum number of pools must be a positive integer.")
+  )
+
+  # The design-prevalence input is created dynamically and may not yet
+  # exist during the initial Shiny render.
+  req(input$calculator_design_prevalence_percent)
+  p <- input$calculator_design_prevalence_percent / 100
+  validate(need(length(p) == 1L && is.finite(p) && p >= 0 && p < 1,
+                "Design prevalence must be at least 0 and less than 1."))
+  m <- minimum_pools_for_power(
+    p, p_t, as.integer(s), required_power, as.integer(max_pools)
+  )
+
+  if (is.na(m)) {
+    tags$div(
+      class = "well",
+      tags$h4("Required power not reached within the search limit"),
+      tags$p(sprintf(
+        "No stable sample size was found up to %s pools (%s mosquitoes). This may require a larger search limit.",
+        format(as.integer(max_pools), big.mark = ","),
+        format(as.integer(max_pools) * as.integer(s), big.mark = ",")
+      ))
+    )
+  } else {
+    probability <- prob_estimate_above_threshold(
+      p, p_t, as.integer(s), m
+    )
+    tags$div(
+      class = "well",
+      tags$h4(sprintf(
+        "Required sample size: %s mosquitoes (%s pools)",
+        format(m * as.integer(s), big.mark = ","),
+        format(m, big.mark = ",")
+      )),
+      tags$p(sprintf(
+        "Threshold = %.3g%%; design prevalence = %.3g%%; target power = %.1f%%; achieved power = %.1f%%.",
+        100 * p_t, 100 * p, 100 * required_power, 100 * probability
+      ))
+    )
+  }
 })
 ```
 
