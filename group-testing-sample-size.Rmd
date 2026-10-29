@@ -503,6 +503,10 @@ renderUI({
 
 ## Sampling over time
 
+<details>
+<summary>Details</summary>
+
+
 The above assumes that we are powering to estimate the prevalence and compare this to the threshold at a single timepoint. But in some pre-validation surveillance settings, surveillance may have to be repeated for a long time. How does this effect our considerations? There's a lot to explore here:
 * how far apart to space the surveys?
 * how should each survey be powered?
@@ -518,6 +522,8 @@ So I propose a 'time to detect resurgence' framework for designing a series of c
 * the number of surveys before  detecting resurgence
 * the number of years before detecting resurgence
 * the true prevalence when resurgence is detected.
+
+</details>
 
 ### Mathematical framework for sampling over time
 
