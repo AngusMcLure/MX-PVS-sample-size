@@ -636,10 +636,10 @@ div(
     "time_threshold_genus",
     "Threshold",
     choices = c(
-      "<em>Aedes</em> (0.1%)" = "0.001",
-      "<em>Anopheles</em> (1%)" = "0.01",
-      "<em>Culex</em> (0.25%)" = "0.0025",
-      "<em>Mansonia</em> (0.5%)" = "0.005"
+      "Aedes (0.1%)" = "0.001",
+      "Anopheles (1%)" = "0.01",
+      "Culex (0.25%)" = "0.0025",
+      "Mansonia (0.5%)" = "0.005"
     ),
     selected = "0.001",
     selectize = FALSE
