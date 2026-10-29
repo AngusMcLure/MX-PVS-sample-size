@@ -730,7 +730,7 @@ renderDataTable({
   datatable(
     data.frame(
       `Survey` = dat$survey,
-      `Time (years)` = sprintf("%.2f", dat$time),
+      `Time (years)` = sprintf("%.0f", dat$time),
       `True prevalence` = sprintf("%.2f%%", 100 * dat$true_prevalence),
       `Detection probability` = sprintf("%.1f%%", 100 * dat$detection_probability),
       `Cumulative probability detected` = sprintf(
