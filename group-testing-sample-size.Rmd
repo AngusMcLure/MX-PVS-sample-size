@@ -206,7 +206,7 @@ renderPlotly({
 })
 ```
 
-*The saw-tooth shape occurs because the number of positive pools is discrete: as the number of pools increases, the minimum number of positive pools needed to exceed the threshold sometimes jumps up by one. At each jump the probability drops, then rises again as more pools are added without changing that minimum.*
+*The saw-tooth shape occurs because the number of positive pools is discrete: as the number of pools increases, the minimum number of positive pools needed to exceed the threshold sometimes jumps up by one. At each jump the probability that the minimum number of positive pools are found drops substantially, then rises again more slowly as more pools are added until the minimum number of positive pools increases by one again, repeating the cycle.*
 
 ```{r prevalidation-current-result}
 renderUI({
@@ -503,7 +503,7 @@ renderUI({
 })
 ```
 
-*The periodic jumps in the required sample size as the design prevalence approaches the threshold is because of the saw-tooth shape in the power curve (see figure in previous section). We are defining the 'required sample size' as the smallest sample size such that all larger sample sizes satisfy the power requirement. Because there can only be an integer number of positive pools, the required number of positives for the estiamte to exceed the threshold periodically increases by one, at which point the number of total pools needed to achieve this with the desired power jumps substantially.*
+*The periodic jumps in the required sample size as the design prevalence approaches the threshold is because of the saw-tooth shape in the power curve (see figure in previous section). We are defining the 'required sample size' as the smallest sample size such that all larger sample sizes satisfy the power requirement. Because there can only be an integer number of positive pools, the required number of positives for the estimate to exceed the threshold periodically increases by one, at which point the number of total pools needed to achieve this with the desired power jumps substantially.*
 
 ## Sampling over time
 
