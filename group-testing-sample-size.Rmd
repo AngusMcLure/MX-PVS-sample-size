@@ -231,18 +231,26 @@ sliderInput(
   post = "%"
 )
 numericInput(
+  "calculator_pool_size",
+  "Pool size (mosquitoes per pool, for this calculator)",
+  value = 25,
+  min = 1,
+  max = 1000,
+  step = 1
+)
+numericInput(
   "calculator_max_pools",
   "Maximum number of pools searched",
-  value = 100000,
+  value = 200,
   min = 100,
   max = 1000000,
-  step = 10000
+  step = 100
 )
 radioButtons(
   "sample_size_y_scale",
   "Sample-size axis",
-  choices = c("Log scale" = "log", "Linear scale" = "linear"),
-  selected = "log",
+  choices = c("Linear scale" = "linear", "Log scale" = "log"),
+  selected = "linear",
   inline = TRUE
 )
 ```
@@ -278,7 +286,7 @@ minimum_pools_for_power <- function(p, p_t, s, required_power, max_pools) {
 ```{r sample-size-calculator-plot}
 renderPlotly({
   p_t <- as.numeric(input$threshold_species)
-  s <- input$pool_size
+  s <- input$calculator_pool_size
   required_power <- input$required_power / 100
   max_pools <- input$calculator_max_pools
 
@@ -376,7 +384,7 @@ renderPlotly({
 ```{r sample-size-calculator-result}
 renderUI({
   p_t <- as.numeric(input$threshold_species)
-  s <- input$pool_size
+  s <- input$calculator_pool_size
   required_power <- input$required_power / 100
   max_pools <- input$calculator_max_pools
   validate(
