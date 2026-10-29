@@ -733,7 +733,6 @@ renderDataTable({
       `Time (years)` = sprintf("%.2f", dat$time),
       `True prevalence` = sprintf("%.2f%%", 100 * dat$true_prevalence),
       `Detection probability` = sprintf("%.1f%%", 100 * dat$detection_probability),
-      `P(N = j)` = sprintf("%.1f%%", 100 * dat$probability_N_equals_j),
       `Cumulative probability detected` = sprintf(
         "%.1f%%",
         100 * cumsum(dat$probability_N_equals_j)
