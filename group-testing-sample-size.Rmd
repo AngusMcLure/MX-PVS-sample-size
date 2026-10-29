@@ -264,14 +264,13 @@ div(
     selected = "0.001"
   ),
   uiOutput("calculator_design_prevalence_ui"),
-  sliderInput(
+  numericInput(
     "required_power",
-    "Required power",
-    min = 50,
+    "Required power (%)",
+    min = 1,
     max = 99,
     value = 75,
-    step = 0.01,
-    post = "%"
+    step = 1
   ),
   numericInput(
     "calculator_pool_size",
