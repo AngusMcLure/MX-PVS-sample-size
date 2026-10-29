@@ -182,6 +182,9 @@ renderPlotly({
 })
 ```
 
+*The saw-tooth shape occurs because the number of positive pools is discrete: as the number of pools increases, the minimum number of positive pools needed to exceed the threshold sometimes jumps up by one.*  
+*At each jump the probability drops, then rises again as more pools are added without changing that minimum.*
+
 ```{r prevalidation-current-result}
 renderUI({
   p_t <- as.numeric(input$threshold_species)
