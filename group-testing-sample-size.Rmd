@@ -501,113 +501,31 @@ renderUI({
 })
 ```
 
-# Explore the assumptions
+## Sampling over time
 
-Use the controls to see how prevalence and the number of sampled individuals affect the probability of observing at least one infected individual under a simple independent-sampling model.
+The above assumes that we are powering to estimate the prevalence and compare this to the threshold at a single timepoint. But in some pre-validation surveillance settings, surveillance may have to be repeated for a long time. How does this effect our considerations? There's a lot to explore here:
+* how far apart to space the surveys?
+* how should each survey be powered?
+* should the design and timing of be influenced by the previous surveys (e.g. if prevalence is found to be very low in the previous survey, can you wait for longer?)
+* what if prevalence is increasing over time?
+* should repeat survey visit the same HHs and/or sites within the EU, or a new set of randomly selected sites?
 
-```{r controls}
-numericInput(
-  "prevalence",
-  "Assumed prevalence",
-  value = 0.001,
-  min = 0.000001,
-  max = 0.5,
-  step = 0.001
-)
-numericInput(
-  "n_individuals",
-  "Number of individuals sampled",
-  value = 1000,
-  min = 1,
-  max = 1000000,
-  step = 100
-)
-```
+I am not going to discuss all these things but below I outline another way of thinking about sequential cross-sectional survey that helps to turn the very abstract 'what should the power and design prevalence be' into something more concrete in terms of 'how long before we detect the disease'?
 
-Under independent sampling, with true prevalence $p$, the probability that a sample of $n$ individuals contains at least one infected individual is
+The basic idea is that the smaller the sample size, the less likely one survey is to find that the prevalence is above the threshold, and the more surveys (and years) it will take to detect that the disease has gone over the threshold. If the disease is spreading quickly in this time this can mean a substantial setback in elimination progress, while if it is spreading slowly taking some time to detect resurgence is not so much of a problem.
 
-$$
-P(\text{at least one infected}) = 1 - (1-p)^n.
-$$
+So I propose a 'time to detect resurgence' framework for designing a series of cross-sectional Pre-VS surveys. We can think of this in terms of
+* the number of surveys before  detecting resurgence
+* the number of years before detecting resurgence
+* the true prevalence when resurgence is detected.
 
-This is a useful baseline for explaining detection probability. It is **not** the same as the probability that a group-testing protocol detects infection: that also depends on pool size, assay performance and the testing algorithm.
+### Mathematical framework for sampling over time
 
-```{r probability-result}
-renderUI({
-  p <- input$prevalence
-  n <- input$n_individuals
-  validate(
-    need(is.finite(p) && p > 0 && p < 1, "Prevalence must be between 0 and 1."),
-    need(is.finite(n) && n >= 1, "Sample size must be at least 1.")
-  )
-  probability <- -expm1(n * log1p(-p))
-  tags$div(
-    class = "well",
-    tags$h4(sprintf("Probability of including at least one infected individual: %.1f%%",
-                    100 * probability)),
-    tags$p(sprintf("Assumptions: prevalence = %.4g; individuals sampled = %s.",
-                   p, format(n, big.mark = ",")))
-  )
-})
-```
+I will assume that when the final TAS is passed is 'year 0'. Since we are interested in being able to detect cases where resurgence is occurring I will assume that in the EUs which are facing challenges that need to be detected, prevalence starts at the threshold value and slowly grows over time, e.g. doubling in prevalence every five years. The prevalence at year $y$, $p(y)$, then follows the form $p(y) = p_t e^{\lambda y}$ where $p(0) = p_t$ is the prevalence when the final TAS is passed, and $\lambda$ is a constant describing the growth rate.
 
-## Interactive figure
+Then for a particular schedule of surveys (e.g. yearly, every five years) and sample size (number of mosquito) we can calculate:
 
-The curve shows the same probability over a range of sample sizes for the selected prevalence. Hover over the curve for values.
+* the number of surveys, $N$, before detecting resurgence;
+* the number of years, $Y$, before detecting resurgence;
+* the true prevalence, $p(Y)$, when resurgence is detected.
 
-```{r probability-plot}
-renderPlotly({
-  p <- input$prevalence
-  validate(need(is.finite(p) && p > 0 && p < 1, "Choose a prevalence between 0 and 1."))
-  n_max <- max(100, min(100000, input$n_individuals * 2))
-  n_values <- unique(round(seq(1, n_max, length.out = 250)))
-  probability <- -expm1(n_values * log1p(-p))
-  plotly::plot_ly(
-    x = n_values,
-    y = probability,
-    type = "scatter",
-    mode = "lines",
-    hovertemplate = "Individuals sampled: %{x:,}<br>Probability: %{y:.1%}<extra></extra>"
-  ) |>
-    plotly::layout(
-      xaxis = list(title = "Number of individuals sampled"),
-      yaxis = list(title = "Probability of including at least one infected individual",
-                    tickformat = ".0%"),
-      margin = list(b = 70, l = 70)
-    )
-})
-```
-
-# Interactive tables
-
-The table below is an example of the interactive table capability. It compares the baseline probability across several sample sizes at the currently selected prevalence. The table can be searched, sorted and paginated.
-
-```{r probability-table}
-DT::renderDataTable({
-  p <- input$prevalence
-  sample_sizes <- c(100, 250, 500, 1000, 2000, 5000, 10000)
-  results <- data.frame(
-    `Individuals sampled` = sample_sizes,
-    `Probability of at least one infected individual` =
-      sprintf("%.1f%%", 100 * (-expm1(sample_sizes * log1p(-p)))),
-    check.names = FALSE
-  )
-  DT::datatable(
-    results,
-    rownames = FALSE,
-    options = list(pageLength = 7, searching = FALSE, lengthChange = FALSE),
-    caption = "Baseline probability under independent sampling"
-  )
-})
-```
-
-# Next steps
-
-The next development step is to define the exact group-testing design and target quantity before implementing its sample-size calculation. In particular, we should distinguish:
-
-1.  **Sampling objective:** for example, a required probability of detecting infection at a specified prevalence.
-2.  **Pool-testing protocol:** pool size, assay sensitivity/specificity, and any confirmatory or individual retesting.
-3.  **Meaning of sample size:** number of individuals sampled, number of pools tested, or total number of assays including follow-up.
-4.  **Design assumptions:** independent infection status, a fixed or finite population, and any clustering or other departures from independence.
-
-Once these are settled, the illustrative calculation can be replaced by the target method while retaining the same interactive inputs, tables and figures.
