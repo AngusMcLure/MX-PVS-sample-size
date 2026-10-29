@@ -507,6 +507,14 @@ renderUI({
 
 ## Recommended sample sizes per EU for single surveys
 
+Below are the recommended sample size per EU under the framework. I have copied the table format in the draft chapter, however you can change the assumptions to see how this affects sample size.
+
+As you can see, for the default assumptions, the required sample sizes are quite modest! 
+
+The design prevalence is set to twice the provisional threshold by default but can be increased or decreased ('Multiplier for design prevalence').
+
+As none of the calculations here account for clustering I've introduced a design effect of 2. This can be increased or decreased ('Design effect'). 
+
 ```{r recommended-sample-sizes-controls}
 div(
   class = "controls-row",
@@ -527,7 +535,7 @@ div(
   ),
   numericInput(
     "recommended_design_effect",
-    "Design effect (D)",
+    "Design effect",
     value = 2,
     min = 1,
     step = 0.1
