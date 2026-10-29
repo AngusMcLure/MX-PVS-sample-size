@@ -503,10 +503,6 @@ renderUI({
 
 ## Sampling over time
 
-<details>
-<summary>Details</summary>
-
-
 The above assumes that we are powering to estimate the prevalence and compare this to the threshold at a single timepoint. But in some pre-validation surveillance settings, surveillance may have to be repeated for a long time. How does this effect our considerations? There's a lot to explore here:
 * how far apart to space the surveys?
 * how should each survey be powered?
@@ -523,7 +519,6 @@ So I propose a 'time to detect resurgence' framework for designing a series of c
 * the number of years before detecting resurgence
 * the true prevalence when resurgence is detected.
 
-</details>
 
 ### Mathematical framework for sampling over time
 
@@ -538,7 +533,7 @@ Then for a particular schedule of surveys (e.g. yearly, every five years) and sa
 * the true prevalence, $p(Y)$, when resurgence is detected.
 
 
-### Calculating the distribution of time to detection
+### Time to detecting resurgence (first survey where prevalence is over threshold)
 
 
 ```{r}
@@ -609,7 +604,6 @@ surveys_to_detection <- function(
 }
 ```
 
-Use the controls to explore how survey frequency, the pool design, starting prevalence, threshold prevalence and the assumed doubling time affect the distribution of time to detection. The default design is 300 pools of 25 mosquitoes each. Starting prevalence defaults to the threshold, but can be changed independently.
 
 ```{r sampling-over-time-controls}
 div(
