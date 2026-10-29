@@ -603,27 +603,151 @@ surveys_to_detection <- function(
 }
 ```
 
-For example, the following calculates the distribution for surveys every two years, with 20 mosquitoes per pool and 50 pools per survey. The starting prevalence is set to the threshold, and prevalence doubles every five years.
+Use the controls to explore how survey frequency, the pool design, starting prevalence, threshold prevalence and the assumed doubling time affect the distribution of time to detection. The default design is 300 pools of 25 mosquitoes each. Starting prevalence defaults to the threshold, but can be changed independently.
 
-```{r}
-result <- surveys_to_detection(
-  g = 2,
-  s = 20,
-  m = 50,
-  p0 = 0.001,
-  pt = 0.001,
-  lambda = log(2) / 5,
-  Jmax = 50
+```{r sampling-over-time-controls}
+div(
+  class = "controls-row",
+  numericInput(
+    "time_survey_interval",
+    "Interval between surveys (years)",
+    value = 1,
+    min = 0.1,
+    max = 100,
+    step = 0.5
+  ),
+  numericInput(
+    "time_pool_size",
+    "Mosquitoes per pool",
+    value = 25,
+    min = 1,
+    max = 1000,
+    step = 1
+  ),
+  numericInput(
+    "time_n_pools",
+    "Number of pools per survey",
+    value = 300,
+    min = 1,
+    max = 10000,
+    step = 10
+  ),
+  numericInput(
+    "time_threshold_percent",
+    "Threshold prevalence (%)",
+    value = 0.1,
+    min = 0.0001,
+    max = 100,
+    step = 0.1
+  ),
+  numericInput(
+    "time_start_percent",
+    "Starting prevalence (%)",
+    value = 0.1,
+    min = 0,
+    max = 100,
+    step = 0.1
+  ),
+  numericInput(
+    "time_doubling_time",
+    "Prevalence doubling time (years)",
+    value = 5,
+    min = 0.01,
+    max = 1000,
+    step = 0.5
+  ),
+  numericInput(
+    "time_max_surveys",
+    "Maximum number of surveys",
+    value = 50,
+    min = 1,
+    max = 1000,
+    step = 10
+  )
 )
+```
 
-head(result$distribution, 10)
+```{r sampling-over-time-results}
+sampling_over_time_result <- reactive({
+  req(
+    input$time_survey_interval,
+    input$time_pool_size,
+    input$time_n_pools,
+    input$time_threshold_percent,
+    input$time_start_percent,
+    input$time_doubling_time,
+    input$time_max_surveys
+  )
 
-# Probability of remaining undetected after 20 years
-with(
-  result$distribution,
-  1 - sum(probability_N_equals_j[time <= 20])
-)
+  validate(
+    need(input$time_survey_interval > 0, "Survey interval must be positive."),
+    need(input$time_pool_size >= 1, "Pool size must be at least 1."),
+    need(input$time_n_pools >= 1, "Number of pools must be at least 1."),
+    need(input$time_threshold_percent > 0 &&
+           input$time_threshold_percent < 100,
+         "Threshold prevalence must be greater than 0% and less than 100%."),
+    need(input$time_start_percent >= 0 &&
+           input$time_start_percent <= 100,
+         "Starting prevalence must be between 0% and 100%."),
+    need(input$time_doubling_time > 0, "Doubling time must be positive."),
+    need(input$time_max_surveys >= 1, "Maximum number of surveys must be at least 1.")
+  )
 
-# Probability mass beyond the final survey
-result$probability_not_detected_by_Jmax
+  surveys_to_detection(
+    g = input$time_survey_interval,
+    s = as.integer(input$time_pool_size),
+    m = as.integer(input$time_n_pools),
+    p0 = input$time_start_percent / 100,
+    pt = input$time_threshold_percent / 100,
+    lambda = log(2) / input$time_doubling_time,
+    Jmax = as.integer(input$time_max_surveys)
+  )
+})
+
+renderUI({
+  result <- sampling_over_time_result()
+  tags$p(
+    sprintf(
+      paste0(
+        "Total mosquitoes per survey: %s. ",
+        "Minimum positive pools needed to exceed the threshold: %s. ",
+        "Probability of remaining undetected after %s surveys: %.2f%%."
+      ),
+      format(result$total_individuals_per_survey, big.mark = ","),
+      result$pool_positive_cutoff,
+      nrow(result$distribution),
+      100 * result$probability_not_detected_by_Jmax
+    )
+  )
+})
+```
+
+```{r sampling-over-time-table}
+renderDataTable({
+  result <- sampling_over_time_result()
+  dat <- result$distribution
+
+  datatable(
+    data.frame(
+      `Survey` = dat$survey,
+      `Time (years)` = round(dat$time, 2),
+      `True prevalence` = sprintf("%.4g%%", 100 * dat$true_prevalence),
+      `Detection probability` = sprintf("%.2f%%", 100 * dat$detection_probability),
+      `P(N = j)` = sprintf("%.2f%%", 100 * dat$probability_N_equals_j),
+      `Cumulative probability detected` = sprintf(
+        "%.2f%%",
+        100 * cumsum(dat$probability_N_equals_j)
+      ),
+      check.names = FALSE
+    ),
+    rownames = FALSE,
+    options = list(
+      pageLength = 10,
+      lengthMenu = c(5, 10, 25, 50, 100),
+      searching = FALSE,
+      scrollX = TRUE
+    ),
+    caption = "Distribution of the number of surveys until resurgence is detected"
+  )
+})
 ```
