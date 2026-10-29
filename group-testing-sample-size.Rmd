@@ -264,14 +264,13 @@ div(
     selected = "0.001"
   ),
   uiOutput("calculator_design_prevalence_ui"),
-  sliderInput(
+  numericInput(
     "required_power",
-    "Required power",
-    min = 50,
+    "Required power (%)",
+    min = 1,
     max = 99,
     value = 75,
-    step = 0.01,
-    post = "%"
+    step = 1
   ),
   numericInput(
     "calculator_pool_size",
@@ -501,113 +500,262 @@ renderUI({
 })
 ```
 
-# Explore the assumptions
+## Sampling over time
 
-Use the controls to see how prevalence and the number of sampled individuals affect the probability of observing at least one infected individual under a simple independent-sampling model.
+The above assumes that we are powering to estimate the prevalence and compare this to the threshold at a single timepoint. But in some pre-validation surveillance settings, surveillance may have to be repeated for a long time. How does this effect our considerations? There's a lot to explore here:
+* how far apart to space the surveys?
+* how should each survey be powered?
+* should the design and timing of be influenced by the previous surveys (e.g. if prevalence is found to be very low in the previous survey, can you wait for longer?)
+* what if prevalence is increasing over time?
+* should repeat survey visit the same HHs and/or sites within the EU, or a new set of randomly selected sites?
 
-```{r controls}
-numericInput(
-  "prevalence",
-  "Assumed prevalence",
-  value = 0.001,
-  min = 0.000001,
-  max = 0.5,
-  step = 0.001
-)
-numericInput(
-  "n_individuals",
-  "Number of individuals sampled",
-  value = 1000,
-  min = 1,
-  max = 1000000,
-  step = 100
+I am not going to discuss all these things but below I outline another way of thinking about sequential cross-sectional survey that helps to turn the very abstract 'what should the power and design prevalence be' into something more concrete in terms of 'how long before we detect the disease'?
+
+The basic idea is that the smaller the sample size, the less likely one survey is to find that the prevalence is above the threshold, and the more surveys (and years) it will take to detect that the disease has gone over the threshold. If the disease is spreading quickly in this time this can mean a substantial setback in elimination progress, while if it is spreading slowly taking some time to detect resurgence is not so much of a problem.
+
+So I propose a 'time to detect resurgence' framework for designing a series of cross-sectional Pre-VS surveys. We can think of this in terms of
+* the number of surveys before  detecting resurgence
+* the number of years before detecting resurgence
+* the true prevalence when resurgence is detected.
+
+
+### Mathematical framework for sampling over time
+
+I will assume that when the final TAS is passed is 'year 0'. Since we are interested in being able to detect cases where resurgence is occurring I will assume that in the EUs which are facing challenges that need to be detected, prevalence starts at the threshold value and slowly grows over time, e.g. doubling in prevalence every five years. The prevalence at year $y$, $p(y)$, then follows the form $p(y) = p_t e^{\lambda y}$ where $p(0) = p_t$ is the prevalence when the final TAS is passed, and $\lambda$ is a constant describing the growth rate.
+
+As a simplifying assumption, as before we ignore clustering. Further we assume that sequential surveys samples are statistically independent of one another. In practice for this assumption to be met, the selected sites and HHs would have to be randomly selected for each survey.
+
+Then for a particular schedule of surveys (e.g. yearly, every five years) and sample size (number of mosquito) we can calculate:
+
+* the number of surveys, $N$, before detecting resurgence;
+* the number of years, $Y$, before detecting resurgence;
+* the true prevalence, $p(Y)$, when resurgence is detected.
+
+
+### Time to detecting resurgence (first survey where prevalence is over threshold)
+
+
+```{r}
+surveys_to_detection <- function(
+    g,
+    s,
+    m,
+    p0,
+    pt,
+    lambda,
+    Jmax = 100
+) {
+  # Validate inputs
+  stopifnot(
+    length(g) == 1L, is.finite(g), g > 0,
+    length(s) == 1L, is.finite(s), s >= 1, s == floor(s),
+    length(m) == 1L, is.finite(m), m >= 1, m == floor(m),
+    length(p0) == 1L, is.finite(p0), p0 >= 0, p0 <= 1,
+    length(pt) == 1L, is.finite(pt), pt > 0, pt < 1,
+    length(lambda) == 1L, is.finite(lambda),
+    length(Jmax) == 1L, is.finite(Jmax),
+    Jmax >= 1, Jmax == floor(Jmax)
+  )
+
+  Jmax <- as.integer(Jmax)
+
+  # Minimum number of positive pools required for estimated prevalence > pt
+  pi_threshold <- -expm1(s * log1p(-pt))
+  cutoff <- floor(m * pi_threshold) + 1L
+
+  # Survey times and true prevalence
+  j <- seq_len(Jmax)
+  time <- j * g
+  prevalence <- pmin(1, p0 * exp(lambda * time))
+
+  # Probability that a pool tests positive at each survey
+  pool_positive <- -expm1(s * log1p(-prevalence))
+
+  # Probability of detecting resurgence in each survey
+  q <- pbinom(
+    cutoff - 1L,
+    size = m,
+    prob = pool_positive,
+    lower.tail = FALSE
+  )
+
+  # Probability of first detection at each survey
+  probability_N <- numeric(Jmax)
+  survival <- 1
+
+  for (i in seq_len(Jmax)) {
+    probability_N[i] <- survival * q[i]
+    survival <- survival * (1 - q[i])
+  }
+
+  list(
+    distribution = data.frame(
+      survey = j,
+      time = time,
+      true_prevalence = prevalence,
+      detection_probability = q,
+      probability_N_equals_j = probability_N
+    ),
+    probability_not_detected_by_Jmax = survival,
+    pool_positive_cutoff = cutoff,
+    total_individuals_per_survey = s * m
+  )
+}
+```
+
+
+```{r sampling-over-time-controls}
+div(
+  class = "controls-row",
+  numericInput(
+    "time_survey_interval",
+    "Interval between surveys (years)",
+    value = 2,
+    min = 1,
+    max = 100,
+    step = 1
+  ),
+  numericInput(
+    "time_pool_size",
+    "Mosquitoes per pool",
+    value = 25,
+    min = 1,
+    max = 1000,
+    step = 1
+  ),
+  numericInput(
+    "time_n_pools",
+    "Number of pools per survey",
+    value = 100,
+    min = 1,
+    max = 10000,
+    step = 10
+  ),
+  selectInput(
+    "time_threshold_genus",
+    "Threshold",
+    choices = c(
+      "Aedes (0.1%)" = "0.001",
+      "Anopheles (1%)" = "0.01",
+      "Culex (0.25%)" = "0.0025",
+      "Mansonia (0.5%)" = "0.005"
+    ),
+    selected = "0.001",
+    selectize = FALSE
+  ),
+  numericInput(
+    "time_start_percent",
+    "Starting prevalence (%)",
+    value = 0.1,
+    min = 0,
+    max = 100,
+    step = 0.1
+  ),
+  numericInput(
+    "time_doubling_time",
+    "Prevalence doubling time (years)",
+    value = 6,
+    min = 0.01,
+    max = 1000,
+    step = 0.5
+  ),
+  numericInput(
+    "time_max_surveys",
+    "Maximum number of surveys",
+    value = 10,
+    min = 1,
+    max = 1000,
+    step = 1
+  )
 )
 ```
 
-Under independent sampling, with true prevalence $p$, the probability that a sample of $n$ individuals contains at least one infected individual is
+```{r sampling-over-time-results}
+observeEvent(input$time_threshold_genus, {
+  updateNumericInput(
+    session,
+    "time_start_percent",
+    value = 100 * as.numeric(input$time_threshold_genus)
+  )
+}, ignoreInit = TRUE)
 
-$$
-P(\text{at least one infected}) = 1 - (1-p)^n.
-$$
+sampling_over_time_result <- reactive({
+  req(
+    input$time_survey_interval,
+    input$time_pool_size,
+    input$time_n_pools,
+    input$time_threshold_genus,
+    input$time_start_percent,
+    input$time_doubling_time,
+    input$time_max_surveys
+  )
 
-This is a useful baseline for explaining detection probability. It is **not** the same as the probability that a group-testing protocol detects infection: that also depends on pool size, assay performance and the testing algorithm.
-
-```{r probability-result}
-renderUI({
-  p <- input$prevalence
-  n <- input$n_individuals
   validate(
-    need(is.finite(p) && p > 0 && p < 1, "Prevalence must be between 0 and 1."),
-    need(is.finite(n) && n >= 1, "Sample size must be at least 1.")
+    need(input$time_survey_interval > 0, "Survey interval must be positive."),
+    need(input$time_pool_size >= 1, "Pool size must be at least 1."),
+    need(input$time_n_pools >= 1, "Number of pools must be at least 1."),
+    need(input$time_start_percent >= 0 &&
+           input$time_start_percent <= 100,
+         "Starting prevalence must be between 0% and 100%."),
+    need(input$time_doubling_time > 0, "Doubling time must be positive."),
+    need(input$time_max_surveys >= 1, "Maximum number of surveys must be at least 1.")
   )
-  probability <- -expm1(n * log1p(-p))
-  tags$div(
-    class = "well",
-    tags$h4(sprintf("Probability of including at least one infected individual: %.1f%%",
-                    100 * probability)),
-    tags$p(sprintf("Assumptions: prevalence = %.4g; individuals sampled = %s.",
-                   p, format(n, big.mark = ",")))
+
+  surveys_to_detection(
+    g = input$time_survey_interval,
+    s = as.integer(input$time_pool_size),
+    m = as.integer(input$time_n_pools),
+    p0 = input$time_start_percent / 100,
+    pt = as.numeric(input$time_threshold_genus),
+    lambda = log(2) / input$time_doubling_time,
+    Jmax = as.integer(input$time_max_surveys)
   )
 })
-```
 
-## Interactive figure
-
-The curve shows the same probability over a range of sample sizes for the selected prevalence. Hover over the curve for values.
-
-```{r probability-plot}
-renderPlotly({
-  p <- input$prevalence
-  validate(need(is.finite(p) && p > 0 && p < 1, "Choose a prevalence between 0 and 1."))
-  n_max <- max(100, min(100000, input$n_individuals * 2))
-  n_values <- unique(round(seq(1, n_max, length.out = 250)))
-  probability <- -expm1(n_values * log1p(-p))
-  plotly::plot_ly(
-    x = n_values,
-    y = probability,
-    type = "scatter",
-    mode = "lines",
-    hovertemplate = "Individuals sampled: %{x:,}<br>Probability: %{y:.1%}<extra></extra>"
-  ) |>
-    plotly::layout(
-      xaxis = list(title = "Number of individuals sampled"),
-      yaxis = list(title = "Probability of including at least one infected individual",
-                    tickformat = ".0%"),
-      margin = list(b = 70, l = 70)
+renderUI({
+  result <- sampling_over_time_result()
+  tags$p(
+    sprintf(
+      paste0(
+        "Total mosquitoes per survey: %s. ",
+        "Minimum positive pools needed to exceed the threshold: %s. ",
+        "Probability of remaining undetected after %s surveys: %.1f%%."
+      ),
+      format(result$total_individuals_per_survey, big.mark = ","),
+      result$pool_positive_cutoff,
+      nrow(result$distribution),
+      100 * result$probability_not_detected_by_Jmax
     )
+  )
 })
 ```
 
-# Interactive tables
+```{r sampling-over-time-table}
+renderDataTable({
+  result <- sampling_over_time_result()
+  dat <- result$distribution
 
-The table below is an example of the interactive table capability. It compares the baseline probability across several sample sizes at the currently selected prevalence. The table can be searched, sorted and paginated.
-
-```{r probability-table}
-DT::renderDataTable({
-  p <- input$prevalence
-  sample_sizes <- c(100, 250, 500, 1000, 2000, 5000, 10000)
-  results <- data.frame(
-    `Individuals sampled` = sample_sizes,
-    `Probability of at least one infected individual` =
-      sprintf("%.1f%%", 100 * (-expm1(sample_sizes * log1p(-p)))),
-    check.names = FALSE
-  )
-  DT::datatable(
-    results,
+  datatable(
+    data.frame(
+      `Survey` = dat$survey,
+      `Time (years)` = sprintf("%.0f", dat$time),
+      `True prevalence` = sprintf("%.2f%%", 100 * dat$true_prevalence),
+      `Probability detected (this survey)` = sprintf("%.1f%%", 100 * dat$detection_probability),
+      `Cumulative probability detected (this and previous surveys)` = sprintf(
+        "%.1f%%",
+        100 * cumsum(dat$probability_N_equals_j)
+      ),
+      check.names = FALSE
+    ),
     rownames = FALSE,
-    options = list(pageLength = 7, searching = FALSE, lengthChange = FALSE),
-    caption = "Baseline probability under independent sampling"
+    options = list(
+      pageLength = 10,
+      lengthChange = FALSE,
+      searching = FALSE,
+      scrollX = TRUE,
+      columnDefs = list(list(className = "dt-right", targets = "_all"))
+    ),
+    caption = "Distribution of the number of surveys until resurgence is detected"
   )
 })
 ```
-
-# Next steps
-
-The next development step is to define the exact group-testing design and target quantity before implementing its sample-size calculation. In particular, we should distinguish:
-
-1.  **Sampling objective:** for example, a required probability of detecting infection at a specified prevalence.
-2.  **Pool-testing protocol:** pool size, assay sensitivity/specificity, and any confirmatory or individual retesting.
-3.  **Meaning of sample size:** number of individuals sampled, number of pools tested, or total number of assays including follow-up.
-4.  **Design assumptions:** independent infection status, a fixed or finite population, and any clustering or other departures from independence.
-
-Once these are settled, the illustrative calculation can be replaced by the target method while retaining the same interactive inputs, tables and figures.
