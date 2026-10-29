@@ -389,7 +389,12 @@ renderUI({
          "Maximum number of pools must be a positive integer.")
   )
 
+  # The design-prevalence input is created dynamically and may not yet
+  # exist during the initial Shiny render.
+  req(input$design_prevalence_percent)
   p <- input$design_prevalence_percent / 100
+  validate(need(length(p) == 1L && is.finite(p) && p >= 0 && p < 1,
+                "Design prevalence must be at least 0 and less than 1."))
   m <- minimum_pools_for_power(
     p, p_t, as.integer(s), required_power, as.integer(max_pools)
   )
