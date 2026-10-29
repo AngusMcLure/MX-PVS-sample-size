@@ -222,7 +222,7 @@ Choose the required probability that the prevalence estimate exceeds the thresho
 The search is limited by the maximum number of pools below. If the target is not met within that limit, the plotted value is unavailable; this does not necessarily mean that no sample size could ever meet the target.
 
 ```{r responsive-controls-css, echo=FALSE}
-tags$head(tags$style(HTML(paste0(
+tags$style(HTML(paste0(
   ".controls-row { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 12px 18px; } ",
   ".controls-row > .form-group, .controls-row > .shiny-input-container, .controls-row > .shiny-html-output { flex: 1 1 220px; min-width: 220px; margin-bottom: 8px; } ",
   ".controls-row .shiny-input-container { width: 100% !important; max-width: 100%; }"
