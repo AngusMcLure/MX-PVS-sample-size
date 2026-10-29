@@ -1,6 +1,6 @@
 ---
-title: "Group-testing sample size at very low prevalence"
-subtitle: "Assumptions, calculations and interactive exploration"
+title: "Survey design and sample size for Pre- and post-validation surveillance for LF using Molecular Xenomonitoring"
+subtitle: "Assumptions, calculations, and interactive exploration"
 author: " "
 date: "`r Sys.Date()`"
 output:
@@ -206,8 +206,7 @@ renderPlotly({
 })
 ```
 
-*The saw-tooth shape occurs because the number of positive pools is discrete: as the number of pools increases, the minimum number of positive pools needed to exceed the threshold sometimes jumps up by one.*  
-*At each jump the probability drops, then rises again as more pools are added without changing that minimum.*
+*The saw-tooth shape occurs because the number of positive pools is discrete: as the number of pools increases, the minimum number of positive pools needed to exceed the threshold sometimes jumps up by one. At each jump the probability drops, then rises again as more pools are added without changing that minimum.*
 
 ```{r prevalidation-current-result}
 renderUI({
@@ -243,7 +242,7 @@ renderUI({
 <details>
 <summary>Details</summary>
 
-<p>Choose the required probability that the prevalence estimate exceeds the threshold. The calculator searches over integer numbers of pools and returns the <strong>larger crossing</strong>: the first sample size after which the required power remains satisfied over the search range. This avoids choosing an earlier sample size that meets the target but is followed by a saw-tooth dip.</p>
+<p>Choose the required probability that the prevalence estimate exceeds the threshold. The calculator searches over integer numbers of pools and returns the <strong>largest crossing</strong> of the power threshold: i.e. the smallest sample size such that the required power is satisfied for it and all larger sample sizes. This avoids choosing a smaller target sample size that might meet the power minimum but comes just before a saw-tooth dip, i.e. if the achieved sample size were to slightly exceed the target, the power would be less than what is required </p>
 
 <p>The search is limited by the maximum number of pools below. If the target is not met within that limit, the plotted value is unavailable; this does not necessarily mean that no sample size could ever meet the target.</p>
 
@@ -499,6 +498,8 @@ renderUI({
   }
 })
 ```
+
+*The periodic jumps in the required sample size as the design prevalence approaches the threshold is because of the saw-tooth shape in the power curve (see figure in previous section). We are defining the 'required sample size' as the smallest sample size such that all larger sample sizes satisfy the power requirement. Because there can only be an integer number of positive pools, the required number of positives for the estiamte to exceed the threshold periodically increases by one, at which point the number of total pools needed to achieve this with the desired power jumps substantially.*
 
 ## Sampling over time
 
