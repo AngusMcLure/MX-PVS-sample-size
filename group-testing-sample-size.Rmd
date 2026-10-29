@@ -505,6 +505,147 @@ renderUI({
 
 *The periodic jumps in the required sample size as the design prevalence approaches the threshold is because of the saw-tooth shape in the power curve (see figure in previous section). We are defining the 'required sample size' as the smallest sample size such that all larger sample sizes satisfy the power requirement. Because there can only be an integer number of positive pools, the required number of positives for the estimate to exceed the threshold periodically increases by one, at which point the number of total pools needed to achieve this with the desired power jumps substantially.*
 
+## Recommended sample sizes per EU for single surveys
+
+Below are the recommended sample size per EU under the framework. I have copied the table format in the draft chapter, however you can change the assumptions to see how this affects sample size.
+
+As you can see, for the default assumptions, the required sample sizes are quite modest! However the choice of design prevalence is really influential here, and simply choosing a multiplier of 2 seems arbitrary
+
+The design prevalence is set to twice the provisional threshold by default but can be increased or decreased ('Multiplier for design prevalence').
+
+As none of the calculations here account for clustering I've introduced a design effect of 2. This can be increased or decreased ('Design effect'). 
+
+```{r recommended-sample-sizes-controls}
+div(
+  class = "controls-row",
+  numericInput(
+    "recommended_required_power",
+    "Required power (%)",
+    value = 75,
+    min = 1,
+    max = 99,
+    step = 1
+  ),
+  numericInput(
+    "recommended_design_prevalence_multiplier",
+    "Multiplier for design prevalence",
+    value = 2,
+    min = 1,
+    step = 0.1
+  ),
+  numericInput(
+    "recommended_design_effect",
+    "Design effect",
+    value = 2,
+    min = 1,
+    step = 0.1
+  ),
+  numericInput(
+    "recommended_pool_size",
+    "Pool size (mosquitoes per pool)",
+    value = 25,
+    min = 1,
+    max = 1000,
+    step = 1
+  )
+)
+```
+
+```{r recommended-sample-sizes-table}
+renderDataTable({
+  required_power <- input$recommended_required_power / 100
+  design_prevalence_multiplier <- input$recommended_design_prevalence_multiplier
+  design_effect <- input$recommended_design_effect
+  pool_size <- input$recommended_pool_size
+
+  validate(
+    need(is.finite(required_power) && required_power > 0 && required_power < 1,
+         "Required power must be between 0% and 100%."),
+    need(is.finite(design_prevalence_multiplier) &&
+           design_prevalence_multiplier >= 1,
+         "The design-prevalence multiplier must be at least 1."),
+    need(is.finite(design_effect) && design_effect >= 1,
+         "The design effect must be at least 1."),
+    need(is.finite(pool_size) && pool_size >= 1 &&
+           pool_size == as.integer(pool_size),
+         "Pool size must be a positive integer.")
+  )
+
+  genera <- data.frame(
+    genus = c("Aedes", "Culex", "Mansonia", "Anopheles"),
+    threshold = c(0.001, 0.0025, 0.005, 0.01)
+  )
+  genera$design_prevalence <- genera$threshold *
+    design_prevalence_multiplier
+
+  validate(
+    need(all(genera$design_prevalence < 1),
+         "The resulting design prevalences must be less than 100%.")
+  )
+
+  # Search up to 100,000 pools for each genus. Values not reached within
+  # this limit are reported as unavailable rather than extrapolated.
+  max_pools <- 100000L
+  genera$minimum_pools <- vapply(
+    seq_len(nrow(genera)),
+    function(i) minimum_pools_for_power(
+      p = genera$design_prevalence[i],
+      p_t = genera$threshold[i],
+      s = as.integer(pool_size),
+      required_power = required_power,
+      max_pools = max_pools
+    ),
+    integer(1)
+  )
+
+  genera$minimum_sample_size <- genera$minimum_pools * as.integer(pool_size)
+  genera$design_effect_sample_size <- ifelse(
+    is.na(genera$minimum_sample_size),
+    NA_real_,
+    ceiling(genera$minimum_sample_size * design_effect)
+  )
+
+  display_value <- function(x) {
+    ifelse(
+      is.na(x),
+      "Not reached",
+      format(x, big.mark = ",", scientific = FALSE, trim = TRUE)
+    )
+  }
+
+  table_data <- data.frame(
+    Genus = genera$genus,
+    Threshold = sprintf("%.3g%%", 100 * genera$threshold),
+    `Design prevalence` = sprintf("%.3g%%", 100 * genera$design_prevalence),
+    `Minimum sample size (ignoring clustering)` =
+      display_value(genera$minimum_sample_size),
+    `Minimum sample size (Design effect = D)` =
+      display_value(genera$design_effect_sample_size),
+    check.names = FALSE
+  )
+  names(table_data)[5] <- paste0(
+    "Minimum sample size (Design effect = ",
+    format(design_effect, trim = TRUE, scientific = FALSE),
+    ")"
+  )
+
+  datatable(
+    table_data,
+    rownames = FALSE,
+    options = list(
+      pageLength = 4,
+      lengthChange = FALSE,
+      searching = FALSE,
+      paging = FALSE,
+      info = FALSE,
+      ordering = FALSE,
+      scrollX = TRUE,
+      columnDefs = list(list(className = "dt-right", targets = 1:4))
+    )
+  )
+})
+```
+
 ## Sampling over time
 
 The above assumes that we are powering to estimate the prevalence and compare this to the threshold at a single timepoint. But in some pre-validation surveillance settings, surveillance may have to be repeated for a long time. How does this effect our considerations? There's a lot to explore here:
