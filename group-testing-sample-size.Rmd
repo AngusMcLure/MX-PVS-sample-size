@@ -230,51 +230,52 @@ tags$style(HTML(paste0(
 ```
 
 ```{r sample-size-calculator-controls}
-div(class = "controls-row",
-selectInput(
-  "calculator_threshold_species",
-  "Threshold",
-  choices = c(
-    "Aedes (0.1%)" = "0.001",
-    "Anopheles (1%)" = "0.01",
-    "Culex (0.25%)" = "0.0025",
-    "Mansonia (0.5%)" = "0.005"
+div(
+  class = "controls-row",
+  selectInput(
+    "calculator_threshold_species",
+    "Threshold",
+    choices = c(
+      "Aedes (0.1%)" = "0.001",
+      "Anopheles (1%)" = "0.01",
+      "Culex (0.25%)" = "0.0025",
+      "Mansonia (0.5%)" = "0.005"
+    ),
+    selected = "0.001"
   ),
-  selected = "0.001"
-)
-uiOutput("calculator_design_prevalence_ui")
-sliderInput(
-  "required_power",
-  "Required power",
-  min = 50,
-  max = 99,
-  value = 75,
-  step = 0.01,
-  post = "%"
-)
-numericInput(
-  "calculator_pool_size",
-  "Pool size (mosquitoes per pool)",
-  value = 25,
-  min = 1,
-  max = 1000,
-  step = 1
-)
-numericInput(
-  "calculator_max_pools",
-  "Maximum number of pools searched",
-  value = 200,
-  min = 100,
-  max = 1000000,
-  step = 100
-)
-radioButtons(
-  "sample_size_y_scale",
-  "Sample-size axis",
-  choices = c("Linear scale" = "linear", "Log scale" = "log"),
-  selected = "linear",
-  inline = TRUE
-)
+  uiOutput("calculator_design_prevalence_ui"),
+  sliderInput(
+    "required_power",
+    "Required power",
+    min = 50,
+    max = 99,
+    value = 75,
+    step = 0.01,
+    post = "%"
+  ),
+  numericInput(
+    "calculator_pool_size",
+    "Pool size (mosquitoes per pool)",
+    value = 25,
+    min = 1,
+    max = 1000,
+    step = 1
+  ),
+  numericInput(
+    "calculator_max_pools",
+    "Maximum number of pools searched",
+    value = 200,
+    min = 100,
+    max = 1000000,
+    step = 100
+  ),
+  radioButtons(
+    "sample_size_y_scale",
+    "Sample-size axis",
+    choices = c("Linear scale" = "linear", "Log scale" = "log"),
+    selected = "linear",
+    inline = TRUE
+  )
 )
 ```
 
