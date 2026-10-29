@@ -434,7 +434,11 @@ renderPlotly({
       yaxis = if (input$sample_size_y_scale == "log") {
         list(title = "Required total sample size (mosquitoes)", type = "log")
       } else {
-        list(title = "Required total sample size (mosquitoes)", type = "linear")
+        list(
+          title = "Required total sample size (mosquitoes)",
+          type = "linear",
+          rangemode = "tozero"
+        )
       },
       shapes = shapes,
       annotations = annotations,
