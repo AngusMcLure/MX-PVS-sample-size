@@ -76,34 +76,45 @@ The available thresholds are *Aedes* (0.1%), *Anopheles* (1%), *Culex* (0.25%), 
 
 The calculation assumes independent mosquito infection status and perfect pool classification. It uses the exact binomial probability, with the number of pools as the binomial sample size. The plotted total sample sizes are multiples of the selected pool size.
 
+```{r responsive-controls-css, echo=FALSE}
+tags$style(HTML(paste0(
+  ".controls-row { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 12px 18px; } ",
+  ".controls-row > .form-group, .controls-row > .shiny-input-container, .controls-row > .shiny-html-output { flex: 1 1 220px; min-width: 220px; margin-bottom: 8px; } ",
+  ".controls-row .shiny-input-container { width: 100% !important; max-width: 100%; }"
+)))
+```
+
 ```{r prevalidation-controls}
-selectInput(
-  "threshold_species",
-  "Threshold",
-  choices = c(
-    "Aedes (0.1%)" = "0.001",
-    "Anopheles (1%)" = "0.01",
-    "Culex (0.25%)" = "0.0025",
-    "Mansonia (0.5%)" = "0.005"
+div(
+  class = "controls-row",
+  selectInput(
+    "threshold_species",
+    "Threshold",
+    choices = c(
+      "Aedes (0.1%)" = "0.001",
+      "Anopheles (1%)" = "0.01",
+      "Culex (0.25%)" = "0.0025",
+      "Mansonia (0.5%)" = "0.005"
+    ),
+    selected = "0.001"
   ),
-  selected = "0.001"
-)
-uiOutput("design_prevalence_ui")
-numericInput(
-  "pool_size",
-  "Pool size (mosquitoes per pool)",
-  value = 25,
-  min = 1,
-  max = 1000,
-  step = 1
-)
-numericInput(
-  "max_pools",
-  "Maximum number of pools shown in the figure",
-  value = 400,
-  min = 1,
-  max = 10000,
-  step = 50
+  uiOutput("design_prevalence_ui"),
+  numericInput(
+    "pool_size",
+    "Pool size (mosquitoes per pool)",
+    value = 25,
+    min = 1,
+    max = 1000,
+    step = 1
+  ),
+  numericInput(
+    "max_pools",
+    "Maximum number of pools shown in the figure",
+    value = 400,
+    min = 1,
+    max = 10000,
+    step = 50
+  )
 )
 ```
 
@@ -220,14 +231,6 @@ renderUI({
 Choose the required probability that the prevalence estimate exceeds the threshold. The calculator searches over integer numbers of pools and returns the **larger crossing**: the first sample size after which the required power remains satisfied over the search range. This avoids choosing an earlier sample size that meets the target but is followed by a saw-tooth dip.
 
 The search is limited by the maximum number of pools below. If the target is not met within that limit, the plotted value is unavailable; this does not necessarily mean that no sample size could ever meet the target.
-
-```{r responsive-controls-css, echo=FALSE}
-tags$style(HTML(paste0(
-  ".controls-row { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 12px 18px; } ",
-  ".controls-row > .form-group, .controls-row > .shiny-input-container, .controls-row > .shiny-html-output { flex: 1 1 220px; min-width: 220px; margin-bottom: 8px; } ",
-  ".controls-row .shiny-input-container { width: 100% !important; max-width: 100%; }"
-)))
-```
 
 ```{r sample-size-calculator-controls}
 div(
