@@ -615,6 +615,11 @@ renderDataTable({
       display_value(genera$design_effect_sample_size),
     check.names = FALSE
   )
+  names(table_data)[5] <- paste0(
+    "Minimum sample size (Design effect = ",
+    format(design_effect, trim = TRUE, scientific = FALSE),
+    ")"
+  )
 
   datatable(
     table_data,
