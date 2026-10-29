@@ -711,7 +711,7 @@ renderUI({
       paste0(
         "Total mosquitoes per survey: %s. ",
         "Minimum positive pools needed to exceed the threshold: %s. ",
-        "Probability of remaining undetected after %s surveys: %.2f%%."
+        "Probability of remaining undetected after %s surveys: %.1f%%."
       ),
       format(result$total_individuals_per_survey, big.mark = ","),
       result$pool_positive_cutoff,
@@ -730,12 +730,12 @@ renderDataTable({
   datatable(
     data.frame(
       `Survey` = dat$survey,
-      `Time (years)` = round(dat$time, 2),
-      `True prevalence` = sprintf("%.4g%%", 100 * dat$true_prevalence),
-      `Detection probability` = sprintf("%.2f%%", 100 * dat$detection_probability),
-      `P(N = j)` = sprintf("%.2f%%", 100 * dat$probability_N_equals_j),
+      `Time (years)` = sprintf("%.2f", dat$time),
+      `True prevalence` = sprintf("%.2f%%", 100 * dat$true_prevalence),
+      `Detection probability` = sprintf("%.1f%%", 100 * dat$detection_probability),
+      `P(N = j)` = sprintf("%.1f%%", 100 * dat$probability_N_equals_j),
       `Cumulative probability detected` = sprintf(
-        "%.2f%%",
+        "%.1f%%",
         100 * cumsum(dat$probability_N_equals_j)
       ),
       check.names = FALSE
@@ -745,7 +745,8 @@ renderDataTable({
       pageLength = 10,
       lengthMenu = c(5, 10, 25, 50, 100),
       searching = FALSE,
-      scrollX = TRUE
+      scrollX = TRUE,
+      columnDefs = list(list(className = "dt-right", targets = "_all"))
     ),
     caption = "Distribution of the number of surveys until resurgence is detected"
   )
