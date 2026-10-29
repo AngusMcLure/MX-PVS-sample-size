@@ -226,7 +226,7 @@ tags$style(HTML(paste0(
   ".controls-row { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 12px 18px; } ",
   ".controls-row > .form-group, .controls-row > .shiny-input-container, .controls-row > .shiny-html-output { flex: 1 1 220px; min-width: 220px; margin-bottom: 8px; } ",
   ".controls-row .shiny-input-container { width: 100% !important; max-width: 100%; }"
-))))
+)))
 ```
 
 ```{r sample-size-calculator-controls}
