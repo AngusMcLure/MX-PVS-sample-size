@@ -42,13 +42,21 @@ The document is an **interactive R Markdown document**. It uses interactive tabl
 knitr::include_graphics("./Prevalidation decision framework.png")
 ```
 
-The above figure is from the LF MX PVS meeting in London in 2024. I think there was some broad agreement that this was the approach we were going to recommend for pre-validation surveillance efforts. The consequence of the above approach is that the main action/decision trigger is when the *point estimate* of prevalence is above the appropriate threshold.
+## What are we aiming for?
+The above figure is from the LF MX PVS meeting in London in 2024. I think there was some broad agreement that this was the approach we were going to recommend for pre-validation surveillance efforts. Consequently the main action/decision trigger is when the *point estimate* of prevalence is *above* the appropriate threshold.
 
-Since we want the decisions to act (namely consider EU-wide action) to be adequately powered, to my mind this means setting up the power calculations as follows.
+Since we want the decisions to act to be adequately powered, to my mind this means defining 'power' and 'sufficient sample size' as follows:
 
-The sample design needs to be sufficiently generous such that if the true prevalence in the population is higher than the provisional threshold, then the probability that the point estimate of prevalence is above the threshold needs to be sufficiently high. We might define sufficiently high in a few ways, but the simplest is to say that the probability that the EU-wide prevalence estimate is above the threshold is >75%. Now, if the true prevalence is only barely higher than the threshold, then even large sample sizes will have a roughly 50% probability of getting a point estimate above the threshold, so we need to assume some design prevalence that is somewhat above the threshold prevalence, e.g. double.
+The 'power' of a survey design is the probability that the *point estimate* of the EU-wide prevalence that is calculated from a population representative random survey will be above the threshold.
 
-I've got some tables for sample size below under various assumptions (which you can change as you like). But the basic maths is this.
+The sample size needs to be large enough that if the true prevalence population is higher than the provisional threshold, then the power is at least 75\% (or some other defined value).
+
+Now, if the true prevalence is only barely higher than the threshold, then even large sample sizes will have a roughly 50% power of getting a point estimate above the threshold, so we need to choose some *design prevalence* that is our lowest true prevalence at which we have the desired power.
+
+The choice of this 'design prevalence' and 'power' are both non-trivial and not really a statistical problems. They should somehow relate to some notion of risk tolerance. If the design prevalence is too low or the power too high then the survey requirements are immense. If the design prevalence is too high or the power to small, then we risk EUs failing to detect resurgence for a long time.
+
+## Statistical framework for power calculations
+I've got some tables and figures for sample size below under various assumptions (which you can change as you like). But the basic maths is this.
 
 For now, we ignore clustering and assume that each mosquito independently tests positive with probability $p$, with mosquitoes tested in pools of size $s$. Then the probability that a pool tests positive is $q = 1-(1-p)^s$. If there are $m$ pools across the EU (for a total of $n = sm$ mosquitoes tested), then the number of positive pools $X$ is distributed as a binomial random variable with size $m$ and probability $q$. The maximum likelihood estimate of the prevalence is simply
 
@@ -66,9 +74,8 @@ P(\hat{p}>p_t)
 \end{align*}
 $$
 
-Then 
 
-# Explore the pre-validation surveillance probability
+## Power of a single survey
 
 Choose a threshold, a design prevalence, and a pool size to explore the probability that the maximum-likelihood prevalence estimate exceeds the selected threshold. The design prevalence defaults to twice the selected threshold, and can be edited independently.
 
@@ -226,7 +233,7 @@ renderUI({
 ```
 
 
-# Calculate sample size for a desired power
+## Minimum sample size for a desired power
 
 Choose the required probability that the prevalence estimate exceeds the threshold. The calculator searches over integer numbers of pools and returns the **larger crossing**: the first sample size after which the required power remains satisfied over the search range. This avoids choosing an earlier sample size that meets the target but is followed by a saw-tooth dip.
 
@@ -269,8 +276,8 @@ div(
     "Maximum number of pools searched",
     value = 200,
     min = 100,
-    max = 1000000,
-    step = 100
+    max = 10000,
+    step = 10
   ),
   radioButtons(
     "sample_size_y_scale",
