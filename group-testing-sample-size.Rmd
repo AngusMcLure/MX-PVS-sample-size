@@ -357,11 +357,11 @@ renderPlotly({
          "Maximum number of pools must be an integer of at least 100.")
   )
 
-  design_prevalences <- seq(p_t, 5 * p_t, length.out = 100)
+  design_prevalences <- seq(p_t, 3 * p_t, by = 0.0001)
 
   # Use a rounded tick interval targeting around 5-10 x-axis labels.
   # The axis is displayed in percent, so calculate the interval on that scale.
-  prevalence_range_percent <- 100 * (5 * p_t - p_t)
+  prevalence_range_percent <- 100 * (3 * p_t - p_t)
   raw_tick <- prevalence_range_percent / 8
   tick_magnitude <- 10^floor(log10(raw_tick))
   tick_fraction <- raw_tick / tick_magnitude
