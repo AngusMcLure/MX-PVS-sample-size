@@ -632,13 +632,17 @@ div(
     max = 10000,
     step = 10
   ),
-  numericInput(
-    "time_threshold_percent",
-    "Threshold prevalence (%)",
-    value = 0.1,
-    min = 0.0001,
-    max = 100,
-    step = 0.1
+  selectInput(
+    "time_threshold_genus",
+    "Threshold",
+    choices = c(
+      "<em>Aedes</em> (0.1%)" = "0.001",
+      "<em>Anopheles</em> (1%)" = "0.01",
+      "<em>Culex</em> (0.25%)" = "0.0025",
+      "<em>Mansonia</em> (0.5%)" = "0.005"
+    ),
+    selected = "0.001",
+    selectize = FALSE
   ),
   numericInput(
     "time_start_percent",
@@ -673,7 +677,7 @@ sampling_over_time_result <- reactive({
     input$time_survey_interval,
     input$time_pool_size,
     input$time_n_pools,
-    input$time_threshold_percent,
+    input$time_threshold_genus,
     input$time_start_percent,
     input$time_doubling_time,
     input$time_max_surveys
@@ -683,9 +687,6 @@ sampling_over_time_result <- reactive({
     need(input$time_survey_interval > 0, "Survey interval must be positive."),
     need(input$time_pool_size >= 1, "Pool size must be at least 1."),
     need(input$time_n_pools >= 1, "Number of pools must be at least 1."),
-    need(input$time_threshold_percent > 0 &&
-           input$time_threshold_percent < 100,
-         "Threshold prevalence must be greater than 0% and less than 100%."),
     need(input$time_start_percent >= 0 &&
            input$time_start_percent <= 100,
          "Starting prevalence must be between 0% and 100%."),
@@ -698,7 +699,7 @@ sampling_over_time_result <- reactive({
     s = as.integer(input$time_pool_size),
     m = as.integer(input$time_n_pools),
     p0 = input$time_start_percent / 100,
-    pt = input$time_threshold_percent / 100,
+    pt = as.numeric(input$time_threshold_genus),
     lambda = log(2) / input$time_doubling_time,
     Jmax = as.integer(input$time_max_surveys)
   )
