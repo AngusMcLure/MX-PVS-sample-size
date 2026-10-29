@@ -221,6 +221,18 @@ Choose the required probability that the prevalence estimate exceeds the thresho
 The search is limited by the maximum number of pools below. If the target is not met within that limit, the plotted value is unavailable; this does not necessarily mean that no sample size could ever meet the target.
 
 ```{r sample-size-calculator-controls}
+selectInput(
+  "calculator_threshold_species",
+  "Threshold (for this calculator)",
+  choices = c(
+    "Aedes (0.1%)" = "0.001",
+    "Anopheles (1%)" = "0.01",
+    "Culex (0.25%)" = "0.0025",
+    "Mansonia (0.5%)" = "0.005"
+  ),
+  selected = "0.001"
+)
+uiOutput("calculator_design_prevalence_ui")
 sliderInput(
   "required_power",
   "Required power",
@@ -255,6 +267,20 @@ radioButtons(
 )
 ```
 
+```{r sample-size-calculator-design-input}
+output$calculator_design_prevalence_ui <- renderUI({
+  p_t <- as.numeric(input$calculator_threshold_species)
+  numericInput(
+    "calculator_design_prevalence_percent",
+    "Design prevalence for the result below (%)",
+    value = 200 * p_t,
+    min = 0,
+    max = 99,
+    step = max(10 * p_t, 0.001)
+  )
+})
+```
+
 ```{r sample-size-calculator-function}
 # Return the minimum pool count after the final below-target dip in the
 # searched range. This selects the larger crossing when power is non-monotone.
@@ -285,7 +311,7 @@ minimum_pools_for_power <- function(p, p_t, s, required_power, max_pools) {
 
 ```{r sample-size-calculator-plot}
 renderPlotly({
-  p_t <- as.numeric(input$threshold_species)
+  p_t <- as.numeric(input$calculator_threshold_species)
   s <- input$calculator_pool_size
   required_power <- input$required_power / 100
   max_pools <- input$calculator_max_pools
@@ -383,7 +409,7 @@ renderPlotly({
 
 ```{r sample-size-calculator-result}
 renderUI({
-  p_t <- as.numeric(input$threshold_species)
+  p_t <- as.numeric(input$calculator_threshold_species)
   s <- input$calculator_pool_size
   required_power <- input$required_power / 100
   max_pools <- input$calculator_max_pools
@@ -399,8 +425,8 @@ renderUI({
 
   # The design-prevalence input is created dynamically and may not yet
   # exist during the initial Shiny render.
-  req(input$design_prevalence_percent)
-  p <- input$design_prevalence_percent / 100
+  req(input$calculator_design_prevalence_percent)
+  p <- input$calculator_design_prevalence_percent / 100
   validate(need(length(p) == 1L && is.finite(p) && p >= 0 && p < 1,
                 "Design prevalence must be at least 0 and less than 1."))
   m <- minimum_pools_for_power(
