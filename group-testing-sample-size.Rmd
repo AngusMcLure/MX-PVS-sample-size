@@ -1,6 +1,6 @@
 ---
-title: "Group-testing sample size at very low prevalence"
-subtitle: "Assumptions, calculations and interactive exploration"
+title: "Survey design and sample size for Pre- and post-validation surveillance for LF using Molecular Xenomonitoring"
+subtitle: "Assumptions, calculations, and interactive exploration"
 author: " "
 date: "`r Sys.Date()`"
 output:
@@ -206,8 +206,7 @@ renderPlotly({
 })
 ```
 
-*The saw-tooth shape occurs because the number of positive pools is discrete: as the number of pools increases, the minimum number of positive pools needed to exceed the threshold sometimes jumps up by one.*  
-*At each jump the probability drops, then rises again as more pools are added without changing that minimum.*
+*The saw-tooth shape occurs because the number of positive pools is discrete: as the number of pools increases, the minimum number of positive pools needed to exceed the threshold sometimes jumps up by one. At each jump the probability that the minimum number of positive pools are found drops substantially, then rises again more slowly as more pools are added until the minimum number of positive pools increases by one again, repeating the cycle.*
 
 ```{r prevalidation-current-result}
 renderUI({
@@ -243,7 +242,7 @@ renderUI({
 <details>
 <summary>Details</summary>
 
-<p>Choose the required probability that the prevalence estimate exceeds the threshold. The calculator searches over integer numbers of pools and returns the <strong>larger crossing</strong>: the first sample size after which the required power remains satisfied over the search range. This avoids choosing an earlier sample size that meets the target but is followed by a saw-tooth dip.</p>
+<p>Choose the required probability that the prevalence estimate exceeds the threshold. The calculator searches over integer numbers of pools and returns the <strong>largest crossing</strong> of the power threshold: i.e. the smallest sample size such that the required power is satisfied for it and all larger sample sizes. This avoids choosing a smaller target sample size that might meet the power minimum but comes just before a saw-tooth dip, i.e. if the achieved sample size were to slightly exceed the target, the power would be less than what is required </p>
 
 <p>The search is limited by the maximum number of pools below. If the target is not met within that limit, the plotted value is unavailable; this does not necessarily mean that no sample size could ever meet the target.</p>
 
@@ -357,11 +356,11 @@ renderPlotly({
          "Maximum number of pools must be an integer of at least 100.")
   )
 
-  design_prevalences <- seq(p_t, 5 * p_t, length.out = 100)
+  design_prevalences <- seq(p_t, 3 * p_t, by = 0.0001)
 
   # Use a rounded tick interval targeting around 5-10 x-axis labels.
   # The axis is displayed in percent, so calculate the interval on that scale.
-  prevalence_range_percent <- 100 * (5 * p_t - p_t)
+  prevalence_range_percent <- 100 * (3 * p_t - p_t)
   raw_tick <- prevalence_range_percent / 8
   tick_magnitude <- 10^floor(log10(raw_tick))
   tick_fraction <- raw_tick / tick_magnitude
@@ -435,7 +434,11 @@ renderPlotly({
       yaxis = if (input$sample_size_y_scale == "log") {
         list(title = "Required total sample size (mosquitoes)", type = "log")
       } else {
-        list(title = "Required total sample size (mosquitoes)", type = "linear")
+        list(
+          title = "Required total sample size (mosquitoes)",
+          type = "linear",
+          rangemode = "tozero"
+        )
       },
       shapes = shapes,
       annotations = annotations,
@@ -500,23 +503,27 @@ renderUI({
 })
 ```
 
+*The periodic jumps in the required sample size as the design prevalence approaches the threshold is because of the saw-tooth shape in the power curve (see figure in previous section). We are defining the 'required sample size' as the smallest sample size such that all larger sample sizes satisfy the power requirement. Because there can only be an integer number of positive pools, the required number of positives for the estimate to exceed the threshold periodically increases by one, at which point the number of total pools needed to achieve this with the desired power jumps substantially.*
+
 ## Sampling over time
 
 The above assumes that we are powering to estimate the prevalence and compare this to the threshold at a single timepoint. But in some pre-validation surveillance settings, surveillance may have to be repeated for a long time. How does this effect our considerations? There's a lot to explore here:
-* how far apart to space the surveys?
-* how should each survey be powered?
-* should the design and timing of be influenced by the previous surveys (e.g. if prevalence is found to be very low in the previous survey, can you wait for longer?)
-* what if prevalence is increasing over time?
-* should repeat survey visit the same HHs and/or sites within the EU, or a new set of randomly selected sites?
+
+- how far apart to space the surveys?
+- how should each survey be powered?
+- should the design and timing of be influenced by the previous surveys (e.g. if prevalence is found to be very low in the previous survey, can you wait for longer?)
+- what if prevalence is increasing over time?
+- should repeat survey visit the same HHs and/or sites within the EU, or a new set of randomly selected sites?
 
 I am not going to discuss all these things but below I outline another way of thinking about sequential cross-sectional survey that helps to turn the very abstract 'what should the power and design prevalence be' into something more concrete in terms of 'how long before we detect the disease'?
 
 The basic idea is that the smaller the sample size, the less likely one survey is to find that the prevalence is above the threshold, and the more surveys (and years) it will take to detect that the disease has gone over the threshold. If the disease is spreading quickly in this time this can mean a substantial setback in elimination progress, while if it is spreading slowly taking some time to detect resurgence is not so much of a problem.
 
 So I propose a 'time to detect resurgence' framework for designing a series of cross-sectional Pre-VS surveys. We can think of this in terms of
-* the number of surveys before  detecting resurgence
-* the number of years before detecting resurgence
-* the true prevalence when resurgence is detected.
+
+- the number of surveys before  detecting resurgence
+- the number of years before detecting resurgence
+- the true prevalence when resurgence is detected.
 
 
 ### Mathematical framework for sampling over time
@@ -527,9 +534,9 @@ As a simplifying assumption, as before we ignore clustering. Further we assume t
 
 Then for a particular schedule of surveys (e.g. yearly, every five years) and sample size (number of mosquito) we can calculate:
 
-* the number of surveys, $N$, before detecting resurgence;
-* the number of years, $Y$, before detecting resurgence;
-* the true prevalence, $p(Y)$, when resurgence is detected.
+- the number of surveys, $N$, before detecting resurgence;
+- the number of years, $Y$, before detecting resurgence;
+- the true prevalence, $p(Y)$, when resurgence is detected.
 
 
 ### Time to detecting resurgence (first survey where prevalence is over threshold)
