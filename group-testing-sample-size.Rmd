@@ -77,11 +77,16 @@ $$
 
 ## Power of a single survey
 
-Choose a threshold, a design prevalence, and a pool size to explore the probability that the maximum-likelihood prevalence estimate exceeds the selected threshold. The design prevalence defaults to twice the selected threshold, and can be edited independently.
+<details>
+<summary>Details</summary>
 
-The available thresholds are *Aedes* (0.1%), *Anopheles* (1%), *Culex* (0.25%), and *Mansonia* (0.5%).
+<p>Choose a threshold, a design prevalence, and a pool size to explore the probability that the maximum-likelihood prevalence estimate exceeds the selected threshold. The design prevalence defaults to twice the selected threshold, and can be edited independently.</p>
 
-The calculation assumes independent mosquito infection status and perfect pool classification. It uses the exact binomial probability, with the number of pools as the binomial sample size. The plotted total sample sizes are multiples of the selected pool size.
+<p>The available thresholds are <em>Aedes</em> (0.1%), <em>Anopheles</em> (1%), <em>Culex</em> (0.25%), and <em>Mansonia</em> (0.5%).</p>
+
+<p>The calculation assumes independent mosquito infection status and perfect pool classification. It uses the exact binomial probability, with the number of pools as the binomial sample size. The plotted total sample sizes are multiples of the selected pool size.</p>
+
+</details>
 
 ```{r responsive-controls-css, echo=FALSE}
 tags$style(HTML(paste0(
@@ -235,9 +240,14 @@ renderUI({
 
 ## Minimum sample size for a desired power
 
-Choose the required probability that the prevalence estimate exceeds the threshold. The calculator searches over integer numbers of pools and returns the **larger crossing**: the first sample size after which the required power remains satisfied over the search range. This avoids choosing an earlier sample size that meets the target but is followed by a saw-tooth dip.
+<details>
+<summary>Details</summary>
 
-The search is limited by the maximum number of pools below. If the target is not met within that limit, the plotted value is unavailable; this does not necessarily mean that no sample size could ever meet the target.
+<p>Choose the required probability that the prevalence estimate exceeds the threshold. The calculator searches over integer numbers of pools and returns the <strong>larger crossing</strong>: the first sample size after which the required power remains satisfied over the search range. This avoids choosing an earlier sample size that meets the target but is followed by a saw-tooth dip.</p>
+
+<p>The search is limited by the maximum number of pools below. If the target is not met within that limit, the plotted value is unavailable; this does not necessarily mean that no sample size could ever meet the target.</p>
+
+</details>
 
 ```{r sample-size-calculator-controls}
 div(
