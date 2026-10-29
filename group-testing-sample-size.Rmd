@@ -759,7 +759,14 @@ renderPlotly({
         text = "Threshold", showarrow = FALSE,
         xanchor = "left", yanchor = "bottom"
       )),
-      margin = list(b = 65, l = 85)
+      legend = list(
+        orientation = "h",
+        x = 0,
+        y = 1.18,
+        xanchor = "left",
+        yanchor = "bottom"
+      ),
+      margin = list(t = 90, b = 65, l = 85)
     )
 })
 ```
