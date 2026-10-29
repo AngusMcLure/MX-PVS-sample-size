@@ -322,22 +322,40 @@ renderPlotly({
     )
   )
 
-  # Explicitly mark the threshold boundary as unattainable for power > 50%.
+  # The exact threshold is the theoretical boundary. Near it, required
+  # sample sizes may exceed the finite search limit.
   shapes <- list()
   annotations <- list()
   if (required_power > 0.5) {
-    shapes <- list(list(
+    shapes <- append(shapes, list(list(
       type = "line", xref = "x", yref = "paper",
       x0 = 100 * p_t, x1 = 100 * p_t,
       y0 = 0, y1 = 1,
       line = list(color = "rgba(200, 50, 50, 0.8)", dash = "dash", width = 2)
-    ))
-    annotations <- list(list(
+    )))
+    annotations <- append(annotations, list(list(
       x = 100 * p_t, y = 0.98, xref = "x", yref = "paper",
-      text = "Threshold boundary",
+      text = "Threshold",
       showarrow = FALSE, xanchor = "left", yanchor = "top",
       font = list(size = 10)
-    ))
+    )))
+  }
+  first_available <- which(!is.na(pool_counts))[1]
+  if (!is.na(first_available) && first_available > 1) {
+    shapes <- append(shapes, list(list(
+      type = "rect", xref = "x", yref = "paper",
+      x0 = 100 * p_t, x1 = 100 * design_prevalences[first_available - 1],
+      y0 = 0, y1 = 1,
+      fillcolor = "rgba(120, 120, 120, 0.15)",
+      line = list(width = 0)
+    )))
+    annotations <- append(annotations, list(list(
+      x = 100 * design_prevalences[first_available - 1], y = 0.90,
+      xref = "x", yref = "paper",
+      text = "No solution within search limit",
+      showarrow = FALSE, xanchor = "right", yanchor = "top",
+      font = list(size = 10)
+    )))
   }
 
   p |>
