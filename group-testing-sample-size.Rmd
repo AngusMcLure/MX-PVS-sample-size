@@ -672,6 +672,14 @@ div(
 ```
 
 ```{r sampling-over-time-results}
+observeEvent(input$time_threshold_genus, {
+  updateNumericInput(
+    session,
+    "time_start_percent",
+    value = 100 * as.numeric(input$time_threshold_genus)
+  )
+}, ignoreInit = TRUE)
+
 sampling_over_time_result <- reactive({
   req(
     input$time_survey_interval,
