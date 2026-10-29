@@ -523,6 +523,8 @@ So I propose a 'time to detect resurgence' framework for designing a series of c
 
 I will assume that when the final TAS is passed is 'year 0'. Since we are interested in being able to detect cases where resurgence is occurring I will assume that in the EUs which are facing challenges that need to be detected, prevalence starts at the threshold value and slowly grows over time, e.g. doubling in prevalence every five years. The prevalence at year $y$, $p(y)$, then follows the form $p(y) = p_t e^{\lambda y}$ where $p(0) = p_t$ is the prevalence when the final TAS is passed, and $\lambda$ is a constant describing the growth rate.
 
+As a simplifying assumption, as before we ignore clustering. Further we assume that sequential surveys samples are statistically independent of one another. In practice for this assumption to be met, the selected sites and HHs would have to be randomly selected for each survey.
+
 Then for a particular schedule of surveys (e.g. yearly, every five years) and sample size (number of mosquito) we can calculate:
 
 * the number of surveys, $N$, before detecting resurgence;
@@ -530,10 +532,8 @@ Then for a particular schedule of surveys (e.g. yearly, every five years) and sa
 * the true prevalence, $p(Y)$, when resurgence is detected.
 
 
+### Calculating the distribution of time to detection
 
-#### Calculating the distribution of time to detection
-
-The function below calculates the distribution of the number of surveys until the estimated prevalence first exceeds the threshold. It assumes independent infection status among mosquitoes, fixed pool sizes, and perfect diagnostic sensitivity and specificity.
 
 ```{r}
 surveys_to_detection <- function(
