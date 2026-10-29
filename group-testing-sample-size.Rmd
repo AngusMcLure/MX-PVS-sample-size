@@ -529,3 +529,101 @@ Then for a particular schedule of surveys (e.g. yearly, every five years) and sa
 * the number of years, $Y$, before detecting resurgence;
 * the true prevalence, $p(Y)$, when resurgence is detected.
 
+
+
+#### Calculating the distribution of time to detection
+
+The function below calculates the distribution of the number of surveys until the estimated prevalence first exceeds the threshold. It assumes independent infection status among mosquitoes, fixed pool sizes, and perfect diagnostic sensitivity and specificity.
+
+```{r}
+surveys_to_detection <- function(
+    g,
+    s,
+    m,
+    p0,
+    pt,
+    lambda,
+    Jmax = 100
+) {
+  # Validate inputs
+  stopifnot(
+    length(g) == 1L, is.finite(g), g > 0,
+    length(s) == 1L, is.finite(s), s >= 1, s == floor(s),
+    length(m) == 1L, is.finite(m), m >= 1, m == floor(m),
+    length(p0) == 1L, is.finite(p0), p0 >= 0, p0 <= 1,
+    length(pt) == 1L, is.finite(pt), pt > 0, pt < 1,
+    length(lambda) == 1L, is.finite(lambda),
+    length(Jmax) == 1L, is.finite(Jmax),
+    Jmax >= 1, Jmax == floor(Jmax)
+  )
+
+  Jmax <- as.integer(Jmax)
+
+  # Minimum number of positive pools required for estimated prevalence > pt
+  pi_threshold <- -expm1(s * log1p(-pt))
+  cutoff <- floor(m * pi_threshold) + 1L
+
+  # Survey times and true prevalence
+  j <- seq_len(Jmax)
+  time <- j * g
+  prevalence <- pmin(1, p0 * exp(lambda * time))
+
+  # Probability that a pool tests positive at each survey
+  pool_positive <- -expm1(s * log1p(-prevalence))
+
+  # Probability of detecting resurgence in each survey
+  q <- pbinom(
+    cutoff - 1L,
+    size = m,
+    prob = pool_positive,
+    lower.tail = FALSE
+  )
+
+  # Probability of first detection at each survey
+  probability_N <- numeric(Jmax)
+  survival <- 1
+
+  for (i in seq_len(Jmax)) {
+    probability_N[i] <- survival * q[i]
+    survival <- survival * (1 - q[i])
+  }
+
+  list(
+    distribution = data.frame(
+      survey = j,
+      time = time,
+      true_prevalence = prevalence,
+      detection_probability = q,
+      probability_N_equals_j = probability_N
+    ),
+    probability_not_detected_by_Jmax = survival,
+    pool_positive_cutoff = cutoff,
+    total_individuals_per_survey = s * m
+  )
+}
+```
+
+For example, the following calculates the distribution for surveys every two years, with 20 mosquitoes per pool and 50 pools per survey. The starting prevalence is set to the threshold, and prevalence doubles every five years.
+
+```{r}
+result <- surveys_to_detection(
+  g = 2,
+  s = 20,
+  m = 50,
+  p0 = 0.001,
+  pt = 0.001,
+  lambda = log(2) / 5,
+  Jmax = 50
+)
+
+head(result$distribution, 10)
+
+# Probability of remaining undetected after 20 years
+with(
+  result$distribution,
+  1 - sum(probability_N_equals_j[time <= 20])
+)
+
+# Probability mass beyond the final survey
+result$probability_not_detected_by_Jmax
+```
