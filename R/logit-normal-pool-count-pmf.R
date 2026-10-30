@@ -168,3 +168,147 @@ logit_normal_pool_count_pmf <- function(
 
   setNames(total_pmf[x + 1L], paste0("P(X=", x, ")"))
 }
+
+
+#' Cumulative distribution function for the clustered pool count
+#'
+#' Calculates P(X < c) for the total number of positive pools under
+#' logit-normal trapping-site heterogeneity.
+#'
+#' Unlike summing the FFT-derived PMF, this function calculates lower-tail
+#' probabilities by repeated truncated convolution in probability space.
+#' This avoids FFT cancellation and does not calculate probabilities above
+#' the requested cutoff.
+#'
+#' @inheritParams logit_normal_pool_count_pmf
+#' @param c Numeric cutoff or vector of cutoffs. Returns P(X < c); since X
+#'   is integer-valued, this is P(X <= ceiling(c) - 1).
+#'
+#' @return A numeric vector of probabilities P(X < c), named by the supplied
+#'   cutoff values.
+#'
+#' @examples
+#' logit_normal_pool_count_cdf(
+#'   w = 30, v = 20, s = 25, mu = qlogis(0.01), sigma = 0.8,
+#'   c = c(5, 10, 15)
+#' )
+#'
+#' @export
+logit_normal_pool_count_cdf <- function(
+    w, v, s, mu, sigma,
+    c,
+    n_quad = 40L
+) {
+  check_scalar_integer <- function(value, name, minimum = 1) {
+    if (!is.numeric(value) || length(value) != 1L ||
+        !is.finite(value) || value < minimum ||
+        value != floor(value)) {
+      stop(name, " must be a single integer >= ", minimum, ".",
+           call. = FALSE)
+    }
+    as.integer(value)
+  }
+
+  w <- check_scalar_integer(w, "w")
+  v <- check_scalar_integer(v, "v")
+  s <- check_scalar_integer(s, "s")
+  n_quad <- check_scalar_integer(n_quad, "n_quad", minimum = 2)
+
+  if (!is.numeric(mu) || length(mu) != 1L || !is.finite(mu)) {
+    stop("mu must be a single finite number.", call. = FALSE)
+  }
+  if (!is.numeric(sigma) || length(sigma) != 1L ||
+      !is.finite(sigma) || sigma < 0) {
+    stop("sigma must be a single finite number >= 0.", call. = FALSE)
+  }
+  if (!is.numeric(c) || length(c) == 0L || any(!is.finite(c))) {
+    stop("c must be a non-empty vector of finite numeric cutoffs.",
+         call. = FALSE)
+  }
+
+  max_count <- as.double(w) * v
+  if (max_count > .Machine$integer.max - 1) {
+    stop("w*v is too large to represent the distribution as an R vector.",
+         call. = FALSE)
+  }
+  max_count <- as.integer(max_count)
+  cutoffs <- ceiling(c) - 1
+
+  # Boundary cases can be answered exactly without any distribution work.
+  answer <- numeric(length(c))
+  answer[cutoffs < 0] <- 0
+  answer[cutoffs >= max_count] <- 1
+  needs_calculation <- which(cutoffs >= 0 & cutoffs < max_count)
+
+  if (length(needs_calculation) > 0L) {
+    max_cutoff <- as.integer(max(cutoffs[needs_calculation]))
+
+    if (sigma == 0) {
+      p <- plogis(mu)
+      q <- -expm1(s * log1p(-p))
+      # pbinom is designed to evaluate binomial tails stably.
+      calculated <- pbinom(
+        cutoffs[needs_calculation],
+        size = max_count,
+        prob = q
+      )
+      answer[needs_calculation] <- calculated
+
+    } else {
+      if (!requireNamespace("statmod", quietly = TRUE)) {
+        stop(
+          "Package 'statmod' is required for Gauss-Hermite quadrature. ",
+          "Install it with install.packages('statmod').",
+          call. = FALSE
+        )
+      }
+
+      quadrature <- statmod::gauss.quad.prob(
+        n = n_quad,
+        dist = "normal"
+      )
+      local_prevalence <- plogis(mu + sigma * quadrature$nodes)
+      pool_positive <- -expm1(s * log1p(-local_prevalence))
+
+      conditional_pmfs <- vapply(
+        pool_positive,
+        function(q_j) dbinom(0:v, size = v, prob = q_j),
+        numeric(v + 1L)
+      )
+      site_pmf <- drop(conditional_pmfs %*% quadrature$weights)
+      site_pmf <- site_pmf / sum(site_pmf)
+
+      # Truncated convolution: retain only probabilities for counts
+      # 0,...,max_cutoff at every step. All terms are non-negative, so this
+      # avoids the cancellation that can affect FFT-based lower tails.
+      accumulated <- 1
+      for (site in seq_len(w)) {
+        current_max <- length(accumulated) - 1L
+        next_max <- min(max_cutoff, current_max + v)
+        next_pmf <- numeric(next_max + 1L)
+
+        for (k in 0:next_max) {
+          j_min <- max(0L, k - current_max)
+          j_max <- min(v, k)
+          js <- j_min:j_max
+          next_pmf[k + 1L] <- sum(
+            accumulated[k - js + 1L] * site_pmf[js + 1L]
+          )
+        }
+
+        accumulated <- next_pmf
+      }
+
+      # Use cumulative sums of the truncated, non-negative PMF.
+      cumulative <- cumsum(accumulated)
+      answer[needs_calculation] <- cumulative[
+        cutoffs[needs_calculation] + 1L
+      ]
+    }
+  }
+
+  # Guard against tiny rounding excursions outside [0, 1].
+  answer <- pmin(1, pmax(0, answer))
+  names(answer) <- paste0("P(X<", c, ")")
+  answer
+}
