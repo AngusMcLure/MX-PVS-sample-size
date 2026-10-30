@@ -24,12 +24,15 @@ jobs:
           use-public-rspm: true
 
       - name: Install deployment and application packages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: Rscript {0}
         run: |
           install.packages(c("remotes", "rsconnect", "shiny", "DT", "plotly", "statmod"))
           remotes::install_github(
             "AngusMcLure/PoolPoweR",
             ref = "4e732164939f948e03a52209a6702ba043deb5b2",
+            auth_token = Sys.getenv("GITHUB_TOKEN"),
             upgrade = "never"
           )
           stopifnot(
