@@ -448,7 +448,6 @@ div(
     ),
     selected = "0.001"
   ),
-  uiOutput("calculator_design_prevalence_ui"),
   numericInput(
     "required_power",
     "Required power (%)",
@@ -483,19 +482,6 @@ div(
 )
 ```
 
-```{r sample-size-calculator-design-input}
-output$calculator_design_prevalence_ui <- renderUI({
-  p_t <- as.numeric(input$calculator_threshold_species)
-  numericInput(
-    "calculator_design_prevalence_percent",
-    "Design prevalence (%)",
-    value = 200 * p_t,
-    min = 0,
-    max = 99,
-    step = max(10 * p_t, 0.001)
-  )
-})
-```
 
 ```{r sample-size-calculator-function}
 # Return the minimum pool count after the final below-target dip in the
@@ -633,61 +619,6 @@ renderPlotly({
 })
 ```
 
-```{r sample-size-calculator-result}
-renderUI({
-  p_t <- as.numeric(input$calculator_threshold_species)
-  s <- input$calculator_pool_size
-  required_power <- input$required_power / 100
-  max_pools <- input$calculator_max_pools
-  validate(
-    need(is.finite(s) && s >= 1 && s == as.integer(s),
-         "Pool size must be a positive integer."),
-    need(is.finite(required_power) && required_power > 0 && required_power < 1,
-         "Required power must be between 0% and 100%."),
-    need(is.finite(max_pools) && max_pools >= 1 &&
-           max_pools == as.integer(max_pools),
-         "Maximum number of pools must be a positive integer.")
-  )
-
-  # The design-prevalence input is created dynamically and may not yet
-  # exist during the initial Shiny render.
-  req(input$calculator_design_prevalence_percent)
-  p <- input$calculator_design_prevalence_percent / 100
-  validate(need(length(p) == 1L && is.finite(p) && p >= 0 && p < 1,
-                "Design prevalence must be at least 0 and less than 1."))
-  m <- minimum_pools_for_power(
-    p, p_t, as.integer(s), required_power, as.integer(max_pools)
-  )
-
-  if (is.na(m)) {
-    tags$div(
-      class = "well",
-      tags$h4("Required power not reached within the search limit"),
-      tags$p(sprintf(
-        "No stable sample size was found up to %s pools (%s mosquitoes). This may require a larger search limit.",
-        format(as.integer(max_pools), big.mark = ","),
-        format(as.integer(max_pools) * as.integer(s), big.mark = ",")
-      ))
-    )
-  } else {
-    probability <- prob_estimate_above_threshold(
-      p, p_t, as.integer(s), m
-    )
-    tags$div(
-      class = "well",
-      tags$h4(sprintf(
-        "Required sample size: %s mosquitoes (%s pools)",
-        format(m * as.integer(s), big.mark = ","),
-        format(m, big.mark = ",")
-      )),
-      tags$p(sprintf(
-        "Threshold = %.3g%%; design prevalence = %.3g%%; target power = %.1f%%; achieved power = %.1f%%.",
-        100 * p_t, 100 * p, 100 * required_power, 100 * probability
-      ))
-    )
-  }
-})
-```
 
 *The periodic jumps in the required sample size as the design prevalence approaches the threshold is because of the saw-tooth shape in the power curve (see figure in previous section). We are defining the 'required sample size' as the smallest sample size such that all larger sample sizes satisfy the power requirement. Because there can only be an integer number of positive pools, the required number of positives for the estimate to exceed the threshold periodically increases by one, at which point the number of total pools needed to achieve this with the desired power jumps substantially.*
 
