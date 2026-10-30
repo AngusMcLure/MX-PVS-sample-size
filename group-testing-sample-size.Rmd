@@ -266,18 +266,11 @@ div(
     ),
     selected = "0.001"
   ),
-  numericInput(
-    "clustered_design_prevalence_percent",
-    "Design prevalence (%)",
-    value = 0.1,
-    min = 0.0001,
-    max = 99.999,
-    step = 0.01
-  ),
+  uiOutput("clustered_design_prevalence_ui"),
   numericInput(
     "clustered_sigma",
     "σ (SD of logit prevalence)",
-    value = 0.8,
+    value = 2,
     min = 0,
     step = 0.1
   ),
@@ -306,6 +299,20 @@ div(
     step = 10
   )
 )
+```
+
+```{r clustered-design-prevalence-input}
+output$clustered_design_prevalence_ui <- renderUI({
+  p_t <- as.numeric(input$clustered_threshold_species)
+  numericInput(
+    "clustered_design_prevalence_percent",
+    "Design prevalence (%)",
+    value = 200 * p_t,
+    min = 0,
+    max = 99,
+    step = max(10 * p_t, 0.001)
+  )
+})
 ```
 
 ```{r clustered-power-plot}
