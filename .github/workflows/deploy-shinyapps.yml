@@ -60,5 +60,5 @@ jobs:
             appName = app_name,
             account = Sys.getenv("SHINYAPPS_ACCOUNT"),
             appTitle = "MX PVS sample size",
-            forceUpdate TRUE
+            forceUpdate = TRUE
           )
