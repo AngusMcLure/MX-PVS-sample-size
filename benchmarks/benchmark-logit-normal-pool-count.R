@@ -18,12 +18,12 @@ source("R/logit-normal-pool-count-pmf.R")
 # Keep the parameters fixed while increasing the number of sites. The direct
 # method is deliberately benchmarked only at moderate sizes because its cost
 # grows quadratically in the total number of pools.
-v <- 10L
+v <- 2L
 s <- 25L
-mu <- qlogis(0.01)
+mu <- qlogis(0.001)
 sigma <- 0.8
 n_quad <- 40L
-site_counts <- c(5L, 10L, 20L, 40L)
+site_counts <- c(5L, 10L, 20L, 40L, 150L, 400L,1000L)
 tolerance <- 1e-9
 
 benchmark_results <- vector("list", length(site_counts))
@@ -55,7 +55,7 @@ for (i in seq_along(site_counts)) {
 
   # Check that the CDF agrees with cumulative probabilities from the PMF.
   # The CDF API returns P(X < c), so integer cutoff c maps to cumsum(PMF)[c].
-  cutoffs <- unique(pmax(1L, pmin(total_pools, c(1L, 3L, floor(total_pools / 10))))
+  cutoffs <- unique(pmax(1L, pmin(total_pools, c(1L, 3L, floor(total_pools / 10)))))
   cdf_values <- logit_normal_pool_count_cdf(
     w = w, v = v, s = s, mu = mu, sigma = sigma,
     c = cutoffs, n_quad = n_quad
