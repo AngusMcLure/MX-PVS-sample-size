@@ -207,6 +207,37 @@ renderPlotly({
 ```
 
 
+*The saw-tooth shape occurs because the number of positive pools is discrete: as the number of pools increases, the minimum number of positive pools needed to exceed the threshold sometimes jumps up by one. At each jump the probability that the minimum number of positive pools are found drops substantially, then rises again more slowly as more pools are added until the minimum number of positive pools increases by one again, repeating the cycle.*
+
+```{r prevalidation-current-result}
+renderUI({
+  p_t <- as.numeric(input$threshold_species)
+  p <- input$design_prevalence_percent / 100
+  s <- input$pool_size
+  max_pools <- input$max_pools
+  validate(
+    need(is.finite(p) && p >= 0 && p < 1,
+         "Design prevalence must be at least 0 and less than 1."),
+    need(is.finite(s) && s >= 1 && s == as.integer(s),
+         "Pool size must be a positive integer."),
+    need(is.finite(max_pools) && max_pools >= 1,
+         "Maximum number of pools must be at least 1.")
+  )
+  m <- as.integer(max_pools)
+  probability <- prob_estimate_above_threshold(p, p_t, as.integer(s), m)
+  tags$div(
+    class = "well",
+    tags$h4(sprintf("Probability at n = %s: %.1f%%",
+                    format(m * as.integer(s), big.mark = ","), 100 * probability)),
+    tags$p(sprintf(
+      "Threshold = %.3g%%; design prevalence = %.3g%%; pool size = %d; pools = %s.",
+      100 * p_t, 100 * p, as.integer(s), format(m, big.mark = ",")
+    ))
+  )
+})
+```
+
+
 ## Power with site-level heterogeneity
 
 <details>
@@ -327,7 +358,7 @@ renderPlotly({
     y = ~power,
     type = "scatter",
     mode = "lines",
-    customdata = cbind(~sites, ~total_pools),
+    customdata = as.matrix(plot_data[, c("sites", "total_pools")]),
     hovertemplate = paste0(
       "Sites: %{customdata[0]}<br>",
       "Pools: %{customdata[1]}<br>",
@@ -346,37 +377,6 @@ renderPlotly({
     )
 })
 ```
-
-*The saw-tooth shape occurs because the number of positive pools is discrete: as the number of pools increases, the minimum number of positive pools needed to exceed the threshold sometimes jumps up by one. At each jump the probability that the minimum number of positive pools are found drops substantially, then rises again more slowly as more pools are added until the minimum number of positive pools increases by one again, repeating the cycle.*
-
-```{r prevalidation-current-result}
-renderUI({
-  p_t <- as.numeric(input$threshold_species)
-  p <- input$design_prevalence_percent / 100
-  s <- input$pool_size
-  max_pools <- input$max_pools
-  validate(
-    need(is.finite(p) && p >= 0 && p < 1,
-         "Design prevalence must be at least 0 and less than 1."),
-    need(is.finite(s) && s >= 1 && s == as.integer(s),
-         "Pool size must be a positive integer."),
-    need(is.finite(max_pools) && max_pools >= 1,
-         "Maximum number of pools must be at least 1.")
-  )
-  m <- as.integer(max_pools)
-  probability <- prob_estimate_above_threshold(p, p_t, as.integer(s), m)
-  tags$div(
-    class = "well",
-    tags$h4(sprintf("Probability at n = %s: %.1f%%",
-                    format(m * as.integer(s), big.mark = ","), 100 * probability)),
-    tags$p(sprintf(
-      "Threshold = %.3g%%; design prevalence = %.3g%%; pool size = %d; pools = %s.",
-      100 * p_t, 100 * p, as.integer(s), format(m, big.mark = ",")
-    ))
-  )
-})
-```
-
 
 ## Minimum sample size for a desired power
 
