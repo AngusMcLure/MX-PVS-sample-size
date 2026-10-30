@@ -109,7 +109,7 @@ logit_normal_parameters_from_moments <- function(mean, variance) {
 #' standard deviation sigma. Conditional on p_j, the number of positive pools
 #' at that location is binomial with size v and probability 1 - (1-p_j)^s.
 #' The location-level PMF is integrated over the logit-normal distribution
-#' using Gauss-Hermite quadrature from the statmod package.
+#' using an internal Gauss-Hermite quadrature routine.
 #'
 #' The total PMF is obtained by raising the discrete Fourier transform of the
 #' location-level PMF to the power w, then applying the inverse transform.
@@ -183,14 +183,6 @@ logit_normal_pool_count_pmf <- function(
     total_pmf <- dbinom(0:max_count, size = max_count, prob = q)
 
   } else {
-    if (!requireNamespace("statmod", quietly = TRUE)) {
-      stop(
-        "Package 'statmod' is required for Gauss-Hermite quadrature. ",
-        "Install it with install.packages('statmod').",
-        call. = FALSE
-      )
-    }
-
     # Integrate with respect to a standard normal distribution.
     quadrature <- .gauss_hermite_normal(n_quad)
 
@@ -342,18 +334,7 @@ logit_normal_pool_count_cdf <- function(
       answer[needs_calculation] <- calculated
 
     } else {
-      if (!requireNamespace("statmod", quietly = TRUE)) {
-        stop(
-          "Package 'statmod' is required for Gauss-Hermite quadrature. ",
-          "Install it with install.packages('statmod').",
-          call. = FALSE
-        )
-      }
-
-      quadrature <- statmod::gauss.quad.prob(
-        n = n_quad,
-        dist = "normal"
-      )
+      quadrature <- .gauss_hermite_normal(n_quad)
       local_prevalence <- plogis(mu + sigma * quadrature$nodes)
       pool_positive <- -expm1(s * log1p(-local_prevalence))
 
@@ -451,14 +432,6 @@ logit_normal_pool_count_pmf_direct <- function(
     q <- -expm1(s * log1p(-p))
     total_pmf <- dbinom(0:max_count, size = max_count, prob = q)
   } else {
-    if (!requireNamespace("statmod", quietly = TRUE)) {
-      stop(
-        "Package 'statmod' is required for Gauss-Hermite quadrature. ",
-        "Install it with install.packages('statmod').",
-        call. = FALSE
-      )
-    }
-
     quadrature <- .gauss_hermite_normal(n_quad)
     local_prevalence <- plogis(mu + sigma * quadrature$nodes)
     pool_positive <- -expm1(s * log1p(-local_prevalence))
