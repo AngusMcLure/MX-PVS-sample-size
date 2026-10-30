@@ -650,6 +650,10 @@ renderDataTable({
 
 The sample sizes recommended above do not have any consideration for false discovery --- i.e. the probability that the MLE will be above the threshold (leading to potential EU-wide action) when the true prevalence is in fact below the threshold value. How big a problem is this? The figure below shows the probabilities for the recommended sample sizes in the table above (Note: changing the assumptions for the table above also updates the figure below).
 
+The probability of false discover is highest when the true prevalence is close to (but below) the threshold. This is, to my mind, not such a bad thing since if the prevalence is still close to the threshold when the PreVS survey is taking place (which is probably a number of years after the last TAS), then this indicates transmission is not decreasing substantially.
+
+When the true prevalence is about half the threshold, the false discovery probability is roughly <15\%. **Is this acceptable?** Again, this is an *operational decision*, not a statistical one. If avoiding false discovery is of similar importance to ensuring true discoveries, then perhaps we need to consider comparing lower confidence bound (say 75%) instead of the MLE to compare to the threshold, but this is not what was decided in the London meeting.
+
 ```{r false-discovery-controls}
 div(
   class = "controls-row",
