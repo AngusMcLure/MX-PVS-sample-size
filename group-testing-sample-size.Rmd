@@ -14,7 +14,7 @@ runtime: shiny
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
-required_packages <- c("shiny", "DT", "plotly", "statmod")
+required_packages <- c("shiny", "DT", "plotly", "statmod", "PoolPoweR")
 missing_packages <- required_packages[
   !vapply(required_packages, requireNamespace, logical(1), quietly = TRUE)
 ]
@@ -248,7 +248,7 @@ renderUI({
 
 <p>This figure extends the single-survey power calculation to allow prevalence to vary between sites. Site-specific prevalence follows a logit-normal distribution: logit(p<sub>j</sub>) = μ + σZ<sub>j</sub>, where Z<sub>j</sub> is standard normal. The design prevalence is the arithmetic mean prevalence across sites, E[p_j]. The input is the intraclass correlation coefficient (ICC) between infection statuses of two mosquitoes sampled from the same site. For each selected design prevalence and ICC, μ and σ are found numerically to match the specified mean and ICC.</p>
 
-<p>The ICC is calculated directly as Corr(Y<sub>1</sub>, Y<sub>2</sub>) = Var(p<sub>j</sub>)/[p̄(1 − p̄)], where p̄ = E[p<sub>j</sub>] is the design prevalence. This is the marginal Pearson correlation between two binary infection indicators from the same site, assuming conditional independence given site prevalence; it is not a latent-scale correlation or an approximation based on σ.</p>
+<p>The ICC is calculated directly as Corr(Y<sub>1</sub>, Y<sub>2</sub>) = Var(p<sub>j</sub>)/[p̄(1 − p̄)], where p̄ = E[p<sub>j</sub>] is the design prevalence. This is the marginal Pearson correlation between two binary infection indicators from the same site, assuming conditional independence given site prevalence; it is not a latent-scale correlation or an approximation based on σ. The corresponding site-prevalence variance is therefore ICC × p̄ × (1 − p̄). The logit-normal parameters are obtained using PoolPoweR’s <code>mu_sigma_linknorm()</code> helper with <code>qlogis</code> and <code>plogis</code>.</p>
 
 <p>The number of pools sampled at each site is held fixed. The calculation increases the number of independent sites, and hence the total number of pools and mosquitoes. Power is the probability that the pooled-prevalence MLE exceeds the selected threshold. The total positive-pool count distribution is calculated using the FFT-based method above. ICC = 1 is handled as the limiting case in which each site's prevalence is either zero or one.</p>
 
@@ -306,51 +306,31 @@ div(
 
 ```{r clustered-design-prevalence-input}
 output$clustered_design_prevalence_ui <- renderUI({
-  p_t <- as.numeric(input$clustered_threshold_species)
-  numericInput(
-    "clustered_design_prevalence_percent",
-    "Design prevalence (%)",
-    value = 200 * p_t,
-    min = 0,
-    max = 99,
-    step = max(10 * p_t, 0.001)
-  )
-})
-```
-
-```{r clustered-power-plot}
-# Convert the marginal mean prevalence and binary within-site ICC to
+  p_t <- as.numeric(input$# Convert the marginal mean prevalence and binary within-site ICC to
 # the parameters of a logit-normal site-prevalence distribution.
-logit_normal_parameters_from_icc <- function(design_prevalence, icc, n_quad = 120L) {
+logit_normal_parameters_from_icc <- function(design_prevalence, icc) {
   stopifnot(
     length(design_prevalence) == 1L, is.finite(design_prevalence),
     design_prevalence > 0, design_prevalence < 1,
     length(icc) == 1L, is.finite(icc), icc >= 0, icc < 1
   )
-  if (icc == 0) return(c(mu = qlogis(design_prevalence), sigma = 0))
 
-  quadrature <- statmod::gauss.quad.prob(n = n_quad, dist = "normal")
-  nodes <- quadrature$nodes
-  weights <- quadrature$weights
-  moments <- function(mu, sigma) {
-    p <- plogis(mu + sigma * nodes)
-    c(mean = sum(weights * p), second = sum(weights * p^2))
-  }
-  mu_for_mean <- function(sigma) {
-    uniroot(
-      function(mu) moments(mu, sigma)[["mean"]] - design_prevalence,
-      interval = c(-50, 50), tol = 1e-10
-    )$root
-  }
-  icc_for_sigma <- function(sigma) {
-    moment <- moments(mu_for_mean(sigma), sigma)
-    (moment[["second"]] - design_prevalence^2) /
-      (design_prevalence * (1 - design_prevalence))
+  # With zero variance the logit-normal distribution is degenerate.
+  if (icc == 0) {
+    return(c(mu = qlogis(design_prevalence), sigma = 0))
   }
 
-  upper_sigma <- 20
-  if (icc_for_sigma(upper_sigma) < icc) {
-    stop("Requested ICC is too close to 1 for the numerical logit-normal parameterisation; choose a slightly smaller ICC.", call. = FALSE)
+  site_prevalence_variance <-
+    icc * design_prevalence * (1 - design_prevalence)
+
+  parameters <- PoolPoweR:::mu_sigma_linknorm(
+    .mean = design_prevalence,
+    .var = site_prevalence_variance,
+    link = qlogis,
+    invlink = plogis
+  )
+  setNames(as.numeric(parameters), c("mu", "sigma"))
+}terisation; choose a slightly smaller ICC.", call. = FALSE)
   }
   sigma <- uniroot(
     function(candidate) icc_for_sigma(candidate) - icc,
