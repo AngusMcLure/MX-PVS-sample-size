@@ -646,6 +646,186 @@ renderDataTable({
 })
 ```
 
+## What about false discovery?
+
+The sample sizes recommended above do not have any consideration for false discovery --- i.e. the probability that the MLE will be above the threshold (leading to potential EU-wide action) when the true prevalence is in fact below the threshold value. How big a problem is this? The figure below shows the probabilities for the recommended sample sizes in the table above (Note: changing the assumptions for the table above also updates the figure below).
+
+The probability of false discovery is highest when the true prevalence is close to (but below) the threshold. This is, to my mind, not such a bad thing since if the prevalence is still close to the threshold when the Pre-VS survey is taking place (which is probably a number of years after the last TAS), then this indicates transmission is not decreasing substantially and some action may be required anyway.
+
+When the true prevalence is about half the threshold, the false discovery probability is roughly 10-15\% (though this depends on choice of assumptions above). **Is this acceptable?** Again, this is an *operational decision*, not a statistical one. If avoiding false discovery is of similar importance to ensuring true discoveries, then perhaps instead of comparing the MLE to the threshold we need to consider comparing the lower confidence bound (say 75%) to the threshold. But this is not what was decided in the London meeting.
+
+```{r false-discovery-controls}
+div(
+  class = "controls-row",
+  selectInput(
+    "false_discovery_genus",
+    "Genus",
+    choices = c("Aedes", "Culex", "Mansonia", "Anopheles"),
+    selected = "Aedes",
+    selectize = FALSE
+  )
+)
+```
+
+```{r false-discovery-plot}
+renderPlotly({
+  required_power <- input$recommended_required_power / 100
+  design_prevalence_multiplier <- input$recommended_design_prevalence_multiplier
+  pool_size <- input$recommended_pool_size
+  genus <- input$false_discovery_genus
+
+  validate(
+    need(is.finite(required_power) && required_power > 0 && required_power < 1,
+         "Required power must be between 0% and 100%."),
+    need(is.finite(design_prevalence_multiplier) &&
+           design_prevalence_multiplier >= 1,
+         "The design-prevalence multiplier must be at least 1."),
+    need(is.finite(pool_size) && pool_size >= 1 &&
+           pool_size == as.integer(pool_size),
+         "Pool size must be a positive integer."),
+    need(genus %in% c("Aedes", "Culex", "Mansonia", "Anopheles"),
+         "Please select a genus.")
+  )
+
+  thresholds <- c(Aedes = 0.001, Culex = 0.0025,
+                  Mansonia = 0.005, Anopheles = 0.01)
+  p_t <- unname(thresholds[genus])
+  design_prevalence <- p_t * design_prevalence_multiplier
+  validate(need(design_prevalence < 1,
+                "The design prevalence must be less than 100%."))
+
+  m <- minimum_pools_for_power(
+    p = design_prevalence,
+    p_t = p_t,
+    s = as.integer(pool_size),
+    required_power = required_power,
+    max_pools = 100000L
+  )
+  validate(need(!is.na(m),
+                "The recommended sample size was not reached within 100,000 pools."))
+
+  # Increment of 0.01 percentage points on the prevalence scale.
+  true_prevalence <- seq(0, design_prevalence, by = 0.0001)
+  if (tail(true_prevalence, 1) < design_prevalence) {
+    true_prevalence <- c(true_prevalence, design_prevalence)
+  }
+  probability <- vapply(
+    true_prevalence,
+    function(p) prob_estimate_above_threshold(p, p_t,
+                                               as.integer(pool_size), m),
+    numeric(1)
+  )
+  plot_data <- data.frame(
+    prevalence = 100 * true_prevalence,
+    probability = probability
+  )
+  left <- plot_data[plot_data$prevalence <= 100 * p_t, ]
+  right <- plot_data[plot_data$prevalence >= 100 * p_t, ]
+
+  plotly::plot_ly() |>
+    plotly::add_trace(
+      data = left, x = ~prevalence, y = ~probability,
+      type = "scatter", mode = "lines", fill = "tozeroy",
+      fillcolor = "rgba(220, 70, 70, 0.22)",
+      line = list(color = "firebrick"),
+      name = "True prevalence below threshold",
+      hovertemplate = paste0(
+        "True prevalence: %{x:.3f}%<br>",
+        "P(MLE > threshold): %{y:.1%}<extra></extra>"
+      )
+    ) |>
+    plotly::add_trace(
+      data = right, x = ~prevalence, y = ~probability,
+      type = "scatter", mode = "lines", fill = "tozeroy",
+      fillcolor = "rgba(70, 170, 100, 0.22)",
+      line = list(color = "seagreen"),
+      name = "True prevalence at or above threshold",
+      hovertemplate = paste0(
+        "True prevalence: %{x:.3f}%<br>",
+        "P(MLE > threshold): %{y:.1%}<extra></extra>"
+      )
+    ) |>
+    plotly::layout(
+      xaxis = list(title = "True prevalence (%)"),
+      yaxis = list(
+        title = "Probability that the MLE exceeds the threshold",
+        tickformat = ".0%",
+        range = c(0, 1)
+      ),
+      shapes = list(list(
+        type = "line", xref = "x", yref = "paper",
+        x0 = 100 * p_t, x1 = 100 * p_t,
+        y0 = 0, y1 = 1,
+        line = list(color = "black", dash = "dash", width = 2)
+      )),
+      annotations = list(list(
+        x = 100 * p_t, y = 1, xref = "x", yref = "paper",
+        text = "Threshold", showarrow = FALSE,
+        xanchor = "left", yanchor = "bottom"
+      )),
+      legend = list(
+        orientation = "h",
+        x = 0,
+        y = 1.18,
+        xanchor = "left",
+        yanchor = "bottom"
+      ),
+      margin = list(t = 90, b = 65, l = 85)
+    )
+})
+```
+
+```{r false-discovery-assumptions}
+renderUI({
+  required_power <- input$recommended_required_power / 100
+  design_prevalence_multiplier <- input$recommended_design_prevalence_multiplier
+  pool_size <- input$recommended_pool_size
+  genus <- input$false_discovery_genus
+
+  validate(
+    need(is.finite(required_power) && required_power > 0 && required_power < 1,
+         "Required power must be between 0% and 100%."),
+    need(is.finite(design_prevalence_multiplier) &&
+           design_prevalence_multiplier >= 1,
+         "The design-prevalence multiplier must be at least 1."),
+    need(is.finite(pool_size) && pool_size >= 1 &&
+           pool_size == as.integer(pool_size),
+         "Pool size must be a positive integer."),
+    need(genus %in% c("Aedes", "Culex", "Mansonia", "Anopheles"),
+         "Please select a genus.")
+  )
+
+  thresholds <- c(Aedes = 0.001, Culex = 0.0025,
+                  Mansonia = 0.005, Anopheles = 0.01)
+  p_t <- unname(thresholds[genus])
+  design_prevalence <- p_t * design_prevalence_multiplier
+  m <- minimum_pools_for_power(
+    p = design_prevalence,
+    p_t = p_t,
+    s = as.integer(pool_size),
+    required_power = required_power,
+    max_pools = 100000L
+  )
+  validate(need(!is.na(m),
+                "The recommended sample size was not reached within 100,000 pools."))
+
+  positive_pools_required <- floor(
+    m * (-expm1(as.integer(pool_size) * log1p(-p_t)))
+  ) + 1L
+
+  tags$p(sprintf(
+    paste0(
+      "The figure assumes a total sample size of %s mosquitoes, ",
+      "tested in pools of %s mosquitoes. The MLE exceeds the threshold ",
+      "when at least %s pools test positive."
+    ),
+    format(m * as.integer(pool_size), big.mark = ","),
+    format(as.integer(pool_size), big.mark = ","),
+    format(positive_pools_required, big.mark = ",")
+  ))
+})
+```
+
 ## Sampling over time
 
 The above assumes that we are powering to estimate the prevalence and compare this to the threshold at a single timepoint. But in some pre-validation surveillance settings, surveillance may have to be repeated for a long time. How does this effect our considerations? There's a lot to explore here:
