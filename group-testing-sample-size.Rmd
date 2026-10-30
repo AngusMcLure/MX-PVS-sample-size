@@ -246,7 +246,7 @@ renderUI({
 <details>
 <summary>Details</summary>
 
-<p>This figure extends the single-survey power calculation to allow prevalence to vary between sites. Site-specific prevalence follows a logit-normal distribution: logit(p<sub>j</sub>) = μ + σZ<sub>j</sub>, where Z<sub>j</sub> is standard normal. The inputs μ and σ therefore describe the distribution of prevalence on the logit scale; μ is not the logit of the overall mean prevalence.</p>
+<p>This figure extends the single-survey power calculation to allow prevalence to vary between sites. Site-specific prevalence follows a logit-normal distribution: logit(p<sub>j</sub>) = μ + σZ<sub>j</sub>, where Z<sub>j</sub> is standard normal. The design prevalence is the arithmetic mean prevalence across sites, E[p_j]. For each selected design prevalence and σ, μ is found numerically so that the logit-normal distribution has that mean.</p>
 
 <p>The number of pools sampled at each site is held fixed. The calculation increases the number of independent sites, and hence the total number of pools and mosquitoes. Power is the probability that the pooled-prevalence MLE exceeds the selected threshold. The total positive-pool count distribution is calculated using the FFT-based method above.</p>
 
@@ -267,10 +267,12 @@ div(
     selected = "0.001"
   ),
   numericInput(
-    "clustered_mu",
-    "μ (mean logit prevalence)",
-    value = qlogis(0.001),
-    step = 0.1
+    "clustered_design_prevalence_percent",
+    "Design prevalence (%)",
+    value = 0.1,
+    min = 0.0001,
+    max = 99.999,
+    step = 0.01
   ),
   numericInput(
     "clustered_sigma",
@@ -307,17 +309,36 @@ div(
 ```
 
 ```{r clustered-power-plot}
+mu_for_mean_prevalence <- function(design_prevalence, sigma, n_quad = 80L) {
+  stopifnot(
+    length(design_prevalence) == 1L, is.finite(design_prevalence),
+    design_prevalence > 0, design_prevalence < 1,
+    length(sigma) == 1L, is.finite(sigma), sigma >= 0
+  )
+  if (sigma == 0) return(qlogis(design_prevalence))
+  quadrature <- statmod::gauss.quad.prob(n = n_quad, dist = "normal")
+  mean_prevalence <- function(mu) {
+    sum(plogis(mu + sigma * quadrature$nodes) * quadrature$weights)
+  }
+  uniroot(
+    function(mu) mean_prevalence(mu) - design_prevalence,
+    interval = c(-40, 40),
+    tol = 1e-10
+  )$root
+}
+
 renderPlotly({
   p_t <- as.numeric(input$clustered_threshold_species)
-  mu <- input$clustered_mu
+  design_prevalence <- input$clustered_design_prevalence_percent / 100
   sigma <- input$clustered_sigma
   s <- input$clustered_pool_size
   v <- input$clustered_pools_per_site
   max_sites <- input$clustered_max_sites
 
   validate(
-    need(length(mu) == 1L && is.finite(mu),
-         "μ must be a finite number."),
+    need(length(design_prevalence) == 1L && is.finite(design_prevalence) &&
+           design_prevalence > 0 && design_prevalence < 1,
+         "Design prevalence must be greater than 0% and less than 100%."),
     need(length(sigma) == 1L && is.finite(sigma) && sigma >= 0,
          "σ must be a finite number greater than or equal to 0."),
     need(is.finite(s) && s >= 1 && s == as.integer(s),
@@ -328,6 +349,8 @@ renderPlotly({
            max_sites == as.integer(max_sites),
          "Maximum number of sites must be a positive integer.")
   )
+
+  mu <- mu_for_mean_prevalence(design_prevalence, sigma)
 
   s <- as.integer(s)
   v <- as.integer(v)
@@ -376,7 +399,12 @@ renderPlotly({
         tickformat = ".0%",
         range = c(0, 1)
       ),
-      margin = list(b = 70, l = 75)
+      margin = list(b = 70, l = 75),
+      annotations = list(list(
+        x = 1, y = 1, xref = "paper", yref = "paper",
+        text = paste0("Implied μ = ", formatC(mu, digits = 3, format = "f")),
+        showarrow = FALSE, xanchor = "right", yanchor = "bottom"
+      ))
     )
 })
 ```
