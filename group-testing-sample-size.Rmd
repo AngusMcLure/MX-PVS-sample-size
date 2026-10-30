@@ -385,19 +385,22 @@ renderPlotly({
     power = power
   )
 
+  plot_data$hover_text <- paste0(
+    "Sites: ", format(plot_data$sites, big.mark = ",", scientific = FALSE), "<br>",
+    "Pools: ", format(plot_data$total_pools, big.mark = ",", scientific = FALSE), "<br>",
+    "Total mosquitoes: ",
+    format(plot_data$total_mosquitoes, big.mark = ",", scientific = FALSE), "<br>",
+    "Power: ", sprintf("%.1f%%", 100 * plot_data$power)
+  )
+
   plotly::plot_ly(
     data = plot_data,
     x = ~total_mosquitoes,
     y = ~power,
     type = "scatter",
     mode = "lines",
-    customdata = as.matrix(plot_data[, c("sites", "total_pools")]),
-    hovertemplate = paste0(
-      "Sites: %{customdata[0]}<br>",
-      "Pools: %{customdata[1]}<br>",
-      "Total mosquitoes: %{x:,}<br>",
-      "Power: %{y:.1%}<extra></extra>"
-    )
+    text = ~hover_text,
+    hoverinfo = "text"
   ) |>
     plotly::layout(
       xaxis = list(title = "Total sample size (mosquitoes)"),
