@@ -393,7 +393,9 @@ renderPlotly({
     mu <- unname(parameters[["mu"]])
     sigma <- unname(parameters[["sigma"]])
     power <- vapply(sites, function(w) {
-      pmf <- logit_normal_pool_count_pmf(w=w, v=v, s=s, mu=mu, sigma=sigma)
+      pmf <- logit_normal_pool_count_pmf(
+        w=w, v=v, s=s, mu=mu, sigma=sigma, n_quad=120L
+      )
       cutoff <- floor((w * v) * q_t) + 1L
       first_index <- cutoff + 1L
       if (first_index > length(pmf)) return(0)
