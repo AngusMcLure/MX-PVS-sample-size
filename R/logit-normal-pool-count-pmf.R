@@ -312,3 +312,105 @@ logit_normal_pool_count_cdf <- function(
   names(answer) <- paste0("P(X<", c, ")")
   answer
 }
+
+
+
+#' Direct-convolution reference implementation of the clustered pool-count PMF
+#'
+#' Calculates the same distribution as [logit_normal_pool_count_pmf()] using
+#' ordinary discrete convolution rather than FFTs. This implementation is
+#' intended as a reference for numerical checks and benchmarking; it is much
+#' slower for large distributions.
+#'
+#' @inheritParams logit_normal_pool_count_pmf
+#' @return A numeric vector containing P(X = k), for k = 0, ..., w*v.
+#' @keywords internal
+logit_normal_pool_count_pmf_direct <- function(
+    w, v, s, mu, sigma,
+    n_quad = 40L
+) {
+  check_scalar_integer <- function(value, name, minimum = 1) {
+    if (!is.numeric(value) || length(value) != 1L ||
+        !is.finite(value) || value < minimum ||
+        value != floor(value)) {
+      stop(name, " must be a single integer >= ", minimum, ".",
+           call. = FALSE)
+    }
+    as.integer(value)
+  }
+
+  w <- check_scalar_integer(w, "w")
+  v <- check_scalar_integer(v, "v")
+  s <- check_scalar_integer(s, "s")
+  n_quad <- check_scalar_integer(n_quad, "n_quad", minimum = 2)
+
+  if (!is.numeric(mu) || length(mu) != 1L || !is.finite(mu)) {
+    stop("mu must be a single finite number.", call. = FALSE)
+  }
+  if (!is.numeric(sigma) || length(sigma) != 1L ||
+      !is.finite(sigma) || sigma < 0) {
+    stop("sigma must be a single finite number >= 0.", call. = FALSE)
+  }
+
+  max_count <- as.double(w) * v
+  if (max_count > .Machine$integer.max - 1) {
+    stop("w*v is too large to represent the PMF as an R vector.",
+         call. = FALSE)
+  }
+  max_count <- as.integer(max_count)
+
+  if (sigma == 0) {
+    p <- plogis(mu)
+    q <- -expm1(s * log1p(-p))
+    total_pmf <- dbinom(0:max_count, size = max_count, prob = q)
+  } else {
+    if (!requireNamespace("statmod", quietly = TRUE)) {
+      stop(
+        "Package 'statmod' is required for Gauss-Hermite quadrature. ",
+        "Install it with install.packages('statmod').",
+        call. = FALSE
+      )
+    }
+
+    quadrature <- statmod::gauss.quad.prob(n = n_quad, dist = "normal")
+    local_prevalence <- plogis(mu + sigma * quadrature$nodes)
+    pool_positive <- -expm1(s * log1p(-local_prevalence))
+
+    conditional_pmfs <- vapply(
+      pool_positive,
+      function(q_j) dbinom(0:v, size = v, prob = q_j),
+      numeric(v + 1L)
+    )
+    site_pmf <- drop(conditional_pmfs %*% quadrature$weights)
+    site_pmf <- site_pmf / sum(site_pmf)
+
+    # Ordinary O(a*b) discrete convolution, implemented explicitly so this
+    # reference path does not call an FFT-based convolution routine.
+    total_pmf <- 1
+    for (site in seq_len(w)) {
+      current_max <- length(total_pmf) - 1L
+      next_max <- current_max + v
+      next_pmf <- numeric(next_max + 1L)
+
+      for (k in 0:next_max) {
+        j_min <- max(0L, k - current_max)
+        j_max <- min(v, k)
+        js <- j_min:j_max
+        next_pmf[k + 1L] <- sum(
+          total_pmf[k - js + 1L] * site_pmf[js + 1L]
+        )
+      }
+      total_pmf <- next_pmf
+    }
+
+    total_mass <- sum(total_pmf)
+    if (!is.finite(total_mass) || total_mass <= 0) {
+      stop("Numerical failure when calculating the total PMF.",
+           call. = FALSE)
+    }
+    total_pmf <- total_pmf / total_mass
+  }
+
+  names(total_pmf) <- as.character(0:max_count)
+  total_pmf
+}
