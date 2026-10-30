@@ -370,8 +370,8 @@ renderPlotly({
   s <- as.integer(s)
   v <- as.integer(v)
   max_trap_locations <- as.integer(max_trap_locations)
-  trap_locations <- seq_len(max_trap_locations)
-  total_pools <- trap_locations * v
+  trapping_locations <- seq_len(max_trap_locations)
+  total_pools <- trapping_locations * v
   q_t <- -expm1(s * log1p(-p_t))
 
   if (icc < 1) {
