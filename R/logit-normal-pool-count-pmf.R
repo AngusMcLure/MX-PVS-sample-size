@@ -414,3 +414,52 @@ logit_normal_pool_count_pmf_direct <- function(
   names(total_pmf) <- as.character(0:max_count)
   total_pmf
 }
+
+mu_sigma_linknorm <- function(.mean, .var,link,invlink){
+  max_restarts <- 10
+  if(.var >= .mean * (1- .mean)){
+    stop('a distribution on [0,1] cannot have a variance this large')
+  }
+  init <- c(link(.mean),2)
+  abs.tol <- 0
+  f <- function(x){
+    mu <- x[1]
+    sigma <- abs(x[2])
+    fExp <- function(x) invlink(x+mu) * stats::dnorm(x,sd = sigma)
+    ..exp <- stats::integrate(fExp, -10 * sigma, 10 * sigma, abs.tol = abs.tol)$value
+    fVar <- function(x) (invlink(x+mu) - ..exp)^2 * stats::dnorm(x,sd = sigma)
+    ..var <- stats::integrate(fVar, -10 * sigma, 10 * sigma, abs.tol = abs.tol)$value
+    abs(c(..exp,..var)/c(.mean,.var) - 1)
+    #c(..exp - .mean, ..var - .var)
+  }
+  # out <- stats::optim(init,f,method = "SANN", control = list(maxit = 1000))$par
+  # out <- stats::optim(out, f, control = list(abstol  = 0, reltol = .Machine$double.eps ^ 0.8))$par
+  
+  sol <- nleqslv::nleqslv(init, f, control = list(xtol = 0, ftol = 1e-9))
+  
+  # sol$termcd == 1 means convergence. Anything else means convergence issues.
+  
+  # sol$termcd == 3 means algorithm has gotten stuck, which can usually fixed by
+  # restarting with slightly perturbed initial conditions. In this case we
+  # restart max_restart times before giving up
+  
+  restarts <- 0
+  while(restarts < max_restarts){
+    if(sol$termcd == 3){
+      sol <- nleqslv::nleqslv(sol$x * (runif(2, 0.95, 1.05)),
+                              f, control = list(xtol = 0, ftol = 1e-9))
+      restarts <- restarts + 1
+    }else{
+      break
+    }
+  }
+  
+  
+  if(sol$termcd != 1){
+    stop('No solution for .mean = ', .mean, ' .var = ', .var, ' and provided link. ',
+         'Convergence flag is ', sol$termcd, ' and f(x) = ', f(sol$x),'.')
+  }
+  
+  sol$x
+}
+
