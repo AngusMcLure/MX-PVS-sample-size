@@ -1,3 +1,93 @@
+# Gauss-Hermite quadrature for expectations under a standard normal
+# distribution. The Golub-Welsch eigenvalue algorithm avoids an external
+# package dependency for the clustered pool-count calculations.
+.gauss_hermite_normal <- function(n) {
+  if (length(n) != 1L || !is.finite(n) || n < 2 || n != as.integer(n)) {
+    stop("n must be an integer greater than or equal to 2.", call. = FALSE)
+  }
+  n <- as.integer(n)
+
+  jacobi <- matrix(0, nrow = n, ncol = n)
+  off_diagonal <- sqrt(seq_len(n - 1L))
+  jacobi[cbind(seq_len(n - 1L), 2:n)] <- off_diagonal
+  jacobi[cbind(2:n, seq_len(n - 1L))] <- off_diagonal
+
+  decomposition <- eigen(jacobi, symmetric = TRUE)
+  ordering <- order(decomposition$values)
+  weights <- decomposition$vectors[1L, ordering]^2
+  weights <- weights / sum(weights)
+
+  list(nodes = decomposition$values[ordering], weights = weights)
+}
+
+
+# Match the first two moments of a logit-normal distribution using only base R.
+# For each sigma, solve for mu to match the requested mean, then solve for
+# sigma to match the requested variance.
+logit_normal_parameters_from_moments <- function(mean, variance) {
+  if (length(mean) != 1L || !is.finite(mean) || mean <= 0 || mean >= 1) {
+    stop("mean must be a single number strictly between 0 and 1.",
+         call. = FALSE)
+  }
+  if (length(variance) != 1L || !is.finite(variance) || variance < 0 ||
+      variance >= mean * (1 - mean)) {
+    stop("variance must be in [0, mean * (1 - mean)).", call. = FALSE)
+  }
+  if (variance == 0) {
+    return(c(mu = qlogis(mean), sigma = 0))
+  }
+
+  normal_moments <- function(mu, sigma) {
+    mean_value <- stats::integrate(
+      function(z) plogis(mu + sigma * z) * stats::dnorm(z),
+      lower = -10, upper = 10,
+      subdivisions = 1000L, rel.tol = 1e-9, abs.tol = 1e-11
+    )$value
+    second_moment <- stats::integrate(
+      function(z) plogis(mu + sigma * z)^2 * stats::dnorm(z),
+      lower = -10, upper = 10,
+      subdivisions = 1000L, rel.tol = 1e-9, abs.tol = 1e-11
+    )$value
+    c(mean = mean_value, variance = max(0, second_moment - mean_value^2))
+  }
+
+  mu_for_sigma <- function(sigma) {
+    centre <- qlogis(mean)
+    span <- 10 + 10 * sigma
+    stats::uniroot(
+      function(mu) normal_moments(mu, sigma)[["mean"]] - mean,
+      interval = c(centre - span, centre + span),
+      tol = 1e-10
+    )$root
+  }
+
+  variance_for_sigma <- function(sigma) {
+    mu <- mu_for_sigma(sigma)
+    normal_moments(mu, sigma)[["variance"]]
+  }
+
+  upper <- 1
+  upper_variance <- variance_for_sigma(upper)
+  while (upper_variance < variance && upper < 64) {
+    upper <- upper * 2
+    upper_variance <- variance_for_sigma(upper)
+  }
+  if (upper_variance < variance) {
+    stop("Could not find logit-normal parameters for the requested moments.",
+         call. = FALSE)
+  }
+
+  sigma <- stats::uniroot(
+    function(value) variance_for_sigma(value) - variance,
+    interval = c(0, upper),
+    tol = 1e-8
+  )$root
+  mu <- mu_for_sigma(sigma)
+
+  c(mu = mu, sigma = sigma)
+}
+
+
 #' Distribution of positive pools under logit-normal site heterogeneity
 #'
 #' Calculates the probability mass function for the total number of positive
@@ -19,7 +109,7 @@
 #' standard deviation sigma. Conditional on p_j, the number of positive pools
 #' at that location is binomial with size v and probability 1 - (1-p_j)^s.
 #' The location-level PMF is integrated over the logit-normal distribution
-#' using Gauss-Hermite quadrature from the statmod package.
+#' using an internal Gauss-Hermite quadrature routine.
 #'
 #' The total PMF is obtained by raising the discrete Fourier transform of the
 #' location-level PMF to the power w, then applying the inverse transform.
@@ -93,19 +183,8 @@ logit_normal_pool_count_pmf <- function(
     total_pmf <- dbinom(0:max_count, size = max_count, prob = q)
 
   } else {
-    if (!requireNamespace("statmod", quietly = TRUE)) {
-      stop(
-        "Package 'statmod' is required for Gauss-Hermite quadrature. ",
-        "Install it with install.packages('statmod').",
-        call. = FALSE
-      )
-    }
-
     # Integrate with respect to a standard normal distribution.
-    quadrature <- statmod::gauss.quad.prob(
-      n = n_quad,
-      dist = "normal"
-    )
+    quadrature <- .gauss_hermite_normal(n_quad)
 
     local_prevalence <- plogis(mu + sigma * quadrature$nodes)
 
@@ -255,18 +334,7 @@ logit_normal_pool_count_cdf <- function(
       answer[needs_calculation] <- calculated
 
     } else {
-      if (!requireNamespace("statmod", quietly = TRUE)) {
-        stop(
-          "Package 'statmod' is required for Gauss-Hermite quadrature. ",
-          "Install it with install.packages('statmod').",
-          call. = FALSE
-        )
-      }
-
-      quadrature <- statmod::gauss.quad.prob(
-        n = n_quad,
-        dist = "normal"
-      )
+      quadrature <- .gauss_hermite_normal(n_quad)
       local_prevalence <- plogis(mu + sigma * quadrature$nodes)
       pool_positive <- -expm1(s * log1p(-local_prevalence))
 
@@ -364,15 +432,7 @@ logit_normal_pool_count_pmf_direct <- function(
     q <- -expm1(s * log1p(-p))
     total_pmf <- dbinom(0:max_count, size = max_count, prob = q)
   } else {
-    if (!requireNamespace("statmod", quietly = TRUE)) {
-      stop(
-        "Package 'statmod' is required for Gauss-Hermite quadrature. ",
-        "Install it with install.packages('statmod').",
-        call. = FALSE
-      )
-    }
-
-    quadrature <- statmod::gauss.quad.prob(n = n_quad, dist = "normal")
+    quadrature <- .gauss_hermite_normal(n_quad)
     local_prevalence <- plogis(mu + sigma * quadrature$nodes)
     pool_positive <- -expm1(s * log1p(-local_prevalence))
 
