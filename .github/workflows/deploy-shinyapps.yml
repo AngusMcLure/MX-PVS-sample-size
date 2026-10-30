@@ -59,5 +59,6 @@ jobs:
             doc = "group-testing-sample-size.Rmd",
             appName = app_name,
             account = Sys.getenv("SHINYAPPS_ACCOUNT"),
-            appTitle = "MX PVS sample size"
+            appTitle = "MX PVS sample size",
+            forceUpdate TRUE
           )
