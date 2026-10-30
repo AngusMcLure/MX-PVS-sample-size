@@ -28,7 +28,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: Rscript {0}
         run: |
-          install.packages(c("remotes", "rsconnect", "shiny", "DT", "plotly", "statmod"))
+          install.packages(c("remotes", "rsconnect", "shiny", "DT", "plotly", "statmod", "nleqslv"))
 
       - name: Configure shinyapps.io account
         env:
