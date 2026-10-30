@@ -15,6 +15,9 @@ runtime: shiny
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 
+# Set an explicit CRAN repository for package installation on shinyapps.io.
+options(repos = c(CRAN = "https://cloud.r-project.org"))
+
 # Pin PoolPoweR to an immutable commit on its refactor branch. If the package
 # is absent or was installed from a different commit, install the pinned copy.
 poolpower_commit <- "4e732164939f948e03a52209a6702ba043deb5b2"
