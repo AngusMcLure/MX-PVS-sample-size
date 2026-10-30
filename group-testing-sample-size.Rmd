@@ -241,16 +241,16 @@ renderUI({
 ```
 
 
-## Power with site-level heterogeneity
+## Power with trap-location-level heterogeneity
 
 <details>
 <summary>Details</summary>
 
-<p>This figure extends the single-survey power calculation to allow prevalence to vary between sites. Site-specific prevalence follows a logit-normal distribution: logit(p<sub>j</sub>) = μ + σZ<sub>j</sub>, where Z<sub>j</sub> is standard normal. The design prevalence is the arithmetic mean prevalence across sites, E[p_j]. The input is the intraclass correlation coefficient (ICC) between infection statuses of two mosquitoes sampled from the same site. For each selected design prevalence and ICC, μ and σ are obtained from the specified mean and variance of site prevalence using PoolPoweR’s link-normal helper.</p>
+<p>This figure extends the single-survey power calculation to allow prevalence to vary between trap_locations. Trap-location-specific prevalence follows a logit-normal distribution: logit(p<sub>j</sub>) = μ + σZ<sub>j</sub>, where Z<sub>j</sub> is standard normal. The design prevalence is the arithmetic mean prevalence across trap_locations, E[p_j]. The input is the intraclass correlation coefficient (ICC) between infection statuses of two mosquitoes sampled from the same trap location. For each selected design prevalence and ICC, μ and σ are obtained from the specified mean and variance of trap-location prevalence using PoolPoweR’s link-normal helper.</p>
 
-<p>The ICC is calculated directly as Corr(Y<sub>1</sub>, Y<sub>2</sub>) = Var(p<sub>j</sub>)/[p̄(1 − p̄)], where p̄ = E[p<sub>j</sub>] is the design prevalence. This is the marginal Pearson correlation between two binary infection indicators from the same site, assuming conditional independence given site prevalence; it is not a latent-scale correlation or an approximation based on σ. The corresponding site-prevalence variance is therefore ICC × p̄ × (1 − p̄). The logit-normal parameters are obtained using PoolPoweR’s <code>mu_sigma_linknorm()</code> helper with <code>qlogis</code> and <code>plogis</code>.</p>
+<p>The ICC is calculated directly as Corr(Y<sub>1</sub>, Y<sub>2</sub>) = Var(p<sub>j</sub>)/[p̄(1 − p̄)], where p̄ = E[p<sub>j</sub>] is the design prevalence. This is the marginal Pearson correlation between two binary infection indicators from the same trap location, assuming conditional independence given trap-location prevalence; it is not a latent-scale correlation or an approximation based on σ. The corresponding trap-location prevalence variance is therefore ICC × p̄ × (1 − p̄). The logit-normal parameters are obtained using PoolPoweR’s <code>mu_sigma_linknorm()</code> helper with <code>qlogis</code> and <code>plogis</code>.</p>
 
-<p>The number of pools sampled at each site is held fixed. The calculation increases the number of independent sites, and hence the total number of pools and mosquitoes. Power is the probability that the pooled-prevalence MLE exceeds the selected threshold. The total positive-pool count distribution is calculated using the FFT-based method above. ICC = 1 is handled as the limiting case in which each site's prevalence is either zero or one.</p>
+<p>The number of pools sampled at each trap location is held fixed. The calculation increases the number of independent trap_locations, and hence the total number of pools and mosquitoes. Power is the probability that the pooled-prevalence MLE exceeds the selected threshold. The total positive-pool count distribution is calculated using the FFT-based method above. ICC = 1 is handled as the limiting case in which each trap location's prevalence is either zero or one.</p>
 
 </details>
 
@@ -271,7 +271,7 @@ div(
   uiOutput("clustered_design_prevalence_ui"),
   numericInput(
     "clustered_icc",
-    "Within-site ICC",
+    "Within-trap location ICC",
     value = 0.1,
     min = 0,
     max = 1,
@@ -286,16 +286,16 @@ div(
     step = 1
   ),
   numericInput(
-    "clustered_pools_per_site",
-    "Pools per site",
+    "clustered_pools_per_trap location",
+    "Pools per trap location",
     value = 2,
     min = 1,
     max = 1000,
     step = 1
   ),
   numericInput(
-    "clustered_max_sites",
-    "Maximum number of sites shown",
+    "clustered_max_trap locations",
+    "Maximum number of trap_locations shown",
     value = 100,
     min = 1,
     max = 1000,
@@ -319,8 +319,8 @@ output$clustered_design_prevalence_ui <- renderUI({
 ```
 
 ```{r clustered-power-plot}
-# Convert the marginal mean prevalence and binary within-site ICC to
-# the parameters of a logit-normal site-prevalence distribution.
+# Convert the marginal mean prevalence and binary within-trap location ICC to
+# the parameters of a logit-normal trap-location prevalence distribution.
 logit_normal_parameters_from_icc <- function(design_prevalence, icc) {
   stopifnot(
     length(design_prevalence) == 1L, is.finite(design_prevalence),
@@ -333,12 +333,12 @@ logit_normal_parameters_from_icc <- function(design_prevalence, icc) {
     return(c(mu = qlogis(design_prevalence), sigma = 0))
   }
 
-  site_prevalence_variance <-
+  trap location_prevalence_variance <-
     icc * design_prevalence * (1 - design_prevalence)
 
   parameters <- PoolPoweR:::mu_sigma_linknorm(
     .mean = design_prevalence,
-    .var = site_prevalence_variance,
+    .var = trap location_prevalence_variance,
     link = qlogis,
     invlink = plogis
   )
@@ -350,8 +350,8 @@ renderPlotly({
   design_prevalence <- input$clustered_design_prevalence_percent / 100
   icc <- input$clustered_icc
   s <- input$clustered_pool_size
-  v <- input$clustered_pools_per_site
-  max_sites <- input$clustered_max_sites
+  v <- input$clustered_pools_per_trap location
+  max_trap_locations <- input$clustered_max_trap locations
 
   validate(
     need(length(design_prevalence) == 1L && is.finite(design_prevalence) &&
@@ -362,23 +362,23 @@ renderPlotly({
     need(is.finite(s) && s >= 1 && s == as.integer(s),
          "Pool size must be a positive integer."),
     need(is.finite(v) && v >= 1 && v == as.integer(v),
-         "Pools per site must be a positive integer."),
-    need(is.finite(max_sites) && max_sites >= 1 && max_sites == as.integer(max_sites),
-         "Maximum number of sites must be a positive integer.")
+         "Pools per trap location must be a positive integer."),
+    need(is.finite(max_trap_locations) && max_trap_locations >= 1 && max_trap_locations == as.integer(max_trap_locations),
+         "Maximum number of trap_locations must be a positive integer.")
   )
 
   s <- as.integer(s)
   v <- as.integer(v)
-  max_sites <- as.integer(max_sites)
-  sites <- seq_len(max_sites)
-  total_pools <- sites * v
+  max_trap_locations <- as.integer(max_trap_locations)
+  trap_locations <- seq_len(max_trap_locations)
+  total_pools <- trap_locations * v
   q_t <- -expm1(s * log1p(-p_t))
 
   if (icc < 1) {
     parameters <- logit_normal_parameters_from_icc(design_prevalence, icc)
     mu <- unname(parameters[["mu"]])
     sigma <- unname(parameters[["sigma"]])
-    power <- vapply(sites, function(w) {
+    power <- vapply(trap_locations, function(w) {
       pmf <- logit_normal_pool_count_pmf(
         w=w, v=v, s=s, mu=mu, sigma=sigma, n_quad=120L
       )
@@ -392,23 +392,23 @@ renderPlotly({
       "; σ = ", formatC(sigma, digits=3, format="f")
     )
   } else {
-    # Limiting case as sigma tends to infinity: site prevalence is 1
+    # Limiting case as sigma tends to infinity: trap-location prevalence is 1
     # with probability equal to the design prevalence, and 0 otherwise.
-    power <- vapply(sites, function(w) {
-      positive_sites <- 0:w
-      positive_pools <- v * positive_sites
+    power <- vapply(trap_locations, function(w) {
+      positive_trap locations <- 0:w
+      positive_pools <- v * positive_trap locations
       cutoff <- floor((w * v) * q_t) + 1L
-      sum(dbinom(positive_sites, size=w, prob=design_prevalence)[positive_pools >= cutoff])
+      sum(dbinom(positive_trap locations, size=w, prob=design_prevalence)[positive_pools >= cutoff])
     }, numeric(1))
     parameter_label <- "ICC = 1 (limiting case: sigma tends to infinity)"
   }
 
   plot_data <- data.frame(
-    sites=sites, total_pools=total_pools,
+    trap_locations=trap_locations, total_pools=total_pools,
     total_mosquitoes=total_pools*s, power=power
   )
   plot_data$hover_text <- paste0(
-    "Sites: ", format(plot_data$sites, big.mark=",", scientific=FALSE), "<br>",
+    "Trap locations: ", format(plot_data$trap_locations, big.mark=",", scientific=FALSE), "<br>",
     "Pools: ", format(plot_data$total_pools, big.mark=",", scientific=FALSE), "<br>",
     "Total mosquitoes: ", format(plot_data$total_mosquitoes, big.mark=",", scientific=FALSE), "<br>",
     "Power: ", sprintf("%.1f%%", 100*plot_data$power)
