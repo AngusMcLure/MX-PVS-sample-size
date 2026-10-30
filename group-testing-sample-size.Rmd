@@ -246,9 +246,11 @@ renderUI({
 <details>
 <summary>Details</summary>
 
-<p>This figure extends the single-survey power calculation to allow prevalence to vary between sites. Site-specific prevalence follows a logit-normal distribution: logit(p<sub>j</sub>) = μ + σZ<sub>j</sub>, where Z<sub>j</sub> is standard normal. The design prevalence is the arithmetic mean prevalence across sites, E[p_j]. For each selected design prevalence and σ, μ is found numerically so that the logit-normal distribution has that mean.</p>
+<p>This figure extends the single-survey power calculation to allow prevalence to vary between sites. Site-specific prevalence follows a logit-normal distribution: logit(p<sub>j</sub>) = μ + σZ<sub>j</sub>, where Z<sub>j</sub> is standard normal. The design prevalence is the arithmetic mean prevalence across sites, E[p_j]. The input is the intraclass correlation coefficient (ICC) between infection statuses of two mosquitoes sampled from the same site. For each selected design prevalence and ICC, μ and σ are found numerically to match the specified mean and ICC.</p>
 
-<p>The number of pools sampled at each site is held fixed. The calculation increases the number of independent sites, and hence the total number of pools and mosquitoes. Power is the probability that the pooled-prevalence MLE exceeds the selected threshold. The total positive-pool count distribution is calculated using the FFT-based method above.</p>
+<p>The ICC is calculated directly as Corr(Y<sub>1</sub>, Y<sub>2</sub>) = Var(p<sub>j</sub>)/[p̄(1 − p̄)], where p̄ = E[p<sub>j</sub>] is the design prevalence. This is the marginal Pearson correlation between two binary infection indicators from the same site, assuming conditional independence given site prevalence; it is not a latent-scale correlation or an approximation based on σ.</p>
+
+<p>The number of pools sampled at each site is held fixed. The calculation increases the number of independent sites, and hence the total number of pools and mosquitoes. Power is the probability that the pooled-prevalence MLE exceeds the selected threshold. The total positive-pool count distribution is calculated using the FFT-based method above. ICC = 1 is handled as the limiting case in which each site's prevalence is either zero or one.</p>
 
 </details>
 
@@ -268,11 +270,12 @@ div(
   ),
   uiOutput("clustered_design_prevalence_ui"),
   numericInput(
-    "clustered_sigma",
-    "σ (SD of logit prevalence)",
-    value = 2,
+    "clustered_icc",
+    "Within-site ICC",
+    value = 0.1,
     min = 0,
-    step = 0.1
+    max = 1,
+    step = 0.01
   ),
   numericInput(
     "clustered_pool_size",
@@ -316,28 +319,50 @@ output$clustered_design_prevalence_ui <- renderUI({
 ```
 
 ```{r clustered-power-plot}
-mu_for_mean_prevalence <- function(design_prevalence, sigma, n_quad = 80L) {
+# Convert the marginal mean prevalence and binary within-site ICC to
+# the parameters of a logit-normal site-prevalence distribution.
+logit_normal_parameters_from_icc <- function(design_prevalence, icc, n_quad = 120L) {
   stopifnot(
     length(design_prevalence) == 1L, is.finite(design_prevalence),
     design_prevalence > 0, design_prevalence < 1,
-    length(sigma) == 1L, is.finite(sigma), sigma >= 0
+    length(icc) == 1L, is.finite(icc), icc >= 0, icc < 1
   )
-  if (sigma == 0) return(qlogis(design_prevalence))
+  if (icc == 0) return(c(mu = qlogis(design_prevalence), sigma = 0))
+
   quadrature <- statmod::gauss.quad.prob(n = n_quad, dist = "normal")
-  mean_prevalence <- function(mu) {
-    sum(plogis(mu + sigma * quadrature$nodes) * quadrature$weights)
+  nodes <- quadrature$nodes
+  weights <- quadrature$weights
+  moments <- function(mu, sigma) {
+    p <- plogis(mu + sigma * nodes)
+    c(mean = sum(weights * p), second = sum(weights * p^2))
   }
-  uniroot(
-    function(mu) mean_prevalence(mu) - design_prevalence,
-    interval = c(-40, 40),
-    tol = 1e-10
+  mu_for_mean <- function(sigma) {
+    uniroot(
+      function(mu) moments(mu, sigma)[["mean"]] - design_prevalence,
+      interval = c(-50, 50), tol = 1e-10
+    )$root
+  }
+  icc_for_sigma <- function(sigma) {
+    moment <- moments(mu_for_mean(sigma), sigma)
+    (moment[["second"]] - design_prevalence^2) /
+      (design_prevalence * (1 - design_prevalence))
+  }
+
+  upper_sigma <- 20
+  if (icc_for_sigma(upper_sigma) < icc) {
+    stop("Requested ICC is too close to 1 for the numerical logit-normal parameterisation; choose a slightly smaller ICC.", call. = FALSE)
+  }
+  sigma <- uniroot(
+    function(candidate) icc_for_sigma(candidate) - icc,
+    interval = c(0, upper_sigma), tol = 1e-8
   )$root
+  c(mu = mu_for_mean(sigma), sigma = sigma)
 }
 
 renderPlotly({
   p_t <- as.numeric(input$clustered_threshold_species)
   design_prevalence <- input$clustered_design_prevalence_percent / 100
-  sigma <- input$clustered_sigma
+  icc <- input$clustered_icc
   s <- input$clustered_pool_size
   v <- input$clustered_pools_per_site
   max_sites <- input$clustered_max_sites
@@ -346,18 +371,15 @@ renderPlotly({
     need(length(design_prevalence) == 1L && is.finite(design_prevalence) &&
            design_prevalence > 0 && design_prevalence < 1,
          "Design prevalence must be greater than 0% and less than 100%."),
-    need(length(sigma) == 1L && is.finite(sigma) && sigma >= 0,
-         "σ must be a finite number greater than or equal to 0."),
+    need(length(icc) == 1L && is.finite(icc) && icc >= 0 && icc <= 1,
+         "ICC must be between 0 and 1."),
     need(is.finite(s) && s >= 1 && s == as.integer(s),
          "Pool size must be a positive integer."),
     need(is.finite(v) && v >= 1 && v == as.integer(v),
          "Pools per site must be a positive integer."),
-    need(is.finite(max_sites) && max_sites >= 1 &&
-           max_sites == as.integer(max_sites),
+    need(is.finite(max_sites) && max_sites >= 1 && max_sites == as.integer(max_sites),
          "Maximum number of sites must be a positive integer.")
   )
-
-  mu <- mu_for_mean_prevalence(design_prevalence, sigma)
 
   s <- as.integer(s)
   v <- as.integer(v)
@@ -366,59 +388,57 @@ renderPlotly({
   total_pools <- sites * v
   q_t <- -expm1(s * log1p(-p_t))
 
-  power <- vapply(sites, function(w) {
-    pmf <- logit_normal_pool_count_pmf(
-      w = w, v = v, s = s, mu = mu, sigma = sigma
+  if (icc < 1) {
+    parameters <- logit_normal_parameters_from_icc(design_prevalence, icc)
+    mu <- unname(parameters[["mu"]])
+    sigma <- unname(parameters[["sigma"]])
+    power <- vapply(sites, function(w) {
+      pmf <- logit_normal_pool_count_pmf(w=w, v=v, s=s, mu=mu, sigma=sigma)
+      cutoff <- floor((w * v) * q_t) + 1L
+      first_index <- cutoff + 1L
+      if (first_index > length(pmf)) return(0)
+      sum(pmf[first_index:length(pmf)])
+    }, numeric(1))
+    parameter_label <- paste0(
+      "Implied μ = ", formatC(mu, digits=3, format="f"),
+      "; σ = ", formatC(sigma, digits=3, format="f")
     )
-    minimum_positive_pools <- floor((w * v) * q_t) + 1L
-    first_index <- minimum_positive_pools + 1L
-    if (first_index > length(pmf)) {
-      return(0)
-    }
-    sum(pmf[first_index:length(pmf)])
-  }, numeric(1))
+  } else {
+    # Limiting case as sigma tends to infinity: site prevalence is 1
+    # with probability equal to the design prevalence, and 0 otherwise.
+    power <- vapply(sites, function(w) {
+      positive_sites <- 0:w
+      positive_pools <- v * positive_sites
+      cutoff <- floor((w * v) * q_t) + 1L
+      sum(dbinom(positive_sites, size=w, prob=design_prevalence)[positive_pools >= cutoff])
+    }, numeric(1))
+    parameter_label <- "ICC = 1 (limiting case: sigma tends to infinity)"
+  }
 
   plot_data <- data.frame(
-    sites = sites,
-    total_pools = total_pools,
-    total_mosquitoes = total_pools * s,
-    power = power
+    sites=sites, total_pools=total_pools,
+    total_mosquitoes=total_pools*s, power=power
   )
-
   plot_data$hover_text <- paste0(
-    "Sites: ", format(plot_data$sites, big.mark = ",", scientific = FALSE), "<br>",
-    "Pools: ", format(plot_data$total_pools, big.mark = ",", scientific = FALSE), "<br>",
-    "Total mosquitoes: ",
-    format(plot_data$total_mosquitoes, big.mark = ",", scientific = FALSE), "<br>",
-    "Power: ", sprintf("%.1f%%", 100 * plot_data$power)
+    "Sites: ", format(plot_data$sites, big.mark=",", scientific=FALSE), "<br>",
+    "Pools: ", format(plot_data$total_pools, big.mark=",", scientific=FALSE), "<br>",
+    "Total mosquitoes: ", format(plot_data$total_mosquitoes, big.mark=",", scientific=FALSE), "<br>",
+    "Power: ", sprintf("%.1f%%", 100*plot_data$power)
   )
-
   plotly::plot_ly(
-    data = plot_data,
-    x = ~total_mosquitoes,
-    y = ~power,
-    type = "scatter",
-    mode = "lines",
-    text = ~hover_text,
-    hoverinfo = "text"
+    data=plot_data, x=~total_mosquitoes, y=~power,
+    type="scatter", mode="lines", text=~hover_text, hoverinfo="text"
   ) |>
     plotly::layout(
-      xaxis = list(title = "Total sample size (mosquitoes)"),
-      yaxis = list(
-        title = "P(prevalence estimate > threshold)",
-        tickformat = ".0%",
-        range = c(0, 1)
-      ),
-      margin = list(b = 70, l = 75),
-      annotations = list(list(
-        x = 1, y = 1, xref = "paper", yref = "paper",
-        text = paste0("Implied μ = ", formatC(mu, digits = 3, format = "f")),
-        showarrow = FALSE, xanchor = "right", yanchor = "bottom"
+      xaxis=list(title="Total sample size (mosquitoes)"),
+      yaxis=list(title="P(prevalence estimate > threshold)", tickformat=".0%", range=c(0,1)),
+      margin=list(b=70,l=75),
+      annotations=list(list(
+        x=1,y=1,xref="paper",yref="paper",text=parameter_label,
+        showarrow=FALSE,xanchor="right",yanchor="bottom"
       ))
     )
 })
-```
-
 ## Minimum sample size for a desired power
 
 <details>
