@@ -23,6 +23,13 @@ jobs:
           r-version: '4.5.3'
           use-public-rspm: true
 
+      - name: Install deployment and application packages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: Rscript {0}
+        run: |
+          install.packages(c("remotes", "rsconnect", "shiny", "DT", "plotly", "statmod"))
+
       - name: Configure shinyapps.io account
         env:
           SHINYAPPS_ACCOUNT: ${{ secrets.SHINYAPPS_ACCOUNT }}
