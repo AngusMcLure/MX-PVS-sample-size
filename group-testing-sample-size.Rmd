@@ -378,7 +378,7 @@ renderPlotly({
     parameters <- logit_normal_parameters_from_icc(design_prevalence, icc)
     mu <- unname(parameters[["mu"]])
     sigma <- unname(parameters[["sigma"]])
-    power <- vapply(trapping locations, function(w) {
+    power <- vapply(trapping_locations, function(w) {
       pmf <- logit_normal_pool_count_pmf(
         w=w, v=v, s=s, mu=mu, sigma=sigma, n_quad=120L
       )
@@ -394,7 +394,7 @@ renderPlotly({
   } else {
     # Limiting case as sigma tends to infinity: trapping-location prevalence is 1
     # with probability equal to the design prevalence, and 0 otherwise.
-    power <- vapply(trapping locations, function(w) {
+    power <- vapply(trapping_locations, function(w) {
       positive_trap_locations <- 0:w
       positive_pools <- v * positive_trap_locations
       cutoff <- floor((w * v) * q_t) + 1L
@@ -404,11 +404,11 @@ renderPlotly({
   }
 
   plot_data <- data.frame(
-    trap_locations=trap_locations, total_pools=total_pools,
+    trapping_locations=trapping_locations, total_pools=total_pools,
     total_mosquitoes=total_pools*s, power=power
   )
   plot_data$hover_text <- paste0(
-    "Trap locations: ", format(plot_data$trapping locations, big.mark=",", scientific=FALSE), "<br>",
+    "Trap locations: ", format(plot_data$trapping_locations, big.mark=",", scientific=FALSE), "<br>",
     "Pools: ", format(plot_data$total_pools, big.mark=",", scientific=FALSE), "<br>",
     "Total mosquitoes: ", format(plot_data$total_mosquitoes, big.mark=",", scientific=FALSE), "<br>",
     "Power: ", sprintf("%.1f%%", 100*plot_data$power)
