@@ -26,7 +26,16 @@ jobs:
       - name: Install deployment and application packages
         shell: Rscript {0}
         run: |
-          install.packages(c("rsconnect", "shiny", "DT", "plotly"))
+          install.packages(c("remotes", "rsconnect", "shiny", "DT", "plotly", "statmod"))
+          remotes::install_github(
+            "AngusMcLure/PoolPoweR",
+            ref = "4e732164939f948e03a52209a6702ba043deb5b2",
+            upgrade = "never"
+          )
+          stopifnot(
+            requireNamespace("statmod", quietly = TRUE),
+            requireNamespace("PoolPoweR", quietly = TRUE)
+          )
 
       - name: Configure shinyapps.io account
         env:
