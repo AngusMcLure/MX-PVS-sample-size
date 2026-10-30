@@ -246,7 +246,7 @@ renderUI({
 <details>
 <summary>Details</summary>
 
-<p>This figure extends the single-survey power calculation to allow prevalence to vary between sites. Site-specific prevalence follows a logit-normal distribution: logit(p<sub>j</sub>) = μ + σZ<sub>j</sub>, where Z<sub>j</sub> is standard normal. The design prevalence is the arithmetic mean prevalence across sites, E[p_j]. The input is the intraclass correlation coefficient (ICC) between infection statuses of two mosquitoes sampled from the same site. For each selected design prevalence and ICC, μ and σ are found numerically to match the specified mean and ICC.</p>
+<p>This figure extends the single-survey power calculation to allow prevalence to vary between sites. Site-specific prevalence follows a logit-normal distribution: logit(p<sub>j</sub>) = μ + σZ<sub>j</sub>, where Z<sub>j</sub> is standard normal. The design prevalence is the arithmetic mean prevalence across sites, E[p_j]. The input is the intraclass correlation coefficient (ICC) between infection statuses of two mosquitoes sampled from the same site. For each selected design prevalence and ICC, μ and σ are obtained from the specified mean and variance of site prevalence using PoolPoweR’s link-normal helper.</p>
 
 <p>The ICC is calculated directly as Corr(Y<sub>1</sub>, Y<sub>2</sub>) = Var(p<sub>j</sub>)/[p̄(1 − p̄)], where p̄ = E[p<sub>j</sub>] is the design prevalence. This is the marginal Pearson correlation between two binary infection indicators from the same site, assuming conditional independence given site prevalence; it is not a latent-scale correlation or an approximation based on σ. The corresponding site-prevalence variance is therefore ICC × p̄ × (1 − p̄). The logit-normal parameters are obtained using PoolPoweR’s <code>mu_sigma_linknorm()</code> helper with <code>qlogis</code> and <code>plogis</code>.</p>
 
@@ -306,7 +306,20 @@ div(
 
 ```{r clustered-design-prevalence-input}
 output$clustered_design_prevalence_ui <- renderUI({
-  p_t <- as.numeric(input$# Convert the marginal mean prevalence and binary within-site ICC to
+  p_t <- as.numeric(input$clustered_threshold_species)
+  numericInput(
+    "clustered_design_prevalence_percent",
+    "Design prevalence (%)",
+    value = 200 * p_t,
+    min = 0,
+    max = 99,
+    step = max(10 * p_t, 0.001)
+  )
+})
+```
+
+```{r clustered-power-plot}
+# Convert the marginal mean prevalence and binary within-site ICC to
 # the parameters of a logit-normal site-prevalence distribution.
 logit_normal_parameters_from_icc <- function(design_prevalence, icc) {
   stopifnot(
@@ -330,13 +343,6 @@ logit_normal_parameters_from_icc <- function(design_prevalence, icc) {
     invlink = plogis
   )
   setNames(as.numeric(parameters), c("mu", "sigma"))
-}terisation; choose a slightly smaller ICC.", call. = FALSE)
-  }
-  sigma <- uniroot(
-    function(candidate) icc_for_sigma(candidate) - icc,
-    interval = c(0, upper_sigma), tol = 1e-8
-  )$root
-  c(mu = mu_for_mean(sigma), sigma = sigma)
 }
 
 renderPlotly({
