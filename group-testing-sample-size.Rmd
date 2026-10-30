@@ -15,26 +15,12 @@ runtime: shiny
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 
-# Set an explicit CRAN repository for package installation on shinyapps.io.
-options(repos = c(CRAN = "https://cloud.r-project.org"))
 
-# Application dependencies are installed and bundled during deployment.
-# Avoid installing packages at runtime: this runs whenever a new session starts.
-required_packages <- c("shiny", "DT", "plotly", "statmod", "PoolPoweR")
-missing_packages <- required_packages[
-  !vapply(required_packages, requireNamespace, logical(1), quietly = TRUE)
-]
-if (length(missing_packages) > 0) {
-  stop(
-    "The deployment is missing required packages: ",
-    paste(missing_packages, collapse = ", ")
-  )
-}
 library(shiny)
 library(plotly)
 library(DT)
 library(statmod)
-library(PoolPoweR)
+library(nleqslv)
 
 # Logit-normal clustered pool-count distribution functions.
 source("R/logit-normal-pool-count-pmf.R")
@@ -344,7 +330,7 @@ logit_normal_parameters_from_icc <- function(design_prevalence, icc) {
   trapping_location_prevalence_variance <-
     icc * design_prevalence * (1 - design_prevalence)
 
-  parameters <- PoolPoweR:::mu_sigma_linknorm(
+  parameters <- mu_sigma_linknorm(
     .mean = design_prevalence,
     .var = trapping_location_prevalence_variance,
     link = qlogis,
