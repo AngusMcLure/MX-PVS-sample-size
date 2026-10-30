@@ -14,7 +14,7 @@ runtime: shiny
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
-required_packages <- c("shiny", "DT", "plotly")
+required_packages <- c("shiny", "DT", "plotly", "statmod")
 missing_packages <- required_packages[
   !vapply(required_packages, requireNamespace, logical(1), quietly = TRUE)
 ]
@@ -27,6 +27,9 @@ if (length(missing_packages) > 0) {
 library(shiny)
 library(plotly)
 library(DT)
+
+# Logit-normal clustered pool-count distribution functions.
+source("R/logit-normal-pool-count-pmf.R")
 
 ```
 
