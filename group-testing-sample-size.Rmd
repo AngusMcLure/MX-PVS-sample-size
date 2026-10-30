@@ -246,7 +246,7 @@ renderUI({
 <details>
 <summary>Details</summary>
 
-<p>This figure extends the single-survey power calculation to allow prevalence to vary between trapping locations. Trap-location-specific prevalence follows a logit-normal distribution: logit(p<sub>j</sub>) = μ + σZ<sub>j</sub>, where Z<sub>j</sub> is standard normal. The design prevalence is the arithmetic mean prevalence across trapping locations, E[p_j]. The input is the intraclass correlation coefficient (ICC) between infection statuses of two mosquitoes sampled from the same trapping location. For each selected design prevalence and ICC, μ and σ are obtained from the specified mean and variance of trapping-location prevalence using PoolPoweR’s link-normal helper.</p>
+<p>This figure extends the single-survey power calculation to allow prevalence to vary between trapping locations. Trapping-location-specific prevalence follows a logit-normal distribution: logit(p<sub>j</sub>) = μ + σZ<sub>j</sub>, where Z<sub>j</sub> is standard normal. The design prevalence is the arithmetic mean prevalence across trapping locations, E[p_j]. The input is the intraclass correlation coefficient (ICC) between infection statuses of two mosquitoes sampled from the same trapping location. For each selected design prevalence and ICC, μ and σ are obtained from the specified mean and variance of trapping-location prevalence using PoolPoweR’s link-normal helper.</p>
 
 <p>The ICC is calculated directly as Corr(Y<sub>1</sub>, Y<sub>2</sub>) = Var(p<sub>j</sub>)/[p̄(1 − p̄)], where p̄ = E[p<sub>j</sub>] is the design prevalence. This is the marginal Pearson correlation between two binary infection indicators from the same trapping location, assuming conditional independence given trapping-location prevalence; it is not a latent-scale correlation or an approximation based on σ. The corresponding trapping-location prevalence variance is therefore ICC × p̄ × (1 − p̄). The logit-normal parameters are obtained using PoolPoweR’s <code>mu_sigma_linknorm()</code> helper with <code>qlogis</code> and <code>plogis</code>.</p>
 
@@ -319,7 +319,7 @@ output$clustered_design_prevalence_ui <- renderUI({
 ```
 
 ```{r clustered-power-plot}
-# Convert the marginal mean prevalence and binary within-trapping location ICC to
+# Convert the marginal mean prevalence and binary within-trapping-location ICC to
 # the parameters of a logit-normal trapping-location prevalence distribution.
 logit_normal_parameters_from_icc <- function(design_prevalence, icc) {
   stopifnot(
@@ -333,12 +333,12 @@ logit_normal_parameters_from_icc <- function(design_prevalence, icc) {
     return(c(mu = qlogis(design_prevalence), sigma = 0))
   }
 
-  trap_location_prevalence_variance <-
+  trapping_location_prevalence_variance <-
     icc * design_prevalence * (1 - design_prevalence)
 
   parameters <- PoolPoweR:::mu_sigma_linknorm(
     .mean = design_prevalence,
-    .var = trap_location_prevalence_variance,
+    .var = trapping_location_prevalence_variance,
     link = qlogis,
     invlink = plogis
   )
@@ -408,7 +408,7 @@ renderPlotly({
     total_mosquitoes=total_pools*s, power=power
   )
   plot_data$hover_text <- paste0(
-    "Trap locations: ", format(plot_data$trapping_locations, big.mark=",", scientific=FALSE), "<br>",
+    "Trapping locations: ", format(plot_data$trapping_locations, big.mark=",", scientific=FALSE), "<br>",
     "Pools: ", format(plot_data$total_pools, big.mark=",", scientific=FALSE), "<br>",
     "Total mosquitoes: ", format(plot_data$total_mosquitoes, big.mark=",", scientific=FALSE), "<br>",
     "Power: ", sprintf("%.1f%%", 100*plot_data$power)
