@@ -32,8 +32,6 @@ variables.
 - Every push to `main` triggers a deployment, including merge commits from
   pull requests.
 - Pushes to any other branch do not trigger deployment.
-- The workflow can also be run manually from the repository's **Actions**
-  tab using **Deploy Shiny app to shinyapps.io**.
 - Deployment credentials are stored as GitHub Actions secrets and are not
   committed to the repository.
 
