@@ -102,7 +102,7 @@ for (i in seq_along(site_counts)) {
 results <- do.call(rbind, benchmark_results)
 print(results[, c(
   "expression", "w", "total_pools", "median", "itr/sec",
-  "mem_alloc", "max_abs_pmf_difference", "max_abs_cdf_difference"
+  "max_abs_pmf_difference", "max_abs_cdf_difference"
 )])
 
 message("All PMF and CDF consistency checks passed.")
