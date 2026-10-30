@@ -14,6 +14,28 @@ runtime: shiny
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+
+# Pin PoolPoweR to an immutable commit on its refactor branch. If the package
+# is absent or was installed from a different commit, install the pinned copy.
+poolpower_commit <- "4e732164939f948e03a52209a6702ba043deb5b2"
+poolpower_installed <- requireNamespace("PoolPoweR", quietly = TRUE)
+poolpower_installed_sha <- if (poolpower_installed) {
+  utils::packageDescription("PoolPoweR")$RemoteSha
+} else {
+  NULL
+}
+
+if (!identical(poolpower_installed_sha, poolpower_commit)) {
+  if (!requireNamespace("remotes", quietly = TRUE)) {
+    install.packages("remotes")
+  }
+  remotes::install_github(
+    "AngusMcLure/PoolPoweR",
+    ref = poolpower_commit,
+    upgrade = "never"
+  )
+}
+
 required_packages <- c("shiny", "DT", "plotly", "statmod", "PoolPoweR")
 missing_packages <- required_packages[
   !vapply(required_packages, requireNamespace, logical(1), quietly = TRUE)
