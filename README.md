@@ -7,7 +7,7 @@ Install the R packages required by the document, including PoolPoweR from GitHub
 
 ```r
 install.packages(c("shiny", "DT", "plotly", "statmod", "remotes"))
-remotes::install_github("AngusMcLure/PoolPoweR")
+remotes::install_github("AngusMcLure/PoolPoweR", ref = "refactor")
 ```
 
 The clustered power calculation uses PoolPoweR's internal `mu_sigma_linknorm()`
