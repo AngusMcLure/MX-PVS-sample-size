@@ -573,6 +573,7 @@ renderPlotly({
   s <- calculated$s
   v <- calculated$v
   icc <- calculated$icc
+  required_power <- calculated$required_power
   design_prevalences <- calculated$design_prevalences
   locations_icc0 <- calculated$locations_icc0
   locations_clustered <- calculated$locations_clustered
