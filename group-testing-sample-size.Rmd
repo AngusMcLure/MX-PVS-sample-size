@@ -71,17 +71,55 @@ P(\hat{p}>p_t)
 \end{align*}
 $$
 
+To allow for clustering, we extend this model by assuming that mosquitoes caught at the same trapping location share a common underlying prevalence. Let $p_j$ denote the prevalence at trapping location $j$. We model these location-specific prevalences using a logit-normal distribution,
+
+$$
+\operatorname{logit}(p_j) = \mu + \sigma Z_j, \qquad Z_j \sim N(0,1),
+$$
+
+independently across trapping locations. Here, $\mu$ determines the overall level of prevalence and $\sigma$ controls the amount of variation between trapping locations. The *population prevalence* is the arithmetic mean across locations, $\bar p = E[p_j] = E[\operatorname{logit}^{-1}(\mu + \sigma Z_j)]$; it is not generally equal to $\operatorname{logit}^{-1}(\mu)$ when $\sigma > 0$.
+
+We describe the degree of clustering using the intraclass correlation coefficient (ICC) between the infection statuses of two mosquitoes sampled from the same trapping location. Under conditional independence given $p_j$, this is
+
+$$
+\operatorname{ICC}
+= \frac{\operatorname{Var}(p_j)}{\bar p(1-\bar p)}.
+$$
+
+Thus, for a specified design prevalence and ICC, the required variance of location-specific prevalence is $\operatorname{Var}(p_j)=\operatorname{ICC}\,\bar p(1-\bar p)$. We obtain $\mu$ and $\sigma$ numerically so that the logit-normal distribution has this mean and variance. When ICC = 0, the variance is zero and all trapping locations have the same prevalence, $p_j=\bar p$; this recovers the independent-pool model above.
+
+Suppose we sample $v$ pools of size $s$ at each of $w$ independently selected trapping locations. Conditional on the prevalence $p_j$ at location $j$, each pool there tests positive with probability
+
+$$
+q_j = 1-(1-p_j)^s.
+$$
+
+Let $X_j$ be the number of positive pools at location $j$. Conditional on $p_j$, $X_j \sim \operatorname{Binomial}(v,q_j)$.
+
+For simplicity and consistency, the pooled-prevalence MLE is still calculated from the total number of positive pools, $X =\sum_{j=1}^{w}X_j$. Therefore, the power is
+
+$$
+P(\hat p>p_t)
+= P\left(X>wv\left[1-(1-p_t)^s\right]\right).
+$$
+
+Unlike the independent-pool case, the distribution of $X$ is not simply binomial: pools from the same trapping location are dependent marginally because they share $p_j$. However, the exact distribution of $X$ is still tractable as each $X_j$ are identically and independently distributed. We calculate the distribution $X_j$ by integrating (numerically) over the logit-normal distribution of trapping-location prevalence, and then determine the distribution of $X$ by calculating the convolution of the $X_j$ (made simple through FFT).
+
 
 ## Power of a single survey
 
 <details>
 <summary>Details</summary>
 
-<p>Choose a threshold, a design prevalence, and a pool size to explore the probability that the maximum-likelihood prevalence estimate exceeds the selected threshold. The design prevalence defaults to twice the selected threshold, and can be edited independently.</p>
+<p>Choose a threshold, a design prevalence, a pool size and the number of pools sampled at each trapping location to explore the probability that the maximum-likelihood prevalence estimate exceeds the selected threshold for a range of sample sizes. The design prevalence defaults to twice the selected threshold, but can be edited independently.</p>
 
-<p>The available thresholds are <em>Aedes</em> (0.1%), <em>Anopheles</em> (1%), <em>Culex</em> (0.25%), and <em>Mansonia</em> (0.5%).</p>
+<p> The figure shows power with and without clustering effects. Across both cases, the calculation assumes perfect pool classification and the plotted total sample sizes are multiples of the selected pool size and pools per trap location. The range sample sizes shown by increasing the number of (statistically independent) trapping locations </p>
 
-<p>The calculation assumes independent mosquito infection status and perfect pool classification. It uses the exact binomial probability, with the number of pools as the binomial sample size. The plotted total sample sizes are multiples of the selected pool size.</p>
+<p>For the no clustering case, the calculates the exact binomial probability, with the number of pools as the binomial sample size. </p>
+
+<p> For the case accounting for clustering, trapping-location-specific prevalence follows a logit-normal distribution: logit(p<sub>j</sub>) = μ + σZ<sub>j</sub>, where Z<sub>j</sub> is standard normal. The design prevalence is the mean prevalence across trapping locations, E[p_j]. The input is the intraclass correlation coefficient (ICC) between infection statuses of two mosquitoes sampled from the same trapping location. For each selected design prevalence and ICC, μ and σ are obtained from the specified mean and variance of trapping-location prevalence.</p>
+
+<p>The ICC is calculated directly as Corr(Y<sub>1</sub>, Y<sub>2</sub>) = Var(p<sub>j</sub>)/[p̄(1 − p̄)], where p̄ = E[p<sub>j</sub>] is the design prevalence. This is the marginal Pearson correlation between two binary infection indicators from the same trapping location, assuming conditional independence given trapping-location prevalence; it is not a latent-scale correlation or an approximation based on σ. The corresponding trapping-location prevalence variance is therefore ICC × p̄ × (1 − p̄).</p>
 
 </details>
 
@@ -93,161 +131,6 @@ tags$style(HTML(paste0(
 )))
 ```
 
-```{r prevalidation-controls}
-div(
-  class = "controls-row",
-  selectInput(
-    "threshold_species",
-    "Threshold",
-    choices = c(
-      "Aedes (0.1%)" = "0.001",
-      "Anopheles (1%)" = "0.01",
-      "Culex (0.25%)" = "0.0025",
-      "Mansonia (0.5%)" = "0.005"
-    ),
-    selected = "0.001"
-  ),
-  uiOutput("design_prevalence_ui"),
-  numericInput(
-    "pool_size",
-    "Pool size (mosquitoes per pool)",
-    value = 25,
-    min = 1,
-    max = 1000,
-    step = 1
-  ),
-  numericInput(
-    "max_pools",
-    "Maximum number of pools shown in the figure",
-    value = 400,
-    min = 1,
-    max = 10000,
-    step = 50
-  )
-)
-```
-
-```{r prevalidation-function}
-# Exact probability that the prevalence MLE exceeds the threshold.
-prob_estimate_above_threshold <- function(p, p_t, s, m) {
-  stopifnot(
-    length(p) == 1L, is.finite(p), p >= 0, p < 1,
-    length(p_t) == 1L, is.finite(p_t), p_t >= 0, p_t < 1,
-    length(s) == 1L, is.finite(s), s >= 1, s == as.integer(s),
-    length(m) == 1L, is.finite(m), m >= 1, m == as.integer(m)
-  )
-
-  q <- -expm1(s * log1p(-p))
-  q_t <- -expm1(s * log1p(-p_t))
-  pbinom(floor(m * q_t), size = m, prob = q, lower.tail = FALSE)
-}
-```
-
-```{r prevalidation-design-input}
-output$design_prevalence_ui <- renderUI({
-  p_t <- as.numeric(input$threshold_species)
-  numericInput(
-    "design_prevalence_percent",
-    "Design prevalence (%)",
-    value = 200 * p_t,
-    min = 0,
-    max = 99,
-    step = max(10 * p_t, 0.001)
-  )
-})
-```
-
-```{r prevalidation-probability-plot}
-renderPlotly({
-  p_t <- as.numeric(input$threshold_species)
-  p <- input$design_prevalence_percent / 100
-  s <- input$pool_size
-  max_pools <- input$max_pools
-
-  validate(
-    need(is.finite(p) && p >= 0 && p < 1,
-         "Design prevalence must be at least 0 and less than 1."),
-    need(is.finite(s) && s >= 1 && s == as.integer(s),
-         "Pool size must be a positive integer."),
-    need(is.finite(max_pools) && max_pools >= 1,
-         "Maximum number of pools must be at least 1.")
-  )
-
-  m_values <- seq_len(as.integer(max_pools))
-  probabilities <- vapply(
-    m_values,
-    function(m) prob_estimate_above_threshold(p, p_t, as.integer(s), m),
-    numeric(1)
-  )
-  plotly::plot_ly(
-    x = m_values * as.integer(s),
-    y = probabilities,
-    type = "scatter",
-    mode = "lines",
-    hovertemplate = paste0(
-      "Total mosquitoes: %{x:,}<br>",
-      "Pools: %{customdata}<br>",
-      "Probability: %{y:.1%}<extra></extra>"
-    ),
-    customdata = m_values
-  ) |>
-    plotly::layout(
-      xaxis = list(title = "Total sample size (n = s × m)"),
-      yaxis = list(
-        title = "P(prevalence estimate > threshold)",
-        tickformat = ".0%",
-        range = c(0, 1)
-      ),
-      margin = list(b = 70, l = 75)
-    )
-})
-```
-
-
-*The saw-tooth shape occurs because the number of positive pools is discrete: as the number of pools increases, the minimum number of positive pools needed to exceed the threshold sometimes jumps up by one. At each jump the probability that the minimum number of positive pools are found drops substantially, then rises again more slowly as more pools are added until the minimum number of positive pools increases by one again, repeating the cycle.*
-
-```{r prevalidation-current-result}
-renderUI({
-  p_t <- as.numeric(input$threshold_species)
-  p <- input$design_prevalence_percent / 100
-  s <- input$pool_size
-  max_pools <- input$max_pools
-  validate(
-    need(is.finite(p) && p >= 0 && p < 1,
-         "Design prevalence must be at least 0 and less than 1."),
-    need(is.finite(s) && s >= 1 && s == as.integer(s),
-         "Pool size must be a positive integer."),
-    need(is.finite(max_pools) && max_pools >= 1,
-         "Maximum number of pools must be at least 1.")
-  )
-  m <- as.integer(max_pools)
-  probability <- prob_estimate_above_threshold(p, p_t, as.integer(s), m)
-  tags$div(
-    class = "well",
-    tags$h4(sprintf("Probability at n = %s: %.1f%%",
-                    format(m * as.integer(s), big.mark = ","), 100 * probability)),
-    tags$p(sprintf(
-      "Threshold = %.3g%%; design prevalence = %.3g%%; pool size = %d; pools = %s.",
-      100 * p_t, 100 * p, as.integer(s), format(m, big.mark = ",")
-    ))
-  )
-})
-```
-
-
-## Power with trapping-location-level heterogeneity
-
-<details>
-<summary>Details</summary>
-
-<p>This figure extends the single-survey power calculation to allow prevalence to vary between trapping locations. Trapping-location-specific prevalence follows a logit-normal distribution: logit(p<sub>j</sub>) = μ + σZ<sub>j</sub>, where Z<sub>j</sub> is standard normal. The design prevalence is the arithmetic mean prevalence across trapping locations, E[p_j]. The input is the intraclass correlation coefficient (ICC) between infection statuses of two mosquitoes sampled from the same trapping location. For each selected design prevalence and ICC, μ and σ are obtained from the specified mean and variance of trapping-location prevalence using PoolPoweR’s link-normal helper.</p>
-
-<p>The ICC is calculated directly as Corr(Y<sub>1</sub>, Y<sub>2</sub>) = Var(p<sub>j</sub>)/[p̄(1 − p̄)], where p̄ = E[p<sub>j</sub>] is the design prevalence. This is the marginal Pearson correlation between two binary infection indicators from the same trapping location, assuming conditional independence given trapping-location prevalence; it is not a latent-scale correlation or an approximation based on σ. The corresponding trapping-location prevalence variance is therefore ICC × p̄ × (1 − p̄). The logit-normal parameters are obtained using PoolPoweR’s <code>mu_sigma_linknorm()</code> helper with <code>qlogis</code> and <code>plogis</code>.</p>
-
-<p>The number of pools sampled at each trapping location is held fixed. The calculation increases the number of independent trapping locations, and hence the total number of pools and mosquitoes. Power is the probability that the pooled-prevalence MLE exceeds the selected threshold. The total positive-pool count distribution is calculated using the FFT-based method above. ICC = 1 is handled as the limiting case in which each trapping location's prevalence is either zero or one.</p>
-
-</details>
-
 ```{r clustered-power-controls}
 div(
   class = "controls-row",
@@ -256,11 +139,11 @@ div(
     "Threshold",
     choices = c(
       "Aedes (0.1%)" = "0.001",
-      "Anopheles (1%)" = "0.01",
       "Culex (0.25%)" = "0.0025",
-      "Mansonia (0.5%)" = "0.005"
+      "Mansonia (0.5%)" = "0.005",
+      "Anopheles (1%)" = "0.01"
     ),
-    selected = "0.001"
+    selected = "0.0025"
   ),
   uiOutput("clustered_design_prevalence_ui"),
   numericInput(
@@ -284,13 +167,13 @@ div(
     "Pools per trapping location",
     value = 2,
     min = 1,
-    max = 1000,
+    max = 100,
     step = 1
   ),
   numericInput(
     "clustered_max_trap_locations",
     "Maximum number of trapping locations shown",
-    value = 100,
+    value = 150,
     min = 1,
     max = 1000,
     step = 10
@@ -313,6 +196,20 @@ output$clustered_design_prevalence_ui <- renderUI({
 ```
 
 ```{r clustered-power-plot}
+# Exact probability that the prevalence MLE exceeds the threshold.
+prob_estimate_above_threshold <- function(p, p_t, s, m) {
+  stopifnot(
+    length(p) == 1L, is.finite(p), p >= 0, p < 1,
+    length(p_t) == 1L, is.finite(p_t), p_t >= 0, p_t < 1,
+    length(s) == 1L, is.finite(s), s >= 1, s == as.integer(s),
+    length(m) == 1L, is.finite(m), m >= 1, m == as.integer(m)
+  )
+
+  q <- -expm1(s * log1p(-p))
+  q_t <- -expm1(s * log1p(-p_t))
+  pbinom(floor(m * q_t), size = m, prob = q, lower.tail = FALSE)
+}
+
 # Convert the marginal mean prevalence and binary within-trapping-location ICC to
 # the parameters of a logit-normal trapping-location prevalence distribution.
 logit_normal_parameters_from_icc <- function(design_prevalence, icc) {
@@ -368,6 +265,7 @@ renderPlotly({
   total_pools <- trapping_locations * v
   q_t <- -expm1(s * log1p(-p_t))
 
+  # Existing curve: power under the selected within-trapping-location ICC.
   if (icc < 1) {
     parameters <- logit_normal_parameters_from_icc(design_prevalence, icc)
     mu <- unname(parameters[["mu"]])
@@ -402,19 +300,49 @@ renderPlotly({
     total_mosquitoes=total_pools*s, power=power
   )
   plot_data$hover_text <- paste0(
+    "ICC = ",
+    format(icc, trim=TRUE, scientific=FALSE),"<br>",
     "Trapping locations: ", format(plot_data$trapping_locations, big.mark=",", scientific=FALSE), "<br>",
     "Pools: ", format(plot_data$total_pools, big.mark=",", scientific=FALSE), "<br>",
     "Total mosquitoes: ", format(plot_data$total_mosquitoes, big.mark=",", scientific=FALSE), "<br>",
     "Power: ", sprintf("%.1f%%", 100*plot_data$power)
   )
-  plotly::plot_ly(
-    data=plot_data, x=~total_mosquitoes, y=~power,
-    type="scatter", mode="lines", text=~hover_text, hoverinfo="text"
-  ) |>
+
+  # Comparison curve: ICC = 0 means no trapping-location heterogeneity, so
+  # all pools are independent and the exact binomial power can be used.
+  independent_power <- vapply(total_pools, function(m) {
+    prob_estimate_above_threshold(design_prevalence,p_t,s,m)
+  }, numeric(1))
+  independent_data <- data.frame(
+    trapping_locations=trapping_locations,
+    total_pools=total_pools,
+    total_mosquitoes=total_pools*s,
+    power=independent_power
+  )
+  independent_data$hover_text <- paste0(
+    "ICC = 0 (no clustering)<br>",
+    "Trapping locations: ", format(independent_data$trapping_locations, big.mark=",", scientific=FALSE), "<br>",
+    "Pools: ", format(independent_data$total_pools, big.mark=",", scientific=FALSE), "<br>",
+    "Total mosquitoes: ", format(independent_data$total_mosquitoes, big.mark=",", scientific=FALSE), "<br>",
+    "Power: ", sprintf("%.1f%%", 100*independent_data$power)
+  )
+
+  plotly::plot_ly() |>
+    plotly::add_trace(
+      data=plot_data, x=~total_mosquitoes, y=~power,
+      type="scatter", mode="lines", text=~hover_text, hoverinfo="text",
+      name=paste0("ICC = ", format(icc, trim=TRUE, scientific=FALSE))
+    ) |>
+    plotly::add_trace(
+      data=independent_data, x=~total_mosquitoes, y=~power,
+      type="scatter", mode="lines", text=~hover_text, hoverinfo="text",
+      name="ICC = 0 (no clustering)"
+    ) |>
     plotly::layout(
       xaxis=list(title="Total sample size (mosquitoes)"),
       yaxis=list(title="P(prevalence estimate > threshold)", tickformat=".0%", range=c(0,1)),
-      margin=list(b=70,l=75),
+      legend=list(orientation="h", x=0, y=1.12),
+      margin=list(t=75,b=70,l=75),
       annotations=list(list(
         x=1,y=1,xref="paper",yref="paper",text=parameter_label,
         showarrow=FALSE,xanchor="right",yanchor="bottom"
@@ -422,6 +350,8 @@ renderPlotly({
     )
 })
 ```
+
+*The saw-tooth shape occurs because the number of positive pools is discrete: as the number of pools increases, the minimum number of positive pools needed to exceed the threshold sometimes jumps up by one. At each jump the probability that the minimum number of positive pools are found drops substantially, then rises again more slowly as more pools are added until the minimum number of positive pools increases by one again, repeating the cycle.*
 
 ## Minimum sample size for a desired power
 
