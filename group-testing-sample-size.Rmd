@@ -458,37 +458,17 @@ minimum_locations_for_power <- function(
       lower.tail = FALSE
     )
   } else if (icc < 1) {
-    # Calculate the trapping-location distribution once, then extend the
-    # total pool-count distribution sequentially as locations are added.
-    # This avoids rebuilding the same sequence of truncated convolutions
-    # independently for every candidate number of locations.
     parameters <- logit_normal_parameters_from_icc(p, icc)
     mu <- unname(parameters[["mu"]])
     sigma <- unname(parameters[["sigma"]])
-
-    quadrature <- statmod::gauss.quad.prob(n = 40L, dist = "normal")
-    local_prevalence <- plogis(mu + sigma * quadrature$nodes)
-    pool_positive <- -expm1(as.integer(s) * log1p(-local_prevalence))
-    conditional_pmfs <- vapply(
-      pool_positive,
-      function(q_j) dbinom(0:as.integer(v), size = as.integer(v), prob = q_j),
-      numeric(as.integer(v) + 1L)
-    )
-    site_pmf <- drop(conditional_pmfs %*% quadrature$weights)
-    site_pmf <- site_pmf / sum(site_pmf)
-
-    total_pmf <- 1
-    power <- numeric(length(locations))
-    for (i in seq_along(locations)) {
-      total_pmf <- stats::convolve(total_pmf, site_pmf, type = "open", conj = FALSE)
-      # FFT-based convolution can introduce negligible negative round-off.
-      total_pmf <- pmax(total_pmf, 0)
-      total_pmf <- total_pmf / sum(total_pmf)
-
-      cutoff <- floor(locations[i] * v * q_t) + 1L
-      power[i] <- if (cutoff > length(total_pmf) - 1L) {
-        0
-      } else {
+    power <- vapply(locations, function(w) {
+      cutoff <- floor(w * v * q_t) + 1L
+      1 - logit_normal_pool_count_cdf(
+        w = w, v = as.integer(v), s = as.integer(s),
+        mu = mu, sigma = sigma, c = cutoff, n_quad = 40L
+      )
+    }, numeric(1))
+  } else {
         sum(total_pmf[(cutoff + 1L):length(total_pmf)])
       }
     }
