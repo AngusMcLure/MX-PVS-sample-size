@@ -366,6 +366,7 @@ renderPlotly({
   total_pools <- trapping_locations * v
   q_t <- -expm1(s * log1p(-p_t))
 
+  # Existing curve: power under the selected within-trapping-location ICC.
   if (icc < 1) {
     parameters <- logit_normal_parameters_from_icc(design_prevalence, icc)
     mu <- unname(parameters[["mu"]])
@@ -405,14 +406,43 @@ renderPlotly({
     "Total mosquitoes: ", format(plot_data$total_mosquitoes, big.mark=",", scientific=FALSE), "<br>",
     "Power: ", sprintf("%.1f%%", 100*plot_data$power)
   )
-  plotly::plot_ly(
-    data=plot_data, x=~total_mosquitoes, y=~power,
-    type="scatter", mode="lines", text=~hover_text, hoverinfo="text"
-  ) |>
+
+  # Comparison curve: ICC = 0 means no trapping-location heterogeneity, so
+  # all pools are independent and the exact binomial power can be used.
+  independent_power <- vapply(total_pools, function(m) {
+    q <- -expm1(s * log1p(-design_prevalence))
+    pbinom(floor(m * q_t), size=m, prob=q, lower.tail=FALSE)
+  }, numeric(1))
+  independent_data <- data.frame(
+    trapping_locations=trapping_locations,
+    total_pools=total_pools,
+    total_mosquitoes=total_pools*s,
+    power=independent_power
+  )
+  independent_data$hover_text <- paste0(
+    "ICC = 0 (no heterogeneity)<br>",
+    "Trapping locations: ", format(independent_data$trapping_locations, big.mark=",", scientific=FALSE), "<br>",
+    "Pools: ", format(independent_data$total_pools, big.mark=",", scientific=FALSE), "<br>",
+    "Total mosquitoes: ", format(independent_data$total_mosquitoes, big.mark=",", scientific=FALSE), "<br>",
+    "Power: ", sprintf("%.1f%%", 100*independent_data$power)
+  )
+
+  plotly::plot_ly() |>
+    plotly::add_trace(
+      data=plot_data, x=~total_mosquitoes, y=~power,
+      type="scatter", mode="lines", text=~hover_text, hoverinfo="text",
+      name=paste0("Selected ICC = ", format(icc, trim=TRUE, scientific=FALSE))
+    ) |>
+    plotly::add_trace(
+      data=independent_data, x=~total_mosquitoes, y=~power,
+      type="scatter", mode="lines", text=~hover_text, hoverinfo="text",
+      name="ICC = 0 (no heterogeneity)"
+    ) |>
     plotly::layout(
       xaxis=list(title="Total sample size (mosquitoes)"),
       yaxis=list(title="P(prevalence estimate > threshold)", tickformat=".0%", range=c(0,1)),
-      margin=list(b=70,l=75),
+      legend=list(orientation="h", x=0, y=1.12),
+      margin=list(t=75,b=70,l=75),
       annotations=list(list(
         x=1,y=1,xref="paper",yref="paper",text=parameter_label,
         showarrow=FALSE,xanchor="right",yanchor="bottom"
