@@ -480,7 +480,7 @@ minimum_locations_for_power <- function(
     total_pmf <- 1
     power <- numeric(length(locations))
     for (i in seq_along(locations)) {
-      total_pmf <- stats::convolve(total_pmf, site_pmf, type = "open")
+      total_pmf <- stats::convolve(total_pmf, site_pmf, type = "open", conj = FALSE)
       # FFT-based convolution can introduce negligible negative round-off.
       total_pmf <- pmax(total_pmf, 0)
       total_pmf <- total_pmf / sum(total_pmf)
