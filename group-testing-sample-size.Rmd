@@ -458,16 +458,40 @@ minimum_locations_for_power <- function(
       lower.tail = FALSE
     )
   } else if (icc < 1) {
+    # Calculate the trapping-location distribution once, then extend the
+    # total pool-count distribution sequentially as locations are added.
+    # This avoids rebuilding the same sequence of truncated convolutions
+    # independently for every candidate number of locations.
     parameters <- logit_normal_parameters_from_icc(p, icc)
     mu <- unname(parameters[["mu"]])
     sigma <- unname(parameters[["sigma"]])
-    power <- vapply(locations, function(w) {
-      cutoff <- floor(w * v * q_t) + 1L
-      1 - logit_normal_pool_count_cdf(
-        w = w, v = as.integer(v), s = as.integer(s),
-        mu = mu, sigma = sigma, c = cutoff, n_quad = 40L
-      )
-    }, numeric(1))
+
+    quadrature <- statmod::gauss.quad.prob(n = 40L, dist = "normal")
+    local_prevalence <- plogis(mu + sigma * quadrature$nodes)
+    pool_positive <- -expm1(as.integer(s) * log1p(-local_prevalence))
+    conditional_pmfs <- vapply(
+      pool_positive,
+      function(q_j) dbinom(0:as.integer(v), size = as.integer(v), prob = q_j),
+      numeric(as.integer(v) + 1L)
+    )
+    site_pmf <- drop(conditional_pmfs %*% quadrature$weights)
+    site_pmf <- site_pmf / sum(site_pmf)
+
+    total_pmf <- 1
+    power <- numeric(length(locations))
+    for (i in seq_along(locations)) {
+      total_pmf <- stats::convolve(total_pmf, site_pmf, type = "open")
+      # FFT-based convolution can introduce negligible negative round-off.
+      total_pmf <- pmax(total_pmf, 0)
+      total_pmf <- total_pmf / sum(total_pmf)
+
+      cutoff <- floor(locations[i] * v * q_t) + 1L
+      power[i] <- if (cutoff > length(total_pmf) - 1L) {
+        0
+      } else {
+        sum(total_pmf[(cutoff + 1L):length(total_pmf)])
+      }
+    }
   } else {
     # Limiting case as sigma tends to infinity: each location has prevalence
     # 1 with probability p and 0 otherwise.
@@ -510,7 +534,46 @@ renderPlotly({
          "Maximum number of trapping locations must be a positive integer.")
   )
 
-  design_prevalences <- seq(p_t, 3 * p_t, by = 0.0001)
+  # Keep all expensive calculations in a reactive that does not depend on
+  # the axis-scale control. Changing linear/log display therefore only
+  # rebuilds the Plotly layout, not either sample-size curve.
+  sample_size_calculations <- reactive({
+    design_prevalences <- seq(p_t, 3 * p_t, by = 0.0001)
+
+    locations_icc0 <- vapply(
+      design_prevalences,
+      function(p) minimum_locations_for_power(
+        p, p_t, as.integer(s), as.integer(v), required_power,
+        as.integer(max_locations), icc = 0
+      ),
+      integer(1)
+    )
+
+    locations_clustered <- if (icc == 0) {
+      # The two curves are identical when the selected ICC is zero.
+      locations_icc0
+    } else {
+      vapply(
+        design_prevalences,
+        function(p) minimum_locations_for_power(
+          p, p_t, as.integer(s), as.integer(v), required_power,
+          as.integer(max_locations), icc = icc
+        ),
+        integer(1)
+      )
+    }
+
+    list(
+      design_prevalences = design_prevalences,
+      locations_icc0 = locations_icc0,
+      locations_clustered = locations_clustered
+    )
+  })
+
+  calculated <- sample_size_calculations()
+  design_prevalences <- calculated$design_prevalences
+  locations_icc0 <- calculated$locations_icc0
+  locations_clustered <- calculated$locations_clustered
 
   # Use a rounded tick interval targeting around 5-10 x-axis labels.
   # The axis is displayed in percent, so calculate the interval on that scale.
@@ -528,23 +591,6 @@ renderPlotly({
     10
   }
   prevalence_tick <- nice_fraction * tick_magnitude
-
-  locations_icc0 <- vapply(
-    design_prevalences,
-    function(p) minimum_locations_for_power(
-      p, p_t, as.integer(s), as.integer(v), required_power,
-      as.integer(max_locations), icc = 0
-    ),
-    integer(1)
-  )
-  locations_clustered <- vapply(
-    design_prevalences,
-    function(p) minimum_locations_for_power(
-      p, p_t, as.integer(s), as.integer(v), required_power,
-      as.integer(max_locations), icc = icc
-    ),
-    integer(1)
-  )
 
   make_plot_data <- function(locations) {
     data.frame(
