@@ -512,7 +512,9 @@ minimum_locations_for_power <- function(
 ```
 
 ```{r sample-size-calculator-plot}
-renderPlotly({
+# Cache the expensive calculations independently of the Plotly rendering.
+# In particular, sample_size_y_scale is deliberately not a dependency here.
+sample_size_calculations <- reactive({
   p_t <- as.numeric(input$calculator_threshold_species)
   s <- input$calculator_pool_size
   v <- input$calculator_pools_per_trap_location
@@ -534,43 +536,43 @@ renderPlotly({
          "Maximum number of trapping locations must be a positive integer.")
   )
 
-  # Keep all expensive calculations in a reactive that does not depend on
-  # the axis-scale control. Changing linear/log display therefore only
-  # rebuilds the Plotly layout, not either sample-size curve.
-  sample_size_calculations <- reactive({
-    design_prevalences <- seq(p_t, 3 * p_t, by = 0.0001)
-
-    locations_icc0 <- vapply(
+  design_prevalences <- seq(p_t, 3 * p_t, by = 0.0001)
+  locations_icc0 <- vapply(
+    design_prevalences,
+    function(p) minimum_locations_for_power(
+      p, p_t, as.integer(s), as.integer(v), required_power,
+      as.integer(max_locations), icc = 0
+    ),
+    integer(1)
+  )
+  locations_clustered <- if (icc == 0) {
+    locations_icc0
+  } else {
+    vapply(
       design_prevalences,
       function(p) minimum_locations_for_power(
         p, p_t, as.integer(s), as.integer(v), required_power,
-        as.integer(max_locations), icc = 0
+        as.integer(max_locations), icc = icc
       ),
       integer(1)
     )
+  }
 
-    locations_clustered <- if (icc == 0) {
-      # The two curves are identical when the selected ICC is zero.
-      locations_icc0
-    } else {
-      vapply(
-        design_prevalences,
-        function(p) minimum_locations_for_power(
-          p, p_t, as.integer(s), as.integer(v), required_power,
-          as.integer(max_locations), icc = icc
-        ),
-        integer(1)
-      )
-    }
+  list(
+    p_t = p_t, s = s, v = v, icc = icc,
+    required_power = required_power, max_locations = max_locations,
+    design_prevalences = design_prevalences,
+    locations_icc0 = locations_icc0,
+    locations_clustered = locations_clustered
+  )
+})
 
-    list(
-      design_prevalences = design_prevalences,
-      locations_icc0 = locations_icc0,
-      locations_clustered = locations_clustered
-    )
-  })
-
+renderPlotly({
   calculated <- sample_size_calculations()
+  p_t <- calculated$p_t
+  s <- calculated$s
+  v <- calculated$v
+  icc <- calculated$icc
   design_prevalences <- calculated$design_prevalences
   locations_icc0 <- calculated$locations_icc0
   locations_clustered <- calculated$locations_clustered
