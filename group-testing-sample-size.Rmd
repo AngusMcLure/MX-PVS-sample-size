@@ -559,11 +559,11 @@ renderPlotly({
 
   p <- plotly::plot_ly() |>
     plotly::add_trace(
-      data = data_icc0,
+      data = data_clustered,
       x = ~design_prevalence, y = ~sample_size,
       type = "scatter", mode = "lines+markers",
       connectgaps = FALSE, customdata = ~trapping_locations,
-      name = "ICC = 0 (no clustering)",
+      name = paste0("ICC = ", format(icc, trim = TRUE, scientific = FALSE)),
       hovertemplate = paste0(
         "Design prevalence: %{x:.4g}%<br>",
         "Total mosquitoes: %{y:,}<br>",
@@ -572,11 +572,11 @@ renderPlotly({
       )
     ) |>
     plotly::add_trace(
-      data = data_clustered,
+      data = data_icc0,
       x = ~design_prevalence, y = ~sample_size,
       type = "scatter", mode = "lines+markers",
       connectgaps = FALSE, customdata = ~trapping_locations,
-      name = paste0("ICC = ", format(icc, trim = TRUE, scientific = FALSE)),
+      name = "ICC = 0 (no clustering)",
       hovertemplate = paste0(
         "Design prevalence: %{x:.4g}%<br>",
         "Total mosquitoes: %{y:,}<br>",
