@@ -469,10 +469,6 @@ minimum_locations_for_power <- function(
       )
     }, numeric(1))
   } else {
-        sum(total_pmf[(cutoff + 1L):length(total_pmf)])
-      }
-    }
-  } else {
     # Limiting case as sigma tends to infinity: each location has prevalence
     # 1 with probability p and 0 otherwise.
     power <- vapply(locations, function(w) {
