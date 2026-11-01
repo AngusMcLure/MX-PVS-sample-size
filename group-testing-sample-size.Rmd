@@ -395,11 +395,27 @@ div(
     step = 1
   ),
   numericInput(
-    "calculator_max_pools",
-    "Maximum number of pools searched",
+    "calculator_pools_per_trap_location",
+    "Pools per trapping location",
+    value = 2,
+    min = 1,
+    max = 100,
+    step = 1
+  ),
+  numericInput(
+    "calculator_icc",
+    "Within-trapping-location ICC",
+    value = 0.1,
+    min = 0,
+    max = 1,
+    step = 0.01
+  ),
+  numericInput(
+    "calculator_max_trap_locations",
+    "Maximum number of trapping locations searched",
     value = 200,
-    min = 100,
-    max = 10000,
+    min = 1,
+    max = 1000,
     step = 10
   ),
   radioButtons(
@@ -414,29 +430,59 @@ div(
 
 
 ```{r sample-size-calculator-function}
-# Return the minimum pool count after the final below-target dip in the
-# searched range. This selects the larger crossing when power is non-monotone.
-minimum_pools_for_power <- function(p, p_t, s, required_power, max_pools) {
+# Return the minimum number of trapping locations after the final
+# below-target dip in the searched range. This selects the largest crossing.
+minimum_locations_for_power <- function(
+    p, p_t, s, v, required_power, max_locations, icc = 0
+) {
   stopifnot(
     length(p) == 1L, is.finite(p), p >= 0, p < 1,
     length(p_t) == 1L, is.finite(p_t), p_t >= 0, p_t < 1,
     length(s) == 1L, is.finite(s), s >= 1, s == as.integer(s),
+    length(v) == 1L, is.finite(v), v >= 1, v == as.integer(v),
     length(required_power) == 1L, is.finite(required_power),
     required_power > 0, required_power < 1,
-    length(max_pools) == 1L, is.finite(max_pools),
-    max_pools >= 1, max_pools == as.integer(max_pools)
+    length(max_locations) == 1L, is.finite(max_locations),
+    max_locations >= 1, max_locations == as.integer(max_locations),
+    length(icc) == 1L, is.finite(icc), icc >= 0, icc <= 1
   )
 
-  m <- seq_len(as.integer(max_pools))
-  q <- -expm1(as.integer(s) * log1p(-p))
+  locations <- seq_len(as.integer(max_locations))
+  total_pools <- locations * as.integer(v)
   q_t <- -expm1(as.integer(s) * log1p(-p_t))
-  power <- pbinom(floor(m * q_t), size = m, prob = q,
-                  lower.tail = FALSE)
-  below <- which(power < required_power)
 
+  if (icc == 0) {
+    q <- -expm1(as.integer(s) * log1p(-p))
+    power <- pbinom(
+      floor(total_pools * q_t), size = total_pools, prob = q,
+      lower.tail = FALSE
+    )
+  } else if (icc < 1) {
+    parameters <- logit_normal_parameters_from_icc(p, icc)
+    mu <- unname(parameters[["mu"]])
+    sigma <- unname(parameters[["sigma"]])
+    power <- vapply(locations, function(w) {
+      cutoff <- floor(w * v * q_t) + 1L
+      1 - logit_normal_pool_count_cdf(
+        w = w, v = as.integer(v), s = as.integer(s),
+        mu = mu, sigma = sigma, c = cutoff, n_quad = 40L
+      )
+    }, numeric(1))
+  } else {
+    # Limiting case as sigma tends to infinity: each location has prevalence
+    # 1 with probability p and 0 otherwise.
+    power <- vapply(locations, function(w) {
+      positive_locations <- 0:w
+      positive_pools <- as.integer(v) * positive_locations
+      cutoff <- floor(w * v * q_t) + 1L
+      sum(dbinom(positive_locations, size = w, prob = p)[positive_pools >= cutoff])
+    }, numeric(1))
+  }
+
+  below <- which(power < required_power)
   if (length(below) == 0L) return(1L)
   last_below <- max(below)
-  if (last_below >= length(m)) return(NA_integer_)
+  if (last_below >= length(locations)) return(NA_integer_)
   as.integer(last_below + 1L)
 }
 ```
@@ -445,17 +491,23 @@ minimum_pools_for_power <- function(p, p_t, s, required_power, max_pools) {
 renderPlotly({
   p_t <- as.numeric(input$calculator_threshold_species)
   s <- input$calculator_pool_size
+  v <- input$calculator_pools_per_trap_location
+  icc <- input$calculator_icc
   required_power <- input$required_power / 100
-  max_pools <- input$calculator_max_pools
+  max_locations <- input$calculator_max_trap_locations
 
   validate(
     need(is.finite(s) && s >= 1 && s == as.integer(s),
          "Pool size must be a positive integer."),
+    need(is.finite(v) && v >= 1 && v == as.integer(v),
+         "Pools per trapping location must be a positive integer."),
+    need(is.finite(icc) && icc >= 0 && icc <= 1,
+         "ICC must be between 0 and 1."),
     need(is.finite(required_power) && required_power > 0 && required_power < 1,
          "Required power must be between 0% and 100%."),
-    need(is.finite(max_pools) && max_pools >= 100 &&
-           max_pools == as.integer(max_pools),
-         "Maximum number of pools must be an integer of at least 100.")
+    need(is.finite(max_locations) && max_locations >= 1 &&
+           max_locations == as.integer(max_locations),
+         "Maximum number of trapping locations must be a positive integer.")
   )
 
   design_prevalences <- seq(p_t, 3 * p_t, by = 0.0001)
@@ -477,34 +529,61 @@ renderPlotly({
   }
   prevalence_tick <- nice_fraction * tick_magnitude
 
-  pool_counts <- vapply(
+  locations_icc0 <- vapply(
     design_prevalences,
-    function(p) minimum_pools_for_power(
-      p, p_t, as.integer(s), required_power, as.integer(max_pools)
+    function(p) minimum_locations_for_power(
+      p, p_t, as.integer(s), as.integer(v), required_power,
+      as.integer(max_locations), icc = 0
     ),
     integer(1)
   )
-  sample_sizes <- pool_counts * as.integer(s)
-  plot_data <- data.frame(
-    design_prevalence = 100 * design_prevalences,
-    sample_size = sample_sizes,
-    pools = pool_counts
+  locations_clustered <- vapply(
+    design_prevalences,
+    function(p) minimum_locations_for_power(
+      p, p_t, as.integer(s), as.integer(v), required_power,
+      as.integer(max_locations), icc = icc
+    ),
+    integer(1)
   )
 
-  p <- plotly::plot_ly(
-    data = plot_data,
-    x = ~design_prevalence,
-    y = ~sample_size,
-    type = "scatter",
-    mode = "lines+markers",
-    connectgaps = FALSE,
-    customdata = ~pools,
-    hovertemplate = paste0(
-      "Design prevalence: %{x:.4g}%<br>",
-      "Total mosquitoes: %{y:,}<br>",
-      "Pools: %{customdata}<extra></extra>"
+  make_plot_data <- function(locations) {
+    data.frame(
+      design_prevalence = 100 * design_prevalences,
+      trapping_locations = locations,
+      total_pools = locations * as.integer(v),
+      sample_size = locations * as.integer(v) * as.integer(s)
     )
-  )
+  }
+  data_icc0 <- make_plot_data(locations_icc0)
+  data_clustered <- make_plot_data(locations_clustered)
+
+  p <- plotly::plot_ly() |>
+    plotly::add_trace(
+      data = data_icc0,
+      x = ~design_prevalence, y = ~sample_size,
+      type = "scatter", mode = "lines+markers",
+      connectgaps = FALSE, customdata = ~trapping_locations,
+      name = "ICC = 0 (no clustering)",
+      hovertemplate = paste0(
+        "Design prevalence: %{x:.4g}%<br>",
+        "Total mosquitoes: %{y:,}<br>",
+        "Trapping locations: %{customdata}<br>",
+        "Pools per trapping location: ", as.integer(v), "<extra></extra>"
+      )
+    ) |>
+    plotly::add_trace(
+      data = data_clustered,
+      x = ~design_prevalence, y = ~sample_size,
+      type = "scatter", mode = "lines+markers",
+      connectgaps = FALSE, customdata = ~trapping_locations,
+      name = paste0("ICC = ", format(icc, trim = TRUE, scientific = FALSE)),
+      hovertemplate = paste0(
+        "Design prevalence: %{x:.4g}%<br>",
+        "Total mosquitoes: %{y:,}<br>",
+        "Trapping locations: %{customdata}<br>",
+        "Pools per trapping location: ", as.integer(v), "<extra></extra>"
+      )
+    )
 
   # The exact threshold is the theoretical boundary. Near it, required
   # sample sizes may exceed the finite search limit.
@@ -550,7 +629,7 @@ renderPlotly({
 ```
 
 
-*The periodic jumps in the required sample size as the design prevalence approaches the threshold is because of the saw-tooth shape in the power curve (see figure in previous section). We are defining the 'required sample size' as the smallest sample size such that all larger sample sizes satisfy the power requirement. Because there can only be an integer number of positive pools, the required number of positives for the estimate to exceed the threshold periodically increases by one, at which point the number of total pools needed to achieve this with the desired power jumps substantially.*
+*The periodic jumps in the required sample size as the design prevalence approaches the threshold are due to the saw-tooth shape in the power curve (see figure in the previous section). For both curves, the required sample size is the smallest sample size such that this and all larger sample sizes (with the same number of pools per trapping location) satisfy the power requirement. The number of positive pools is discrete, so the required number of positives periodically increases by one, causing the required sample size to jump.*
 
 ## Recommended sample sizes per EU for single surveys
 
