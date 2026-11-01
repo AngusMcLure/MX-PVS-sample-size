@@ -648,6 +648,34 @@ The design prevalence is set to twice the provisional threshold by default but c
 
 As none of the calculations here account for clustering I've introduced a design effect of 2. This can be increased or decreased ('Design effect'). 
 
+```{r recommended-sample-size-function}
+# Return the minimum pool count after the final below-target dip in the
+# searched range. This selects the larger crossing when power is non-monotone.
+minimum_pools_for_power <- function(p, p_t, s, required_power, max_pools) {
+  stopifnot(
+    length(p) == 1L, is.finite(p), p >= 0, p < 1,
+    length(p_t) == 1L, is.finite(p_t), p_t >= 0, p_t < 1,
+    length(s) == 1L, is.finite(s), s >= 1, s == as.integer(s),
+    length(required_power) == 1L, is.finite(required_power),
+    required_power > 0, required_power < 1,
+    length(max_pools) == 1L, is.finite(max_pools),
+    max_pools >= 1, max_pools == as.integer(max_pools)
+  )
+
+  m <- seq_len(as.integer(max_pools))
+  q <- -expm1(as.integer(s) * log1p(-p))
+  q_t <- -expm1(as.integer(s) * log1p(-p_t))
+  power <- pbinom(floor(m * q_t), size = m, prob = q,
+                  lower.tail = FALSE)
+  below <- which(power < required_power)
+
+  if (length(below) == 0L) return(1L)
+  last_below <- max(below)
+  if (last_below >= length(m)) return(NA_integer_)
+  as.integer(last_below + 1L)
+}
+```
+
 ```{r recommended-sample-sizes-controls}
 div(
   class = "controls-row",
