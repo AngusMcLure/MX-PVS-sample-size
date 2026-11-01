@@ -358,9 +358,9 @@ renderPlotly({
 <details>
 <summary>Details</summary>
 
-<p>Choose the required probability that the prevalence estimate exceeds the threshold. The calculator searches over integer numbers of pools and returns the <strong>largest crossing</strong> of the power threshold: i.e. the smallest sample size such that the required power is satisfied for it and all larger sample sizes. This avoids choosing a smaller target sample size that might meet the power minimum but comes just before a saw-tooth dip, i.e. if the achieved sample size were to slightly exceed the target, the power would be less than what is required </p>
+<p>Choose the required probability that the prevalence estimate exceeds the threshold. The calculator returns the <strong>largest crossing</strong> of the power threshold: the smallest number of trapping locations for which the required power is achieved at that and all larger numbers of trapping locations. This avoids selecting a smaller sample size that meets the power minimum just before a saw-tooth dip. The calculation compares no clustering (ICC = 0) with the selected ICC above zero, using the same number of pools per trapping location for both curves.</p>
 
-<p>The search is limited by the maximum number of pools below. If the target is not met within that limit, the plotted value is unavailable; this does not necessarily mean that no sample size could ever meet the target.</p>
+<p>The search is limited by the maximum number of trapping locations below. If the target is not met within that limit, the plotted value is unavailable; this does not necessarily mean that no sample size could ever meet the target.</p>
 
 </details>
 
