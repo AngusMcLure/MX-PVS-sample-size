@@ -126,6 +126,56 @@ logit_normal_mu_from_grand_mean <- function(
 }
 
 
+# Maximum-likelihood estimate of mu and the marginal mean prevalence
+# from the observed histogram of location-level positive-pool counts.
+logit_normal_pool_count_mle <- function(
+    counts, sigma, s, n_quad = 120L,
+    lower = -40, upper = 40
+) {
+  if (!is.numeric(counts) || length(counts) < 2L ||
+      any(!is.finite(counts)) || any(counts < 0) ||
+      any(counts != floor(counts)) || sum(counts) < 1) {
+    stop("counts must be non-negative integer frequencies with positive total.",
+         call. = FALSE)
+  }
+  v <- length(counts) - 1L
+  if (!is.finite(sigma) || length(sigma) != 1L || sigma < 0 ||
+      !is.finite(s) || length(s) != 1L || s < 1 ||
+      s != as.integer(s)) {
+    stop("sigma must be >= 0 and s must be a positive integer.",
+         call. = FALSE)
+  }
+
+  total_locations <- sum(counts)
+  if (counts[1] == total_locations) {
+    return(c(mu = -Inf, prevalence = 0))
+  }
+  if (counts[v + 1L] == total_locations) {
+    return(c(mu = Inf, prevalence = 1))
+  }
+
+  log_likelihood <- function(mu) {
+    probabilities <- logit_normal_pool_count_probabilities(
+      mu, sigma, as.integer(s), v, n_quad
+    )
+    if (any(counts > 0 & probabilities <= 0)) return(-Inf)
+    sum(counts[counts > 0] * log(probabilities[counts > 0]))
+  }
+
+  estimate <- stats::optimize(
+    log_likelihood,
+    interval = c(lower, upper),
+    maximum = TRUE,
+    tol = 1e-8
+  )$maximum
+
+  c(
+    mu = estimate,
+    prevalence = logit_normal_grand_mean(estimate, sigma, n_quad)
+  )
+}
+
+
 logit_normal_clustered_mle_setup <- function(
     mu, sigma, p_t, s, v, n_quad = 120L
 ) {
