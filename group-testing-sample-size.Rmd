@@ -1290,9 +1290,9 @@ div(
   ),
   numericInput(
     "time_doubling_time",
-    "Prevalence doubling time (years)",
+    "Prevalence doubling/halving time (years)",
     value = 6,
-    min = 0.01,
+    min = -20,
     max = 20,
     step = 0.5
   ),
@@ -1375,7 +1375,7 @@ sampling_over_time_result <- reactive({
     need(input$time_start_percent >= 0 &&
            input$time_start_percent <= 100,
          "Starting prevalence must be between 0% and 100%."),
-    need(input$time_doubling_time > 0, "Doubling time must be positive."),
+    need(input$time_doubling_time != 0, "Doubling/halving time cannot be zero."),
     need(input$time_max_surveys >= 1, "Maximum number of surveys must be at least 1.")
   )
 
