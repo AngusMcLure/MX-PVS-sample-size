@@ -500,14 +500,19 @@ sample_size_calculations <- reactive({
   locations_clustered <- if (icc == 0) {
     locations_icc0
   } else {
-    vapply(
-      design_prevalences,
-      function(p) minimum_locations_for_power(
-        p, p_t, as.integer(s), as.integer(v), required_power,
-        as.integer(max_locations), icc = icc
-      ),
-      integer(1)
-    )
+    # as we are looking at increasing threshold prevalence, then the minimum locations required is going to be equal to or greater that for the previous prevalence searched, reducing search space. 
+    locations_clustered <- numeric(length(design_prevalences))
+    ml <- max_locations # max location to be searched (potentially reduced after each pass through the loop)
+    for(i in 1:length(design_prevalences)){
+      locations_clustered[i] <- minimum_locations_for_power(
+        design_prevalences[i], p_t, as.integer(s), as.integer(v), required_power,
+        ml, icc = icc
+      )
+      if(!is.na(locations_clustered[i])){
+        ml <- locations_clustered[i] 
+      }
+    }
+    locations_clustered
   }
 
   list(
