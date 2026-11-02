@@ -870,7 +870,9 @@ The sample sizes recommended above do not have any consideration for false disco
 
 The probability of false discovery is highest when the true prevalence is close to (but below) the threshold. This is, to my mind, not such a bad thing since if the prevalence is still close to the threshold when the Pre-VS survey is taking place (which is probably a number of years after the last TAS), then this indicates transmission is not decreasing substantially and some action may be required anyway.
 
-When the true prevalence is about half the threshold, the false discovery probability is roughly 10-15\% (though this depends on choice of assumptions above). **Is this acceptable?** Again, this is an *operational decision*, not a statistical one. If avoiding false discovery is of similar importance to ensuring true discoveries, then perhaps instead of comparing the MLE to the threshold we need to consider comparing the lower confidence bound (say 75%) to the threshold. But this is not what was decided in the London meeting.
+When the true prevalence is about half the threshold, the false discovery probability is roughly 10-15\% if ignoring clustering and <5\% if accounting for clustering. (Though this depends on choice of assumptions above). **Is this acceptable?** Again, this is an *operational decision*, not a statistical one.
+
+If, operationally, avoiding false discovery is of similar importance to ensuring true discoveries, then our sample size calculations should account for this. For instance, instead of comparing the MLE to the threshold we could consider comparing the one-sided lower confidence bound (e.g. 75%) to the threshold and only recommend EU-wide action if this lower bound is above the threshold. But this is not the framework that was decided on in the London meeting.
 
 ```{r false-discovery-controls}
 div(
