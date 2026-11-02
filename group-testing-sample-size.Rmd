@@ -210,6 +210,16 @@ prob_estimate_above_threshold <- function(p, p_t, s, m) {
   pbinom(floor(m * q_t), size = m, prob = q, lower.tail = FALSE)
 }
 
+prob_estimate_above_threshold_clustered <- function(mu, sigma, p_t, s, v, w) {
+  pmf <- logit_normal_pool_count_pmf(w=w, v=v, s=s, mu=mu,
+                                     sigma=sigma, n_quad=120L)
+  q_t <- -expm1(s * log1p(-p_t))
+  cutoff <- floor((w * v) * q_t) + 1L
+  first_index <- cutoff + 1L
+  if (first_index > length(pmf)) return(0)
+  sum(pmf[first_index:length(pmf)])
+}
+
 # Convert the marginal mean prevalence and binary within-trapping-location ICC to
 # the parameters of a logit-normal trapping-location prevalence distribution.
 logit_normal_parameters_from_icc <- function(design_prevalence, icc) {
@@ -263,22 +273,15 @@ renderPlotly({
   max_trap_locations <- as.integer(max_trap_locations)
   trapping_locations <- seq_len(max_trap_locations)
   total_pools <- trapping_locations * v
-  q_t <- -expm1(s * log1p(-p_t))
 
   # Existing curve: power under the selected within-trapping-location ICC.
   
   parameters <- logit_normal_parameters_from_icc(design_prevalence, icc)
   mu <- unname(parameters[["mu"]])
   sigma <- unname(parameters[["sigma"]])
-  power <- vapply(trapping_locations, function(w) {
-    pmf <- logit_normal_pool_count_pmf(
-        w=w, v=v, s=s, mu=mu, sigma=sigma, n_quad=120L
-      )
-      cutoff <- floor((w * v) * q_t) + 1L
-      first_index <- cutoff + 1L
-      if (first_index > length(pmf)) return(0)
-      sum(pmf[first_index:length(pmf)])
-    }, numeric(1))
+  power <- vapply(trapping_locations,
+                  \(w)prob_estimate_above_threshold_clustered(mu, sigma, p_t, s, v, w),
+                  numeric(1))
   parameter_label <- paste0(
     "Implied μ = ", formatC(mu, digits=3, format="f"),
     "; σ = ", formatC(sigma, digits=3, format="f")
