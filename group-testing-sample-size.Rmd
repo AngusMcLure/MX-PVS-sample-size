@@ -241,16 +241,53 @@ logit_normal_parameters_from_icc <- function(design_prevalence, icc) {
     return(c(mu = qlogis(design_prevalence), sigma = 0))
   }
 
-  trapping_location_prevalence_variance <-
-    icc * design_prevalence * (1 - design_prevalence)
+  # Use deterministic nested one-dimensional root finding. The previous
+  # two-parameter solver could require random restarts, which made the
+  # logit-normal parameters unstable as prevalence varied along a curve.
+  quadrature <- statmod::gauss.quad.prob(120, dist = "normal")
+  target_variance <- icc * design_prevalence * (1 - design_prevalence)
 
-  parameters <- mu_sigma_linknorm(
-    .mean = design_prevalence,
-    .var = trapping_location_prevalence_variance,
-    link = qlogis,
-    invlink = plogis
-  )
-  setNames(as.numeric(parameters), c("mu", "sigma"))
+  moments <- function(mu, sigma) {
+    local_prevalence <- plogis(mu + sigma * quadrature$nodes)
+    mean_prevalence <- sum(quadrature$weights * local_prevalence)
+    variance <- sum(
+      quadrature$weights * local_prevalence^2
+    ) - mean_prevalence^2
+    c(mean = mean_prevalence, variance = variance)
+  }
+
+  mu_for_sigma <- function(sigma) {
+    bound <- 50 + 10 * sigma
+    stats::uniroot(
+      function(mu) {
+        moments(mu, sigma)[["mean"]] - design_prevalence
+      },
+      interval = c(-bound, bound),
+      tol = 1e-10
+    )$root
+  }
+
+  variance_for_sigma <- function(sigma) {
+    moments(mu_for_sigma(sigma), sigma)[["variance"]]
+  }
+
+  upper_sigma <- 1
+  while (variance_for_sigma(upper_sigma) < target_variance &&
+         upper_sigma < 20) {
+    upper_sigma <- upper_sigma * 2
+  }
+  if (variance_for_sigma(upper_sigma) < target_variance) {
+    stop("Could not find logit-normal parameters for the requested ICC.",
+         call. = FALSE)
+  }
+
+  sigma <- stats::uniroot(
+    function(sigma) variance_for_sigma(sigma) - target_variance,
+    interval = c(0, upper_sigma),
+    tol = 1e-8
+  )$root
+  mu <- mu_for_sigma(sigma)
+  c(mu = mu, sigma = sigma)
 }
 
 renderPlotly({
@@ -959,10 +996,11 @@ renderPlotly({
     validate(need(!is.na(n_locations),
                   "The recommended sample size was not reached within 1,000 trapping locations."))
     n_pools <- n_locations * as.integer(pools_per_location)
-    true_prevalence <- seq(0, design_prevalence, by = 0.0001)
-    if (tail(true_prevalence, 1) < design_prevalence) {
-      true_prevalence <- c(true_prevalence, design_prevalence)
-    }
+    true_prevalence <- sort(unique(c(
+      seq(0, design_prevalence, by = 0.0001),
+      p_t,
+      design_prevalence
+    )))
     probability <- vapply(true_prevalence, function(p) {
       if (p <= 0) return(0)
       parameters <- logit_normal_parameters_from_icc(p, icc)
@@ -982,10 +1020,11 @@ renderPlotly({
     )
     validate(need(!is.na(n_pools),
                   "The recommended sample size was not reached within 100,000 pools."))
-    true_prevalence <- seq(0, design_prevalence, by = 0.0001)
-    if (tail(true_prevalence, 1) < design_prevalence) {
-      true_prevalence <- c(true_prevalence, design_prevalence)
-    }
+    true_prevalence <- sort(unique(c(
+      seq(0, design_prevalence, by = 0.0001),
+      p_t,
+      design_prevalence
+    )))
     probability <- vapply(
       true_prevalence,
       function(p) prob_estimate_above_threshold(p, p_t,
