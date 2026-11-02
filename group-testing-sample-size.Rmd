@@ -670,7 +670,7 @@ renderPlotly({
 ```
 
 
-*The non-smooth shape of the above curves is due to the saw-tooth shape in the power curve (see figure in the previous section), and relates the fact that the number of positive and negative pools are integers.*
+*The non-smooth shape of the above curves reflects the discrete distribution of pool-count patterns across trapping locations, which can cause the power to fluctuate as the number of locations increases.*
 
 ## Recommended sample sizes per EU for single surveys
 
