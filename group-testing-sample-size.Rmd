@@ -466,10 +466,6 @@ minimum_locations_for_power <- function(
 ```{r sample-size-calculator-plot}
 # Cache the expensive calculations independently of the Plotly rendering.
 # In particular, sample_size_y_scale is deliberately not a dependency here.
-# The cache key excludes max_locations so that changing the search limit can
-# reuse results from the previous limit.
-sample_size_cache <- reactiveVal(NULL)
-
 sample_size_calculations <- reactive({
   p_t <- as.numeric(input$calculator_threshold_species)
   s <- input$calculator_pool_size
@@ -483,8 +479,8 @@ sample_size_calculations <- reactive({
          "Pool size must be a positive integer."),
     need(is.finite(v) && v >= 1 && v == as.integer(v),
          "Pools per trapping location must be a positive integer."),
-    need(is.finite(icc) && icc >= 0 && icc < 1,
-         "ICC must be at least 0 and less than 1."),
+    need(is.finite(icc) && icc >= 0 && icc <= 1,
+         "ICC must be between 0 and 1."),
     need(is.finite(required_power) && required_power > 0 && required_power < 1,
          "Required power must be between 0% and 100%."),
     need(is.finite(max_locations) && max_locations >= 1 &&
@@ -492,95 +488,42 @@ sample_size_calculations <- reactive({
          "Maximum number of trapping locations must be a positive integer.")
   )
 
-  s <- as.integer(s)
-  v <- as.integer(v)
-  max_locations <- as.integer(max_locations)
   design_prevalences <- seq(p_t, 3 * p_t, by = 0.0001)
-  cache_key <- list(
-    p_t = p_t, s = s, v = v, icc = icc,
-    required_power = required_power,
-    design_prevalences = design_prevalences
-  )
-  previous <- isolate(sample_size_cache())
-
-  # Extend or truncate a cached non-increasing sequence of required
-  # trapping-location counts when only the search limit has changed.
-  update_cached_curve <- function(old_values, prevalence_values, old_max,
-                                  new_max, curve_icc) {
-    if (is.null(old_values) || length(old_values) != length(prevalence_values)) {
-      old_values <- rep(NA_integer_, length(prevalence_values))
-      old_max <- 0L
-    }
-
-    values <- as.integer(old_values)
-
-    if (new_max < old_max) {
-      # A previously found solution beyond the new limit is now unavailable.
-      values[!is.na(values) & values > new_max] <- NA_integer_
-      return(values)
-    }
-
-    if (new_max == old_max) return(values)
-
-    # With a larger search limit, revisit the leading NA values. Once the
-    # first solution is found, use it as the upper search bound for the next
-    # prevalence, as in the original sequential calculation.
-    first_found <- which(!is.na(values))[1]
-    if (is.na(first_found)) first_found <- length(values) + 1L
-    last_to_recalculate <- min(first_found, length(values))
-
-    search_max <- new_max
-    if (last_to_recalculate > 1L) {
-      for (i in seq_len(last_to_recalculate - 1L)) {
-        values[i] <- minimum_locations_for_power(
-          prevalence_values[i], p_t, s, v, required_power,
-          search_max, icc = curve_icc
-        )
-        if (!is.na(values[i])) search_max <- values[i]
-      }
-    }
-
-    # Recheck the first previously successful prevalence: a newly searched
-    # larger range may contain a later below-power dip.
-    if (first_found <= length(values)) {
-      values[first_found] <- minimum_locations_for_power(
-        prevalence_values[first_found], p_t, s, v, required_power,
-        search_max, icc = curve_icc
-      )
-    }
-
-    values
-  }
-
-  same_inputs <- !is.null(previous) && identical(previous$key, cache_key)
-  old_max <- if (same_inputs) previous$max_locations else 0L
-  old_icc0 <- if (same_inputs) previous$locations_icc0 else NULL
-  old_clustered <- if (same_inputs) previous$locations_clustered else NULL
-
-  locations_icc0 <- update_cached_curve(
-    old_icc0, design_prevalences, old_max, max_locations, curve_icc = 0
+  locations_icc0 <- vapply(
+    design_prevalences,
+    function(p) minimum_locations_for_power(
+      p, p_t, as.integer(s), as.integer(v), required_power,
+      as.integer(max_locations), icc = 0
+    ),
+    integer(1)
   )
   locations_clustered <- if (icc == 0) {
     locations_icc0
   } else {
-    update_cached_curve(
-      old_clustered, design_prevalences, old_max, max_locations,
-      curve_icc = icc
-    )
+    # as we are looking at increasing threshold prevalence, then the minimum locations required is going to be equal to or greater that for the previous prevalence searched, reducing search space. 
+    locations_clustered <- numeric(length(design_prevalences))
+    ml <- max_locations # max location to be searched (potentially reduced after each pass through the loop)
+    for(i in 1:length(design_prevalences)){
+      locations_clustered[i] <- minimum_locations_for_power(
+        design_prevalences[i], p_t, as.integer(s), as.integer(v), required_power,
+        ml, icc = icc
+      )
+      if(!is.na(locations_clustered[i])){
+        ml <- locations_clustered[i] 
+      }
+    }
+    locations_clustered
   }
 
-  result <- list(
-    key = cache_key,
-    max_locations = max_locations,
+  list(
     p_t = p_t, s = s, v = v, icc = icc,
-    required_power = required_power,
+    required_power = required_power, max_locations = max_locations,
     design_prevalences = design_prevalences,
     locations_icc0 = locations_icc0,
     locations_clustered = locations_clustered
   )
-  sample_size_cache(result)
-  result
 })
+
 renderPlotly({
   calculated <- sample_size_calculations()
   p_t <- calculated$p_t
