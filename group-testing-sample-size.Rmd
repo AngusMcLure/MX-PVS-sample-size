@@ -642,7 +642,7 @@ renderPlotly({
 ```
 
 
-*The periodic jumps in the required sample size as the design prevalence approaches the threshold are due to the saw-tooth shape in the power curve (see figure in the previous section). For both curves, the required sample size is the smallest sample size such that this and all larger sample sizes (with the same number of pools per trapping location) satisfy the power requirement. The number of positive pools is discrete, so the required number of positives periodically increases by one, causing the required sample size to jump.*
+*The non-smooth shape of the above curves is due to the saw-tooth shape in the power curve (see figure in the previous section), and relates the fact that the number of positive and negative pools are integers.*
 
 ## Recommended sample sizes per EU for single surveys
 
