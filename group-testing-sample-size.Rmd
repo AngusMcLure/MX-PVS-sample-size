@@ -394,7 +394,7 @@ renderPlotly({
 })
 ```
 
-*The non-smooth shape reflects the discrete distribution of the observed pool-count patterns across trapping locations. The clustered MLE depends on how positive pools are distributed among locations, not only on the total number of positive pools.*
+*The saw-tooth shape occurs because the number of positive pools is discrete: as the number of pools increases, the minimum number of positive pools needed to exceed the threshold sometimes jumps up by one. At each jump the probability that the minimum number of positive pools are found drops substantially, then rises again more slowly as more pools are added until the minimum number of positive pools increases by one again, repeating the cycle.*
 
 ## Minimum sample size for a desired power
 
@@ -707,7 +707,7 @@ renderPlotly({
 ```
 
 
-*The non-smooth shape of the above curves reflects the discrete distribution of pool-count patterns across trapping locations, which can cause the power to fluctuate as the number of locations increases.*
+*The non-smooth shape of the above curves is due to the saw-tooth shape in the power curve (see figure in the previous section), and relates the fact that the number of positive and negative pools are integers.*
 
 ## Recommended sample sizes per EU for single surveys
 
