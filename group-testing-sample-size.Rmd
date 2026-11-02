@@ -24,6 +24,7 @@ library(nleqslv)
 
 # Logit-normal clustered pool-count distribution functions.
 source("R/logit-normal-pool-count-pmf.R")
+source("R/logit-normal-prevalence-mle.R")
 
 ```
 
@@ -96,14 +97,30 @@ $$
 
 Let $X_j$ be the number of positive pools at location $j$. Conditional on $p_j$, $X_j \sim \operatorname{Binomial}(v,q_j)$.
 
-For simplicity and consistency, the pooled-prevalence MLE is still calculated from the total number of positive pools, $X =\sum_{j=1}^{w}X_j$. Therefore, the power is
+For the clustered case, we estimate the population mean prevalence using the likelihood of the location-level pool counts, rather than transforming the total number of positive pools. Let $n_k$ be the number of trapping locations with exactly $k$ positive pools, for $k=0,\ldots,v$. Under the logit-normal model, the probability of observing $k$ positive pools at a location is
 
-$$
-P(\hat p>p_t)
-= P\left(X>wv\left[1-(1-p_t)^s\right]\right).
-$$
+$
+\\pi_k(\\mu,\\sigma)
+=
+E\\left[
+{v\\choose k}
+\\{1-(1-p_j)^s\\}^k
+(1-p_j)^{s(v-k)}
+\\right].
+$
 
-Unlike the independent-pool case, the distribution of $X$ is not simply binomial: pools from the same trapping location are dependent marginally because they share $p_j$. However, the exact distribution of $X$ is still tractable as each $X_j$ are identically and independently distributed. We calculate the distribution $X_j$ by integrating (numerically) over the logit-normal distribution of trapping-location prevalence, and then determine the distribution of $X$ by calculating the convolution of the $X_j$ (made simple through FFT).
+The likelihood is therefore proportional to $\\prod_{k=0}^v \\pi_k(\\mu,\\sigma)^{n_k}$. We treat $\\sigma$ as fixed (specified by the assumed ICC and design prevalence), estimate $\\mu$ by maximum likelihood, and obtain the MLE of population mean prevalence using the invariance property of maximum likelihood:
+
+$
+\\hat p
+=
+E\\left[\\operatorname{logit}^{-1}(\\hat\\mu+\\sigma Z)\\right],
+\\qquad Z\\sim N(0,1).
+$
+
+If all pools are negative, the likelihood is maximised at the boundary $\\hat\\mu=-\\infty$, giving $\\hat p=0$. For other observations, the MLE is obtained from the location-level pool-count likelihood.
+
+The vector $(n_0,\\ldots,n_v)$ has a multinomial distribution with $w$ locations and cell probabilities $\\pi_0,\\ldots,\\pi_v$. We calculate the exact probability that the MLE of population mean prevalence exceeds the threshold by summing over the possible location-count patterns. This event generally depends on how positive pools are distributed across trapping locations, not just on their total number. For the common design with two pools per trapping location, the exact calculation can be reduced to a one-dimensional sum of binomial probabilities.
 
 
 ## Power of a single survey
@@ -208,16 +225,6 @@ prob_estimate_above_threshold <- function(p, p_t, s, m) {
   q <- -expm1(s * log1p(-p))
   q_t <- -expm1(s * log1p(-p_t))
   pbinom(floor(m * q_t), size = m, prob = q, lower.tail = FALSE)
-}
-
-prob_estimate_above_threshold_clustered <- function(mu, sigma, p_t, s, v, w) {
-  pmf <- logit_normal_pool_count_pmf(w=w, v=v, s=s, mu=mu,
-                                     sigma=sigma, n_quad=120L)
-  q_t <- -expm1(s * log1p(-p_t))
-  cutoff <- floor((w * v) * q_t) + 1L
-  first_index <- cutoff + 1L
-  if (first_index > length(pmf)) return(0)
-  sum(pmf[first_index:length(pmf)])
 }
 
 # Convert the marginal mean prevalence and binary within-trapping-location ICC to
@@ -343,7 +350,7 @@ renderPlotly({
 })
 ```
 
-*The saw-tooth shape occurs because the number of positive pools is discrete: as the number of pools increases, the minimum number of positive pools needed to exceed the threshold sometimes jumps up by one. At each jump the probability that the minimum number of positive pools are found drops substantially, then rises again more slowly as more pools are added until the minimum number of positive pools increases by one again, repeating the cycle.*
+*The non-smooth shape reflects the discrete distribution of the observed pool-count patterns across trapping locations. The clustered MLE depends on how positive pools are distributed among locations, not only on the total number of positive pools.*
 
 ## Minimum sample size for a desired power
 
@@ -1083,22 +1090,18 @@ renderUI({
     validate(need(!is.na(n_locations),
                   "The recommended sample size was not reached within 1,000 trapping locations."))
     n_pools <- n_locations * as.integer(pools_per_location)
-    positive_pools_required <- floor(
-      n_pools * (-expm1(as.integer(pool_size) * log1p(-p_t)))
-    ) + 1L
     tags$p(sprintf(
       paste0(
         "The figure assumes %s pools of %s mosquitoes (%s mosquitoes total), ",
         "with %s pools per trapping location across %s trapping locations. ",
-        "The MLE exceeds the threshold when at least %s pools test positive. ",
-        "The clustering calculation uses ICC = %s."
+        "The clustered MLE uses the distribution of positive-pool counts ",
+        "across trapping locations, with ICC = %s."
       ),
       format(n_pools, big.mark = ","),
       format(as.integer(pool_size), big.mark = ","),
       format(n_pools * as.integer(pool_size), big.mark = ","),
       format(as.integer(pools_per_location), big.mark = ","),
       format(n_locations, big.mark = ","),
-      format(positive_pools_required, big.mark = ","),
       format(icc, trim = TRUE, scientific = FALSE)
     ))
   } else {
@@ -1198,7 +1201,7 @@ surveys_to_detection <- function(
 
   Jmax <- as.integer(Jmax)
 
-  # Minimum number of positive pools required for estimated prevalence > pt
+  # Minimum positive-pool count is a threshold rule only without clustering.
   pi_threshold <- -expm1(s * log1p(-pt))
   cutoff <- floor(m * pi_threshold) + 1L
 
@@ -1252,7 +1255,7 @@ surveys_to_detection <- function(
       probability_N_equals_j = probability_N
     ),
     probability_not_detected_by_Jmax = survival,
-    pool_positive_cutoff = cutoff,
+    pool_positive_cutoff = if (icc == 0) cutoff else NA_integer_,
     total_individuals_per_survey = s * m
   )
 }
@@ -1398,13 +1401,21 @@ renderUI({
   result <- sampling_over_time_result()
   tags$p(
     sprintf(
-      paste0(
-        "Total mosquitoes per survey: %s. ",
-        "Minimum positive pools needed to exceed the threshold: %s. ",
-        "Probability of remaining undetected after %s surveys: %.1f%%."
-      ),
+      if (is.na(result$pool_positive_cutoff)) {
+        paste0(
+          "Total mosquitoes per survey: %s. ",
+          "The clustered MLE uses the distribution of positive pools across trapping locations. ",
+          "Probability of remaining undetected after %s surveys: %.1f%%."
+        )
+      } else {
+        paste0(
+          "Total mosquitoes per survey: %s. ",
+          "Minimum positive pools needed to exceed the threshold: %s. ",
+          "Probability of remaining undetected after %s surveys: %.1f%%."
+        )
+      },
       format(result$total_individuals_per_survey, big.mark = ","),
-      result$pool_positive_cutoff,
+      if (is.na(result$pool_positive_cutoff)) NULL else result$pool_positive_cutoff,
       nrow(result$distribution),
       100 * result$probability_not_detected_by_Jmax
     )
