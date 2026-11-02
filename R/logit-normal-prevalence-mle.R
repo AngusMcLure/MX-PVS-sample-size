@@ -41,7 +41,7 @@ logit_normal_pool_count_probabilities <- function(
 }
 
 
-# Derivative of each marginal location-count probability with respect to mu.
+# Score contributions d log(pi_k(mu, sigma)) / d mu for each location count k.
 logit_normal_pool_count_score <- function(
     mu, sigma, s, v, n_quad = 120L
 ) {
@@ -56,44 +56,33 @@ logit_normal_pool_count_score <- function(
 
   s <- as.integer(s)
   v <- as.integer(v)
+  quadrature <- statmod::gauss.quad.prob(
+    n = as.integer(n_quad),
+    dist = "normal"
+  )
+  p <- plogis(mu + sigma * quadrature$nodes)
+  q <- -expm1(s * log1p(-p))
+  q_prime <- s * p * exp(s * log1p(-p))
 
-  if (sigma == 0) {
-    p <- plogis(mu)
-    q <- -expm1(s * log1p(-p))
-    probabilities <- dbinom(0:v, size = v, prob = q)
-    q_prime <- s * p * (1 - p)^s
-    derivative <- probabilities *
-      ((0:v) * q_prime / q - (v - 0:v) * s * p)
-  } else {
-    quadrature <- statmod::gauss.quad.prob(
-      n = as.integer(n_quad),
-      dist = "normal"
-    )
-    p <- plogis(mu + sigma * quadrature$nodes)
-    q <- -expm1(s * log1p(-p))
-    one_minus_q <- exp(s * log1p(-p))
-    q_prime <- s * p * one_minus_q
-
-    conditional <- vapply(
-      seq_along(q),
-      function(i) {
-        k <- 0:v
-        mass <- dbinom(k, size = v, prob = q[i])
-        conditional_score <- k * q_prime[i] / q[i] -
-          (v - k) * s * p[i]
-        mass * conditional_score
-      },
+  conditional <- vapply(
+    seq_along(q),
+    function(i) {
+      k <- 0:v
+      mass <- dbinom(k, size = v, prob = q[i])
+      conditional_score <- k * q_prime[i] / q[i] -
+        (v - k) * s * p[i]
+      mass * conditional_score
+    },
+    numeric(v + 1L)
+  )
+  probabilities <- drop(
+    vapply(
+      q,
+      function(q_j) dbinom(0:v, size = v, prob = q_j),
       numeric(v + 1L)
-    )
-    probabilities <- drop(
-      vapply(
-        q,
-        function(q_j) dbinom(0:v, size = v, prob = q_j),
-        numeric(v + 1L)
-      ) %*% quadrature$weights
-    )
-    derivative <- drop(conditional %*% quadrature$weights)
-  }
+    ) %*% quadrature$weights
+  )
+  derivative <- drop(conditional %*% quadrature$weights)
 
   probabilities <- probabilities / sum(probabilities)
   derivative <- derivative - probabilities * sum(derivative)
@@ -253,13 +242,22 @@ prob_estimate_above_threshold_clustered <- function(
   recurse <- function(category, remaining, log_probability, score_sum,
                       remaining_mass) {
     if (category == v) {
-      last_probability <- true_probabilities[v + 1L] / remaining_mass
-      if (score_sum + remaining * score[v + 1L] > 0) {
-        total_probability <<- total_probability +
-          exp(log_probability + dbinom(
-            remaining, size = remaining,
-            prob = last_probability, log = TRUE
-          ))
+      category_probability <- true_probabilities[category] /
+        remaining_mass
+      counts <- 0:remaining
+      log_mass <- dbinom(
+        counts, size = remaining,
+        prob = category_probability, log = TRUE
+      )
+      for (i in seq_along(counts)) {
+        count <- counts[i]
+        final_count <- remaining - count
+        if (score_sum + count * score[category] +
+            final_count * score[category + 1L] > 0 &&
+            is.finite(log_mass[i])) {
+          total_probability <<- total_probability +
+            exp(log_probability + log_mass[i])
+        }
       }
       return(invisible(NULL))
     }
