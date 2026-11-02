@@ -1220,6 +1220,7 @@ surveys_to_detection <- function(
     w <- m %/% v
     q <- vapply(prevalence, function(p) {
       if (p <= 0) return(0)
+      if (p >= 1) return(1)
       parameters <- logit_normal_parameters_from_icc(p, icc)
       prob_estimate_above_threshold_clustered(
         unname(parameters[["mu"]]),
