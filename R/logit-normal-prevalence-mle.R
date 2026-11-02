@@ -126,6 +126,29 @@ logit_normal_mu_from_grand_mean <- function(
 }
 
 
+logit_normal_clustered_mle_setup <- function(
+    mu, sigma, p_t, s, v, n_quad = 120L
+) {
+  stopifnot(
+    length(mu) == 1L, is.finite(mu),
+    length(sigma) == 1L, is.finite(sigma), sigma >= 0,
+    length(p_t) == 1L, is.finite(p_t), p_t > 0, p_t < 1,
+    length(s) == 1L, is.finite(s), s >= 1, s == as.integer(s),
+    length(v) == 1L, is.finite(v), v >= 1, v == as.integer(v)
+  )
+
+  list(
+    probabilities = logit_normal_pool_count_probabilities(
+      mu, sigma, s, v, n_quad
+    ),
+    score = logit_normal_pool_count_score(
+      logit_normal_mu_from_grand_mean(p_t, sigma, n_quad),
+      sigma, s, v, n_quad
+    )
+  )
+}
+
+
 # Exact probability that the MLE of the marginal mean prevalence exceeds p_t.
 #
 # With sigma fixed, the MLE of the grand mean is the logit-normal marginal
@@ -141,7 +164,8 @@ logit_normal_mu_from_grand_mean <- function(
 prob_estimate_above_threshold_clustered <- function(
     mu, sigma, p_t, s, v, w,
     n_quad = 120L,
-    max_configurations = 1e6
+    max_configurations = 1e6,
+    setup = NULL
 ) {
   stopifnot(
     length(mu) == 1L, is.finite(mu),
@@ -158,9 +182,12 @@ prob_estimate_above_threshold_clustered <- function(
   v <- as.integer(v)
   w <- as.integer(w)
 
-  true_probabilities <- logit_normal_pool_count_probabilities(
-    mu, sigma, s, v, n_quad
-  )
+  if (is.null(setup)) {
+    setup <- logit_normal_clustered_mle_setup(
+      mu, sigma, p_t, s, v, n_quad
+    )
+  }
+  true_probabilities <- setup$probabilities
 
   # A zero threshold is exceeded unless every pool is negative.
   if (p_t == 0) {
@@ -175,12 +202,7 @@ prob_estimate_above_threshold_clustered <- function(
                   prob = q, lower.tail = FALSE))
   }
 
-  mu_threshold <- logit_normal_mu_from_grand_mean(
-    p_t, sigma, n_quad
-  )
-  score <- logit_normal_pool_count_score(
-    mu_threshold, sigma, s, v, n_quad
-  )
+  score <- setup$score
 
   # The score contributions should increase with the number of positive
   # pools. Retain a general exact enumeration fallback if numerical
