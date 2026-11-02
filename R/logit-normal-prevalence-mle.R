@@ -182,15 +182,11 @@ prob_estimate_above_threshold_clustered <- function(
   v <- as.integer(v)
   w <- as.integer(w)
 
-  if (is.null(setup)) {
-    setup <- logit_normal_clustered_mle_setup(
-      mu, sigma, p_t, s, v, n_quad
-    )
-  }
-  true_probabilities <- setup$probabilities
-
   # A zero threshold is exceeded unless every pool is negative.
   if (p_t == 0) {
+    true_probabilities <- logit_normal_pool_count_probabilities(
+      mu, sigma, s, v, n_quad
+    )
     return(1 - true_probabilities[1]^w)
   }
 
@@ -202,6 +198,12 @@ prob_estimate_above_threshold_clustered <- function(
                   prob = q, lower.tail = FALSE))
   }
 
+  if (is.null(setup)) {
+    setup <- logit_normal_clustered_mle_setup(
+      mu, sigma, p_t, s, v, n_quad
+    )
+  }
+  true_probabilities <- setup$probabilities
   score <- setup$score
 
   # The score contributions should increase with the number of positive
