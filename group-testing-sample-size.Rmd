@@ -1173,6 +1173,8 @@ surveys_to_detection <- function(
     p0,
     pt,
     lambda,
+    icc = 0,
+    v = 1,
     Jmax = 100
 ) {
   # Validate inputs
@@ -1183,6 +1185,9 @@ surveys_to_detection <- function(
     length(p0) == 1L, is.finite(p0), p0 >= 0, p0 <= 1,
     length(pt) == 1L, is.finite(pt), pt > 0, pt < 1,
     length(lambda) == 1L, is.finite(lambda),
+    length(icc) == 1L, is.finite(icc), icc >= 0, icc < 1,
+    length(v) == 1L, is.finite(v), v >= 1, v == floor(v),
+    m %% v == 0,
     length(Jmax) == 1L, is.finite(Jmax),
     Jmax >= 1, Jmax == floor(Jmax)
   )
@@ -1201,13 +1206,28 @@ surveys_to_detection <- function(
   # Probability that a pool tests positive at each survey
   pool_positive <- -expm1(s * log1p(-prevalence))
 
-  # Probability of detecting resurgence in each survey
-  q <- pbinom(
-    cutoff - 1L,
-    size = m,
-    prob = pool_positive,
-    lower.tail = FALSE
-  )
+  # Probability of detecting resurgence in each survey. The ICC is
+  # fixed over time; the logit-normal mean is updated to the marginal
+  # prevalence at each survey.
+  if (icc == 0) {
+    q <- pbinom(
+      cutoff - 1L,
+      size = m,
+      prob = pool_positive,
+      lower.tail = FALSE
+    )
+  } else {
+    w <- m %/% v
+    q <- vapply(prevalence, function(p) {
+      if (p <= 0) return(0)
+      parameters <- logit_normal_parameters_from_icc(p, icc)
+      prob_estimate_above_threshold_clustered(
+        unname(parameters[["mu"]]),
+        unname(parameters[["sigma"]]),
+        pt, s, v, w
+      )
+    }, numeric(1))
+  }
 
   # Probability of first detection at each survey
   probability_N <- numeric(Jmax)
@@ -1260,6 +1280,14 @@ div(
     min = 1,
     max = 10000,
     step = 10
+  ),
+  numericInput(
+    "time_icc",
+    "Within-trapping-location ICC",
+    value = 0.1,
+    min = 0,
+    max = 0.99,
+    step = 0.01
   ),
   selectInput(
     "time_threshold_genus",
@@ -1314,6 +1342,8 @@ sampling_over_time_result <- reactive({
     input$time_survey_interval,
     input$time_pool_size,
     input$time_n_pools,
+    input$time_icc,
+    input$recommended_pools_per_location,
     input$time_threshold_genus,
     input$time_start_percent,
     input$time_doubling_time,
@@ -1324,6 +1354,14 @@ sampling_over_time_result <- reactive({
     need(input$time_survey_interval > 0, "Survey interval must be positive."),
     need(input$time_pool_size >= 1, "Pool size must be at least 1."),
     need(input$time_n_pools >= 1, "Number of pools must be at least 1."),
+    need(input$time_icc >= 0 && input$time_icc < 1,
+         "ICC must be at least 0 and less than 1."),
+    need(input$recommended_pools_per_location >= 1 &&
+           input$recommended_pools_per_location ==
+             floor(input$recommended_pools_per_location),
+         "Pools per trapping location must be a positive integer."),
+    need(input$time_n_pools %% input$recommended_pools_per_location == 0,
+         "Number of pools per survey must be divisible by pools per trapping location."),
     need(input$time_start_percent >= 0 &&
            input$time_start_percent <= 100,
          "Starting prevalence must be between 0% and 100%."),
@@ -1338,6 +1376,8 @@ sampling_over_time_result <- reactive({
     p0 = input$time_start_percent / 100,
     pt = as.numeric(input$time_threshold_genus),
     lambda = log(2) / input$time_doubling_time,
+    icc = input$time_icc,
+    v = as.integer(input$recommended_pools_per_location),
     Jmax = as.integer(input$time_max_surveys)
   )
 })
