@@ -817,14 +817,13 @@ renderDataTable({
     Genus = genera$genus,
     Threshold = sprintf("%.3g%%", 100 * genera$threshold),
     `Design prevalence` = sprintf("%.3g%%", 100 * genera$design_prevalence),
-    `# pools` = display_value(genera$minimum_pools),
-    `# mosquitoes` = display_value(genera$minimum_sample_size),
+    `# mosquitoes (ignoring clustering)` =
+      display_value(genera$minimum_sample_size),
     `# locations` = display_value(genera$minimum_locations_clustered),
-    `# pools clustered` = display_value(genera$clustered_pools),
     `# mosquitoes clustered` = display_value(genera$clustered_sample_size),
     check.names = FALSE
   )
-  names(table_data)[7:8] <- c("# pools", "# mosquitoes")
+  names(table_data)[6] <- "# mosquitoes"
 
   icc_label <- paste0(
     "ICC = ", format(icc, trim = TRUE, scientific = FALSE)
@@ -837,14 +836,12 @@ renderDataTable({
           th(rowspan = 2, "Genus"),
           th(rowspan = 2, "Threshold"),
           th(rowspan = 2, "Design prevalence"),
-          th(colspan = 2, "Ignoring clustering"),
-          th(colspan = 3, icc_label)
+          th(colspan = 1, "Ignoring clustering"),
+          th(colspan = 2, icc_label)
         ),
         tr(
-          th("# pools"),
           th("# mosquitoes"),
           th("# locations"),
-          th("# pools"),
           th("# mosquitoes")
         )
       )
@@ -863,7 +860,7 @@ renderDataTable({
       info = FALSE,
       ordering = FALSE,
       scrollX = TRUE,
-      columnDefs = list(list(className = "dt-right", targets = 1:7))
+      columnDefs = list(list(className = "dt-right", targets = 1:5))
     )
   )
 })
