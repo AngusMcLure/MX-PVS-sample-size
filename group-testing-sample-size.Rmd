@@ -425,7 +425,7 @@ div(
 # Return the minimum number of trapping locations after the final
 # below-target dip in the searched range. This selects the largest crossing.
 minimum_locations_for_power <- function(
-    p, p_t, s, v, required_power, max_locations, icc = 0
+    p, p_t, s, v, required_power, max_locations, icc = 0, passed_tooth = FALSE
 ) {
   stopifnot(
     length(p) == 1L, is.finite(p), p >= 0, p < 1,
@@ -445,8 +445,10 @@ minimum_locations_for_power <- function(
     sigma <- unname(parameters[["sigma"]])
   }
   
-  #In descending order of sample size, check if it satisfies power, accepting the last number of locations that doesn't meet the requirements
+  #In descending order of sample size, check if it satisfies power, accepting the last number of locations that doesn't meet the requirements.
+  #Optionally: However to guarantee that a larger sample size doesn't dip back under the power requirement, we need to traverse over at least one 'tooth' in the sawtooth to accept an answer. We may thus sometimes reject possible answers but should never accept false ones. If we happen to know that there isn't a dip below the required power after the provided max_locations then we can use the passed_tooth = TRUE option above  
   answer <- NA
+  prev_power <- Inf
   for(w in max_locations:1){
     power <- if(icc == 0){
       prob_estimate_above_threshold(p, p_t, s, v*w)
@@ -456,9 +458,14 @@ minimum_locations_for_power <- function(
     if(power < required_power){
       break
     }else{
-      answer <- w
+      if(prev_power < power){ #have we just gone over a 'tooth' in the sawtooth?
+        passed_tooth <- TRUE}
+      if(passed_tooth){ #only accept w as a possible answer if we have gone over at least one sawtooth
+        answer <- w
+      }
     }
-  }
+    prev_power <- power 
+}
   answer
 }
 ```
@@ -501,15 +508,17 @@ sample_size_calculations <- reactive({
     locations_icc0
   } else {
     # as we are looking at increasing threshold prevalence, then the minimum locations required is going to be equal to or greater that for the previous prevalence searched, reducing search space. 
+    passed_tooth <- FALSE
     locations_clustered <- numeric(length(design_prevalences))
     ml <- max_locations # max location to be searched (potentially reduced after each pass through the loop)
     for(i in 1:length(design_prevalences)){
       locations_clustered[i] <- minimum_locations_for_power(
         design_prevalences[i], p_t, as.integer(s), as.integer(v), required_power,
-        ml, icc = icc
+        ml, icc = icc, passed_tooth = passed_tooth
       )
       if(!is.na(locations_clustered[i])){
-        ml <- locations_clustered[i] 
+        ml <- locations_clustered[i]
+        passed_tooth <- TRUE
       }
     }
     locations_clustered
