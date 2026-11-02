@@ -266,7 +266,7 @@ renderPlotly({
   q_t <- -expm1(s * log1p(-p_t))
 
   # Existing curve: power under the selected within-trapping-location ICC.
-  if (icc < 1) {
+  
     parameters <- logit_normal_parameters_from_icc(design_prevalence, icc)
     mu <- unname(parameters[["mu"]])
     sigma <- unname(parameters[["sigma"]])
@@ -283,17 +283,6 @@ renderPlotly({
       "Implied μ = ", formatC(mu, digits=3, format="f"),
       "; σ = ", formatC(sigma, digits=3, format="f")
     )
-  } else {
-    # Limiting case as sigma tends to infinity: trapping-location prevalence is 1
-    # with probability equal to the design prevalence, and 0 otherwise.
-    power <- vapply(trapping_locations, function(w) {
-      positive_trap_locations <- 0:w
-      positive_pools <- v * positive_trap_locations
-      cutoff <- floor((w * v) * q_t) + 1L
-      sum(dbinom(positive_trap_locations, size=w, prob=design_prevalence)[positive_pools >= cutoff])
-    }, numeric(1))
-    parameter_label <- "ICC = 1 (limiting case: sigma tends to infinity)"
-  }
 
   plot_data <- data.frame(
     trapping_locations=trapping_locations, total_pools=total_pools,
@@ -376,7 +365,7 @@ div(
       "Culex (0.25%)" = "0.0025",
       "Mansonia (0.5%)" = "0.005"
     ),
-    selected = "0.001"
+    selected = "0.0025"
   ),
   numericInput(
     "required_power",
@@ -391,7 +380,7 @@ div(
     "Pool size (mosquitoes per pool)",
     value = 25,
     min = 1,
-    max = 1000,
+    max = 100,
     step = 1
   ),
   numericInput(
@@ -399,7 +388,7 @@ div(
     "Pools per trapping location",
     value = 2,
     min = 1,
-    max = 100,
+    max = 20,
     step = 1
   ),
   numericInput(
