@@ -267,11 +267,11 @@ renderPlotly({
 
   # Existing curve: power under the selected within-trapping-location ICC.
   
-    parameters <- logit_normal_parameters_from_icc(design_prevalence, icc)
-    mu <- unname(parameters[["mu"]])
-    sigma <- unname(parameters[["sigma"]])
-    power <- vapply(trapping_locations, function(w) {
-      pmf <- logit_normal_pool_count_pmf(
+  parameters <- logit_normal_parameters_from_icc(design_prevalence, icc)
+  mu <- unname(parameters[["mu"]])
+  sigma <- unname(parameters[["sigma"]])
+  power <- vapply(trapping_locations, function(w) {
+    pmf <- logit_normal_pool_count_pmf(
         w=w, v=v, s=s, mu=mu, sigma=sigma, n_quad=120L
       )
       cutoff <- floor((w * v) * q_t) + 1L
@@ -279,9 +279,9 @@ renderPlotly({
       if (first_index > length(pmf)) return(0)
       sum(pmf[first_index:length(pmf)])
     }, numeric(1))
-    parameter_label <- paste0(
-      "Implied μ = ", formatC(mu, digits=3, format="f"),
-      "; σ = ", formatC(sigma, digits=3, format="f")
+  parameter_label <- paste0(
+    "Implied μ = ", formatC(mu, digits=3, format="f"),
+    "; σ = ", formatC(sigma, digits=3, format="f")
     )
 
   plot_data <- data.frame(
