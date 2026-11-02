@@ -657,7 +657,7 @@ renderPlotly({
 
 Below are the recommended sample size per EU under the above framework. I have copied the table format in the draft chapter, however you can change the assumptions to see how this affects sample size. 
 
-As you can see if you follow the default assumptions and ignore clustering, the required sample sizes are very modest. However, once you account for clustering the minimium sample sizes explode with larger pools. Reducing the size of the pools 
+As you can see if you follow the default assumptions and ignore clustering, the required sample sizes are very modest. However, once you account for clustering the minimium sample sizes explode with larger pools. Reducing the size of the pools (say from 25 to 10), can massively reduce the required sample size for reasonably high ICC (e.g 0.1).
 
 The design prevalence is set to twice the provisional threshold by default but can be increased or decreased ('Multiplier for design prevalence').
 
@@ -801,8 +801,9 @@ renderDataTable({
     ),
     integer(1)
   )
-  genera$clustered_sample_size <- genera$minimum_locations_clustered *
-    pools_per_location * pool_size
+  genera$clustered_pools <- genera$minimum_locations_clustered *
+    pools_per_location
+  genera$clustered_sample_size <- genera$clustered_pools * pool_size
 
   display_value <- function(x) {
     ifelse(
@@ -816,20 +817,38 @@ renderDataTable({
     Genus = genera$genus,
     Threshold = sprintf("%.3g%%", 100 * genera$threshold),
     `Design prevalence` = sprintf("%.3g%%", 100 * genera$design_prevalence),
-    `Minimum sample size (ignoring clustering)` =
-      display_value(genera$minimum_sample_size),
-    `Minimum sample size (ICC = X)` =
-      display_value(genera$clustered_sample_size),
+    `# mosquitoes` = display_value(genera$minimum_sample_size),
+    `# mosquitoes clustered` = display_value(genera$clustered_sample_size),
+    `# locations` = display_value(genera$minimum_locations_clustered),
     check.names = FALSE
   )
-  names(table_data)[5] <- paste0(
-    "Minimum sample size (ICC = ",
-    format(icc, trim = TRUE, scientific = FALSE),
-    ")"
+
+  icc_label <- paste0(
+    "ICC = ", format(icc, trim = TRUE, scientific = FALSE)
+  )
+  table_header <- htmltools::withTags(
+    table(
+      class = "display",
+      thead(
+        tr(
+          th(rowspan = 2, "Genus"),
+          th(rowspan = 2, "Threshold"),
+          th(rowspan = 2, "Design prevalence"),
+          th(colspan = 1, "Ignoring clustering"),
+          th(colspan = 2, icc_label)
+        ),
+        tr(
+          th("# mosquitoes"),
+          th("# mosquitoes"),
+          th("# locations")
+        )
+      )
+    )
   )
 
   datatable(
     table_data,
+    container = table_header,
     rownames = FALSE,
     options = list(
       pageLength = 4,
@@ -839,7 +858,7 @@ renderDataTable({
       info = FALSE,
       ordering = FALSE,
       scrollX = TRUE,
-      columnDefs = list(list(className = "dt-right", targets = 1:4))
+      columnDefs = list(list(className = "dt-right", targets = 1:5))
     )
   )
 })
