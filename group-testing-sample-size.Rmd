@@ -1151,7 +1151,9 @@ So I propose a 'time to detect resurgence' framework for designing a series of c
 
 ### Mathematical framework for sampling over time
 
-I will assume that when the final TAS is passed is 'year 0'. Since we are interested in being able to detect cases where resurgence is occurring I will assume that in the EUs which are facing challenges that need to be detected, prevalence starts at the threshold value and slowly grows over time, e.g. doubling in prevalence every five years. The prevalence at year $y$, $p(y)$, then follows the form $p(y) = p_t e^{\lambda y}$ where $p(0) = p_t$ is the prevalence when the final TAS is passed, and $\lambda$ is a constant describing the growth rate.
+I will assume that when the final TAS is passed is 'year 0'. Since we are interested in being able to detect cases where resurgence is occurring I will assume that in the EUs which are facing challenges that need to be detected, prevalence starts at the threshold value and slowly grows over time, e.g. doubling in prevalence every five years. The prevalence at year $y$, $p(y)$, then follows the form $p(y) = p_t e^{\lambda y}$ where $p(0) = p_t$ is the prevalence when the final TAS is passed, and $\lambda = \frac{log(2)}{\text{Doubling time}}$ is a constant describing the growth rate.
+
+If we are interested in the probability of false detection we might compare to the scenario where the prevalence is actually declining over time --- e.g. halves every five years. Mathematically this is identical to above but selecting a 'negative' doubling time. 
 
 Further we assume that sequential surveys samples are statistically independent of one another. In practice for this assumption to be met, the selected sites and HHs would have to be randomly selected for each survey.
 
@@ -1447,3 +1449,6 @@ renderDataTable({
   )
 })
 ```
+
+
+Note that for the genera with low thresholds (*Aedes* and *Culex* in particular) if the first survey happens before the doubling time has elapsed then the probability that resurgence is detected on the first survey is not much above 50% and is hard to increase with increasing numbers of samples. Moreover the probability of a false detection under the scenario of gradual halving of prevalence over time (i.e. a negative doubling time) is also very high. I.e. if the assumptions above hold then there's not much point in doing a small/moderate MX sized survey soon after TAS-3 as there is a high chance of a false positive detection and a low chance of a true detection. However this is all predicated on the assumptions above and should be considered even more tentative then other recommendations in this document so far.
