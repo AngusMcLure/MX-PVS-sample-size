@@ -456,12 +456,12 @@ minimum_locations_for_power <- function(
     power <- vapply(locations,
                     \(w)prob_estimate_above_threshold_clustered(mu, sigma, p_t, s, v, w),
                     numeric(1))
+  }
   below <- which(power < required_power)
   if (length(below) == 0L) return(1L)
   last_below <- max(below)
   if (last_below >= length(locations)) return(NA_integer_)
   as.integer(last_below + 1L)
-  }
 }
 ```
 
