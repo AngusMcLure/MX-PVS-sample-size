@@ -1275,12 +1275,20 @@ div(
     step = 1
   ),
   numericInput(
-    "time_n_pools",
-    "Number of pools per survey",
-    value = 100,
+    "time_pools_per_location",
+    "Pools per trapping location",
+    value = 2,
+    min = 1,
+    max = 100,
+    step = 1
+  ),
+  numericInput(
+    "time_n_locations",
+    "Number of trapping locations",
+    value = 50,
     min = 1,
     max = 10000,
-    step = 10
+    step = 1
   ),
   numericInput(
     "time_icc",
@@ -1342,9 +1350,9 @@ sampling_over_time_result <- reactive({
   req(
     input$time_survey_interval,
     input$time_pool_size,
-    input$time_n_pools,
+    input$time_pools_per_location,
+    input$time_n_locations,
     input$time_icc,
-    input$recommended_pools_per_location,
     input$time_threshold_genus,
     input$time_start_percent,
     input$time_doubling_time,
@@ -1354,15 +1362,14 @@ sampling_over_time_result <- reactive({
   validate(
     need(input$time_survey_interval > 0, "Survey interval must be positive."),
     need(input$time_pool_size >= 1, "Pool size must be at least 1."),
-    need(input$time_n_pools >= 1, "Number of pools must be at least 1."),
+    need(input$time_pools_per_location >= 1 &&
+           input$time_pools_per_location == floor(input$time_pools_per_location),
+         "Pools per trapping location must be a positive integer."),
+    need(input$time_n_locations >= 1 &&
+           input$time_n_locations == floor(input$time_n_locations),
+         "Number of trapping locations must be a positive integer."),
     need(input$time_icc >= 0 && input$time_icc < 1,
          "ICC must be at least 0 and less than 1."),
-    need(input$recommended_pools_per_location >= 1 &&
-           input$recommended_pools_per_location ==
-             floor(input$recommended_pools_per_location),
-         "Pools per trapping location must be a positive integer."),
-    need(input$time_n_pools %% input$recommended_pools_per_location == 0,
-         "Number of pools per survey must be divisible by pools per trapping location."),
     need(input$time_start_percent >= 0 &&
            input$time_start_percent <= 100,
          "Starting prevalence must be between 0% and 100%."),
@@ -1373,12 +1380,12 @@ sampling_over_time_result <- reactive({
   surveys_to_detection(
     g = input$time_survey_interval,
     s = as.integer(input$time_pool_size),
-    m = as.integer(input$time_n_pools),
+    m = as.integer(input$time_pools_per_location * input$time_n_locations),
     p0 = input$time_start_percent / 100,
     pt = as.numeric(input$time_threshold_genus),
     lambda = log(2) / input$time_doubling_time,
     icc = input$time_icc,
-    v = as.integer(input$recommended_pools_per_location),
+    v = as.integer(input$time_pools_per_location),
     Jmax = as.integer(input$time_max_surveys)
   )
 })
