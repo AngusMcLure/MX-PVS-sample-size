@@ -286,8 +286,15 @@ renderPlotly({
   parameters <- logit_normal_parameters_from_icc(design_prevalence, icc)
   mu <- unname(parameters[["mu"]])
   sigma <- unname(parameters[["sigma"]])
+  clustered_setup <- if (sigma > 0) {
+    logit_normal_clustered_mle_setup(mu, sigma, p_t, s, v)
+  } else {
+    NULL
+  }
   power <- vapply(trapping_locations,
-                  \(w)prob_estimate_above_threshold_clustered(mu, sigma, p_t, s, v, w),
+                  \(w)prob_estimate_above_threshold_clustered(
+                    mu, sigma, p_t, s, v, w, setup = clustered_setup
+                  ),
                   numeric(1))
   parameter_label <- paste0(
     "Implied μ = ", formatC(mu, digits=3, format="f"),
@@ -450,6 +457,9 @@ minimum_locations_for_power <- function(
     parameters <- logit_normal_parameters_from_icc(p, icc)
     mu <- unname(parameters[["mu"]])
     sigma <- unname(parameters[["sigma"]])
+    clustered_setup <- logit_normal_clustered_mle_setup(
+      mu, sigma, p_t, s, v
+    )
   }
   
   #In descending order of sample size, check if it satisfies power, accepting the last number of locations that doesn't meet the requirements.
@@ -460,7 +470,9 @@ minimum_locations_for_power <- function(
     power <- if(icc == 0){
       prob_estimate_above_threshold(p, p_t, s, v*w)
     }else{
-      prob_estimate_above_threshold_clustered(mu, sigma, p_t, s, v, w)
+      prob_estimate_above_threshold_clustered(
+        mu, sigma, p_t, s, v, w, setup = clustered_setup
+      )
     }
     if(power < required_power){
       break
