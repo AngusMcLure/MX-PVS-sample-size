@@ -453,29 +453,15 @@ minimum_locations_for_power <- function(
     parameters <- logit_normal_parameters_from_icc(p, icc)
     mu <- unname(parameters[["mu"]])
     sigma <- unname(parameters[["sigma"]])
-    power <- vapply(locations, function(w) {
-      cutoff <- floor(w * v * q_t) + 1L
-      1 - logit_normal_pool_count_cdf(
-        w = w, v = as.integer(v), s = as.integer(s),
-        mu = mu, sigma = sigma, c = cutoff, n_quad = 40L
-      )
-    }, numeric(1))
-  } else {
-    # Limiting case as sigma tends to infinity: each location has prevalence
-    # 1 with probability p and 0 otherwise.
-    power <- vapply(locations, function(w) {
-      positive_locations <- 0:w
-      positive_pools <- as.integer(v) * positive_locations
-      cutoff <- floor(w * v * q_t) + 1L
-      sum(dbinom(positive_locations, size = w, prob = p)[positive_pools >= cutoff])
-    }, numeric(1))
-  }
-
+    power <- vapply(locations,
+                    \(w)prob_estimate_above_threshold_clustered(mu, sigma, p_t, s, v, w),
+                    numeric(1))
   below <- which(power < required_power)
   if (length(below) == 0L) return(1L)
   last_below <- max(below)
   if (last_below >= length(locations)) return(NA_integer_)
   as.integer(last_below + 1L)
+  }
 }
 ```
 
