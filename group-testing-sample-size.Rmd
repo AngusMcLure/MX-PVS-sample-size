@@ -1271,9 +1271,9 @@ div(
   numericInput(
     "time_pool_size",
     "Mosquitoes per pool",
-    value = 25,
+    value = 10,
     min = 1,
-    max = 1000,
+    max = 100,
     step = 1
   ),
   numericInput(
@@ -1289,7 +1289,7 @@ div(
     "Number of trapping locations",
     value = 50,
     min = 1,
-    max = 10000,
+    max = 2000,
     step = 1
   ),
   numericInput(
@@ -1325,15 +1325,15 @@ div(
     "Prevalence doubling time (years)",
     value = 6,
     min = 0.01,
-    max = 1000,
+    max = 20,
     step = 0.5
   ),
   numericInput(
     "time_max_surveys",
     "Maximum number of surveys",
-    value = 10,
+    value = 5,
     min = 1,
-    max = 1000,
+    max = 20,
     step = 1
   )
 )
