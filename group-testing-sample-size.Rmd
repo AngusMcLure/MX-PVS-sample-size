@@ -1414,12 +1414,19 @@ renderUI({
 renderDataTable({
   result <- sampling_over_time_result()
   dat <- result$distribution
+  threshold <- as.numeric(input$time_threshold_genus)
+  prevalence_colour <- ifelse(dat$true_prevalence >= threshold, "red", "green")
+  prevalence_text <- sprintf(
+    '<span style="color: %s;">%.2f%%</span>',
+    prevalence_colour,
+    100 * dat$true_prevalence
+  )
 
   datatable(
     data.frame(
       `Survey` = dat$survey,
       `Time (years)` = sprintf("%.0f", dat$time),
-      `True prevalence` = sprintf("%.2f%%", 100 * dat$true_prevalence),
+      `True prevalence` = prevalence_text,
       `Probability detected (this survey)` = sprintf("%.1f%%", 100 * dat$detection_probability),
       `Cumulative probability detected (this and previous surveys)` = sprintf(
         "%.1f%%",
@@ -1428,6 +1435,7 @@ renderDataTable({
       check.names = FALSE
     ),
     rownames = FALSE,
+    escape = FALSE,
     options = list(
       pageLength = 10,
       lengthChange = FALSE,
