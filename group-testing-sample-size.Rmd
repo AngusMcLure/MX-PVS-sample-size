@@ -1151,9 +1151,13 @@ So I propose a 'time to detect resurgence' framework for designing a series of c
 
 ### Mathematical framework for sampling over time
 
-I will assume that when the final TAS is passed is 'year 0'. Since we are interested in being able to detect cases where resurgence is occurring I will assume that in the EUs which are facing challenges that need to be detected, prevalence starts at the threshold value and slowly grows over time, e.g. doubling in prevalence every five years. The prevalence at year $y$, $p(y)$, then follows the form $p(y) = p_t e^{\lambda y}$ where $p(0) = p_t$ is the prevalence when the final TAS is passed, and $\lambda$ is a constant describing the growth rate.
+I will assume that when the final TAS is passed is 'year 0'. Since we are interested in being able to detect cases where resurgence is occurring I will assume that in the EUs which are facing challenges that need to be detected, prevalence starts at the threshold value and slowly grows over time, e.g. doubling in prevalence every five years. The prevalence at year $y$, $p(y)$, then follows the form $p(y) = p_t e^{\lambda y}$ where $p(0) = p_t$ is the prevalence when the final TAS is passed, and $\lambda = \frac{log(2)}{\text{Doubling time}}$ is a constant describing the growth rate.
 
-As a simplifying assumption, as before we ignore clustering. Further we assume that sequential surveys samples are statistically independent of one another. In practice for this assumption to be met, the selected sites and HHs would have to be randomly selected for each survey.
+If we are interested in the probability of false detection we might compare to the scenario where the prevalence is actually declining over time --- e.g. halves every five years. Mathematically this is identical to above but selecting a 'negative' doubling time. 
+
+Further we assume that sequential surveys samples are statistically independent of one another. In practice for this assumption to be met, the selected sites and HHs would have to be randomly selected for each survey.
+
+When accounting for clustering, $p(y) = E\left[p_j(y)\right]$ represents the population mean prevalence. We also make the simplifying assumption that the ICC is constant over time. This assumption seems dubious, but it is not clear what a better assumption would be. 
 
 Then for a particular schedule of surveys (e.g. yearly, every five years) and sample size (number of mosquito) we can calculate:
 
@@ -1173,6 +1177,8 @@ surveys_to_detection <- function(
     p0,
     pt,
     lambda,
+    icc = 0,
+    v = 1,
     Jmax = 100
 ) {
   # Validate inputs
@@ -1183,6 +1189,9 @@ surveys_to_detection <- function(
     length(p0) == 1L, is.finite(p0), p0 >= 0, p0 <= 1,
     length(pt) == 1L, is.finite(pt), pt > 0, pt < 1,
     length(lambda) == 1L, is.finite(lambda),
+    length(icc) == 1L, is.finite(icc), icc >= 0, icc < 1,
+    length(v) == 1L, is.finite(v), v >= 1, v == floor(v),
+    m %% v == 0,
     length(Jmax) == 1L, is.finite(Jmax),
     Jmax >= 1, Jmax == floor(Jmax)
   )
@@ -1201,13 +1210,29 @@ surveys_to_detection <- function(
   # Probability that a pool tests positive at each survey
   pool_positive <- -expm1(s * log1p(-prevalence))
 
-  # Probability of detecting resurgence in each survey
-  q <- pbinom(
-    cutoff - 1L,
-    size = m,
-    prob = pool_positive,
-    lower.tail = FALSE
-  )
+  # Probability of detecting resurgence in each survey. The ICC is
+  # fixed over time; the logit-normal mean is updated to the marginal
+  # prevalence at each survey.
+  if (icc == 0) {
+    q <- pbinom(
+      cutoff - 1L,
+      size = m,
+      prob = pool_positive,
+      lower.tail = FALSE
+    )
+  } else {
+    w <- m %/% v
+    q <- vapply(prevalence, function(p) {
+      if (p <= 0) return(0)
+      if (p >= 1) return(1)
+      parameters <- logit_normal_parameters_from_icc(p, icc)
+      prob_estimate_above_threshold_clustered(
+        unname(parameters[["mu"]]),
+        unname(parameters[["sigma"]]),
+        pt, s, v, w
+      )
+    }, numeric(1))
+  }
 
   # Probability of first detection at each survey
   probability_N <- numeric(Jmax)
@@ -1237,30 +1262,6 @@ surveys_to_detection <- function(
 ```{r sampling-over-time-controls}
 div(
   class = "controls-row",
-  numericInput(
-    "time_survey_interval",
-    "Interval between surveys (years)",
-    value = 2,
-    min = 1,
-    max = 100,
-    step = 1
-  ),
-  numericInput(
-    "time_pool_size",
-    "Mosquitoes per pool",
-    value = 25,
-    min = 1,
-    max = 1000,
-    step = 1
-  ),
-  numericInput(
-    "time_n_pools",
-    "Number of pools per survey",
-    value = 100,
-    min = 1,
-    max = 10000,
-    step = 10
-  ),
   selectInput(
     "time_threshold_genus",
     "Threshold",
@@ -1282,19 +1283,59 @@ div(
     step = 0.1
   ),
   numericInput(
+    "time_icc",
+    "Within-trapping-location ICC",
+    value = 0.1,
+    min = 0,
+    max = 0.99,
+    step = 0.01
+  ),
+  numericInput(
     "time_doubling_time",
-    "Prevalence doubling time (years)",
+    "Prevalence doubling/halving time (years)",
     value = 6,
-    min = 0.01,
-    max = 1000,
+    min = -20,
+    max = 20,
     step = 0.5
+  ),
+  numericInput(
+    "time_survey_interval",
+    "Interval between surveys (years)",
+    value = 2,
+    min = 1,
+    max = 100,
+    step = 1
   ),
   numericInput(
     "time_max_surveys",
     "Maximum number of surveys",
+    value = 5,
+    min = 1,
+    max = 20,
+    step = 1
+  ),
+  numericInput(
+    "time_pool_size",
+    "Mosquitoes per pool",
     value = 10,
     min = 1,
-    max = 1000,
+    max = 100,
+    step = 1
+  ),
+  numericInput(
+    "time_pools_per_location",
+    "Pools per trapping location",
+    value = 2,
+    min = 1,
+    max = 100,
+    step = 1
+  ),
+  numericInput(
+    "time_n_locations",
+    "Number of trapping locations",
+    value = 50,
+    min = 1,
+    max = 2000,
     step = 1
   )
 )
@@ -1313,7 +1354,9 @@ sampling_over_time_result <- reactive({
   req(
     input$time_survey_interval,
     input$time_pool_size,
-    input$time_n_pools,
+    input$time_pools_per_location,
+    input$time_n_locations,
+    input$time_icc,
     input$time_threshold_genus,
     input$time_start_percent,
     input$time_doubling_time,
@@ -1323,21 +1366,30 @@ sampling_over_time_result <- reactive({
   validate(
     need(input$time_survey_interval > 0, "Survey interval must be positive."),
     need(input$time_pool_size >= 1, "Pool size must be at least 1."),
-    need(input$time_n_pools >= 1, "Number of pools must be at least 1."),
+    need(input$time_pools_per_location >= 1 &&
+           input$time_pools_per_location == floor(input$time_pools_per_location),
+         "Pools per trapping location must be a positive integer."),
+    need(input$time_n_locations >= 1 &&
+           input$time_n_locations == floor(input$time_n_locations),
+         "Number of trapping locations must be a positive integer."),
+    need(input$time_icc >= 0 && input$time_icc < 1,
+         "ICC must be at least 0 and less than 1."),
     need(input$time_start_percent >= 0 &&
            input$time_start_percent <= 100,
          "Starting prevalence must be between 0% and 100%."),
-    need(input$time_doubling_time > 0, "Doubling time must be positive."),
+    need(input$time_doubling_time != 0, "Doubling/halving time cannot be zero."),
     need(input$time_max_surveys >= 1, "Maximum number of surveys must be at least 1.")
   )
 
   surveys_to_detection(
     g = input$time_survey_interval,
     s = as.integer(input$time_pool_size),
-    m = as.integer(input$time_n_pools),
+    m = as.integer(input$time_pools_per_location * input$time_n_locations),
     p0 = input$time_start_percent / 100,
     pt = as.numeric(input$time_threshold_genus),
     lambda = log(2) / input$time_doubling_time,
+    icc = input$time_icc,
+    v = as.integer(input$time_pools_per_location),
     Jmax = as.integer(input$time_max_surveys)
   )
 })
@@ -1364,12 +1416,19 @@ renderUI({
 renderDataTable({
   result <- sampling_over_time_result()
   dat <- result$distribution
+  threshold <- as.numeric(input$time_threshold_genus)
+  prevalence_colour <- ifelse(dat$true_prevalence >= threshold, "red", "green")
+  prevalence_text <- sprintf(
+    '<span style="color: %s;">%.2f%%</span>',
+    prevalence_colour,
+    100 * dat$true_prevalence
+  )
 
   datatable(
     data.frame(
       `Survey` = dat$survey,
       `Time (years)` = sprintf("%.0f", dat$time),
-      `True prevalence` = sprintf("%.2f%%", 100 * dat$true_prevalence),
+      `True prevalence` = prevalence_text,
       `Probability detected (this survey)` = sprintf("%.1f%%", 100 * dat$detection_probability),
       `Cumulative probability detected (this and previous surveys)` = sprintf(
         "%.1f%%",
@@ -1378,6 +1437,7 @@ renderDataTable({
       check.names = FALSE
     ),
     rownames = FALSE,
+    escape = FALSE,
     options = list(
       pageLength = 10,
       lengthChange = FALSE,
@@ -1389,3 +1449,6 @@ renderDataTable({
   )
 })
 ```
+
+
+Note that for the genera with low thresholds (*Aedes* and *Culex* in particular) if the first survey happens before the doubling time has elapsed then the probability that resurgence is detected on the first survey is not much above 50% and is hard to increase with increasing numbers of samples. Moreover the probability of a false detection under the scenario of gradual halving of prevalence over time (i.e. a negative doubling time) is also very high. I.e. if the assumptions above hold then there's not much point in doing a small/moderate MX sized survey soon after TAS-3 as there is a high chance of a false positive detection and a low chance of a true detection. However this is all predicated on the assumptions above and should be considered even more tentative then other recommendations in this document so far.
