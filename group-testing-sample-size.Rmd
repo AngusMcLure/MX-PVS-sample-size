@@ -817,13 +817,11 @@ renderDataTable({
     Genus = genera$genus,
     Threshold = sprintf("%.3g%%", 100 * genera$threshold),
     `Design prevalence` = sprintf("%.3g%%", 100 * genera$design_prevalence),
-    `# mosquitoes (ignoring clustering)` =
-      display_value(genera$minimum_sample_size),
-    `# locations` = display_value(genera$minimum_locations_clustered),
+    `# mosquitoes` = display_value(genera$minimum_sample_size),
     `# mosquitoes clustered` = display_value(genera$clustered_sample_size),
+    `# locations` = display_value(genera$minimum_locations_clustered),
     check.names = FALSE
   )
-  names(table_data)[6] <- "# mosquitoes"
 
   icc_label <- paste0(
     "ICC = ", format(icc, trim = TRUE, scientific = FALSE)
@@ -841,8 +839,8 @@ renderDataTable({
         ),
         tr(
           th("# mosquitoes"),
-          th("# locations"),
-          th("# mosquitoes")
+          th("# mosquitoes"),
+          th("# locations")
         )
       )
     )
