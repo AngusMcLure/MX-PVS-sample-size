@@ -870,7 +870,9 @@ The sample sizes recommended above do not have any consideration for false disco
 
 The probability of false discovery is highest when the true prevalence is close to (but below) the threshold. This is, to my mind, not such a bad thing since if the prevalence is still close to the threshold when the Pre-VS survey is taking place (which is probably a number of years after the last TAS), then this indicates transmission is not decreasing substantially and some action may be required anyway.
 
-When the true prevalence is about half the threshold, the false discovery probability is roughly 10-15\% (though this depends on choice of assumptions above). **Is this acceptable?** Again, this is an *operational decision*, not a statistical one. If avoiding false discovery is of similar importance to ensuring true discoveries, then perhaps instead of comparing the MLE to the threshold we need to consider comparing the lower confidence bound (say 75%) to the threshold. But this is not what was decided in the London meeting.
+When the true prevalence is about half the threshold, the false discovery probability is roughly 10-15\% if ignoring clustering and <5\% if accounting for clustering. (Though this depends on choice of assumptions above). **Is this acceptable?** Again, this is an *operational decision*, not a statistical one.
+
+If, operationally, avoiding false discovery is of similar importance to ensuring true discoveries, then our sample size calculations should account for this. For instance, instead of comparing the MLE to the threshold we could consider comparing the one-sided lower confidence bound (e.g. 75%) to the threshold and only recommend EU-wide action if this lower bound is above the threshold. But this is not the framework that was decided on in the London meeting.
 
 ```{r false-discovery-controls}
 div(
@@ -881,6 +883,11 @@ div(
     choices = c("Aedes", "Culex", "Mansonia", "Anopheles"),
     selected = "Aedes",
     selectize = FALSE
+  ),
+  checkboxInput(
+    "false_discovery_account_clustering",
+    "Account for clustering",
+    value = TRUE
   )
 )
 ```
@@ -890,6 +897,9 @@ renderPlotly({
   required_power <- input$recommended_required_power / 100
   design_prevalence_multiplier <- input$recommended_design_prevalence_multiplier
   pool_size <- input$recommended_pool_size
+  pools_per_location <- input$recommended_pools_per_location
+  icc <- input$recommended_icc
+  account_clustering <- isTRUE(input$false_discovery_account_clustering)
   genus <- input$false_discovery_genus
 
   validate(
@@ -901,6 +911,11 @@ renderPlotly({
     need(is.finite(pool_size) && pool_size >= 1 &&
            pool_size == as.integer(pool_size),
          "Pool size must be a positive integer."),
+    need(is.finite(pools_per_location) && pools_per_location >= 1 &&
+           pools_per_location == as.integer(pools_per_location),
+         "Pools per trapping location must be a positive integer."),
+    need(is.finite(icc) && icc >= 0 && icc < 1,
+         "ICC must be at least 0 and less than 1."),
     need(genus %in% c("Aedes", "Culex", "Mansonia", "Anopheles"),
          "Please select a genus.")
   )
@@ -912,27 +927,54 @@ renderPlotly({
   validate(need(design_prevalence < 1,
                 "The design prevalence must be less than 100%."))
 
-  m <- minimum_pools_for_power(
-    p = design_prevalence,
-    p_t = p_t,
-    s = as.integer(pool_size),
-    required_power = required_power,
-    max_pools = 100000L
-  )
-  validate(need(!is.na(m),
-                "The recommended sample size was not reached within 100,000 pools."))
-
-  # Increment of 0.01 percentage points on the prevalence scale.
-  true_prevalence <- seq(0, design_prevalence, by = 0.0001)
-  if (tail(true_prevalence, 1) < design_prevalence) {
-    true_prevalence <- c(true_prevalence, design_prevalence)
+  if (account_clustering) {
+    n_locations <- minimum_locations_for_power(
+      p = design_prevalence,
+      p_t = p_t,
+      s = as.integer(pool_size),
+      v = as.integer(pools_per_location),
+      required_power = required_power,
+      max_locations = 1000,
+      icc = icc
+    )
+    validate(need(!is.na(n_locations),
+                  "The recommended sample size was not reached within 1,000 trapping locations."))
+    n_pools <- n_locations * as.integer(pools_per_location)
+    true_prevalence <- seq(0, design_prevalence, by = 0.0001)
+    if (tail(true_prevalence, 1) < design_prevalence) {
+      true_prevalence <- c(true_prevalence, design_prevalence)
+    }
+    probability <- vapply(true_prevalence, function(p) {
+      if (p <= 0) return(0)
+      parameters <- logit_normal_parameters_from_icc(p, icc)
+      prob_estimate_above_threshold_clustered(
+        unname(parameters[["mu"]]), unname(parameters[["sigma"]]),
+        p_t, as.integer(pool_size), as.integer(pools_per_location),
+        as.integer(n_locations)
+      )
+    }, numeric(1))
+  } else {
+    n_pools <- minimum_pools_for_power(
+      p = design_prevalence,
+      p_t = p_t,
+      s = as.integer(pool_size),
+      required_power = required_power,
+      max_pools = 100000L
+    )
+    validate(need(!is.na(n_pools),
+                  "The recommended sample size was not reached within 100,000 pools."))
+    true_prevalence <- seq(0, design_prevalence, by = 0.0001)
+    if (tail(true_prevalence, 1) < design_prevalence) {
+      true_prevalence <- c(true_prevalence, design_prevalence)
+    }
+    probability <- vapply(
+      true_prevalence,
+      function(p) prob_estimate_above_threshold(p, p_t,
+                                                 as.integer(pool_size), n_pools),
+      numeric(1)
+    )
   }
-  probability <- vapply(
-    true_prevalence,
-    function(p) prob_estimate_above_threshold(p, p_t,
-                                               as.integer(pool_size), m),
-    numeric(1)
-  )
+
   plot_data <- data.frame(
     prevalence = 100 * true_prevalence,
     probability = probability
@@ -998,6 +1040,9 @@ renderUI({
   required_power <- input$recommended_required_power / 100
   design_prevalence_multiplier <- input$recommended_design_prevalence_multiplier
   pool_size <- input$recommended_pool_size
+  pools_per_location <- input$recommended_pools_per_location
+  icc <- input$recommended_icc
+  account_clustering <- isTRUE(input$false_discovery_account_clustering)
   genus <- input$false_discovery_genus
 
   validate(
@@ -1009,6 +1054,11 @@ renderUI({
     need(is.finite(pool_size) && pool_size >= 1 &&
            pool_size == as.integer(pool_size),
          "Pool size must be a positive integer."),
+    need(is.finite(pools_per_location) && pools_per_location >= 1 &&
+           pools_per_location == as.integer(pools_per_location),
+         "Pools per trapping location must be a positive integer."),
+    need(is.finite(icc) && icc >= 0 && icc < 1,
+         "ICC must be at least 0 and less than 1."),
     need(genus %in% c("Aedes", "Culex", "Mansonia", "Anopheles"),
          "Please select a genus.")
   )
@@ -1017,30 +1067,64 @@ renderUI({
                   Mansonia = 0.005, Anopheles = 0.01)
   p_t <- unname(thresholds[genus])
   design_prevalence <- p_t * design_prevalence_multiplier
-  m <- minimum_pools_for_power(
-    p = design_prevalence,
-    p_t = p_t,
-    s = as.integer(pool_size),
-    required_power = required_power,
-    max_pools = 100000L
-  )
-  validate(need(!is.na(m),
-                "The recommended sample size was not reached within 100,000 pools."))
+  validate(need(design_prevalence < 1,
+                "The design prevalence must be less than 100%."))
 
-  positive_pools_required <- floor(
-    m * (-expm1(as.integer(pool_size) * log1p(-p_t)))
-  ) + 1L
-
-  tags$p(sprintf(
-    paste0(
-      "The figure assumes a total sample size of %s mosquitoes, ",
-      "tested in pools of %s mosquitoes. The MLE exceeds the threshold ",
-      "when at least %s pools test positive."
-    ),
-    format(m * as.integer(pool_size), big.mark = ","),
-    format(as.integer(pool_size), big.mark = ","),
-    format(positive_pools_required, big.mark = ",")
-  ))
+  if (account_clustering) {
+    n_locations <- minimum_locations_for_power(
+      p = design_prevalence,
+      p_t = p_t,
+      s = as.integer(pool_size),
+      v = as.integer(pools_per_location),
+      required_power = required_power,
+      max_locations = 1000,
+      icc = icc
+    )
+    validate(need(!is.na(n_locations),
+                  "The recommended sample size was not reached within 1,000 trapping locations."))
+    n_pools <- n_locations * as.integer(pools_per_location)
+    positive_pools_required <- floor(
+      n_pools * (-expm1(as.integer(pool_size) * log1p(-p_t)))
+    ) + 1L
+    tags$p(sprintf(
+      paste0(
+        "The figure assumes %s pools of %s mosquitoes (%s mosquitoes total), ",
+        "with %s pools per trapping location across %s trapping locations. ",
+        "The MLE exceeds the threshold when at least %s pools test positive. ",
+        "The clustering calculation uses ICC = %s."
+      ),
+      format(n_pools, big.mark = ","),
+      format(as.integer(pool_size), big.mark = ","),
+      format(n_pools * as.integer(pool_size), big.mark = ","),
+      format(as.integer(pools_per_location), big.mark = ","),
+      format(n_locations, big.mark = ","),
+      format(positive_pools_required, big.mark = ","),
+      format(icc, trim = TRUE, scientific = FALSE)
+    ))
+  } else {
+    n_pools <- minimum_pools_for_power(
+      p = design_prevalence,
+      p_t = p_t,
+      s = as.integer(pool_size),
+      required_power = required_power,
+      max_pools = 100000L
+    )
+    validate(need(!is.na(n_pools),
+                  "The recommended sample size was not reached within 100,000 pools."))
+    positive_pools_required <- floor(
+      n_pools * (-expm1(as.integer(pool_size) * log1p(-p_t)))
+    ) + 1L
+    tags$p(sprintf(
+      paste0(
+        "The figure assumes a total sample size of %s mosquitoes, ",
+        "tested in pools of %s mosquitoes. The MLE exceeds the threshold ",
+        "when at least %s pools test positive."
+      ),
+      format(n_pools * as.integer(pool_size), big.mark = ","),
+      format(as.integer(pool_size), big.mark = ","),
+      format(positive_pools_required, big.mark = ",")
+    ))
+  }
 })
 ```
 
