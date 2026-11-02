@@ -436,32 +436,30 @@ minimum_locations_for_power <- function(
     required_power > 0, required_power < 1,
     length(max_locations) == 1L, is.finite(max_locations),
     max_locations >= 1, max_locations == as.integer(max_locations),
-    length(icc) == 1L, is.finite(icc), icc >= 0, icc <= 1
+    length(icc) == 1L, is.finite(icc), icc >= 0, icc < 1
   )
 
-  locations <- seq_len(as.integer(max_locations))
-  total_pools <- locations * as.integer(v)
-  q_t <- -expm1(as.integer(s) * log1p(-p_t))
-
-  if (icc == 0) {
-    q <- -expm1(as.integer(s) * log1p(-p))
-    power <- pbinom(
-      floor(total_pools * q_t), size = total_pools, prob = q,
-      lower.tail = FALSE
-    )
-  } else if (icc < 1) {
+  if (icc > 0) {
     parameters <- logit_normal_parameters_from_icc(p, icc)
     mu <- unname(parameters[["mu"]])
     sigma <- unname(parameters[["sigma"]])
-    power <- vapply(locations,
-                    \(w)prob_estimate_above_threshold_clustered(mu, sigma, p_t, s, v, w),
-                    numeric(1))
   }
-  below <- which(power < required_power)
-  if (length(below) == 0L) return(1L)
-  last_below <- max(below)
-  if (last_below >= length(locations)) return(NA_integer_)
-  as.integer(last_below + 1L)
+  
+  #In descending order of sample size, check if it satisfies power, accepting the last number of locations that doesn't meet the requirements
+  answer <- NA
+  for(w in max_locations:1){
+    power <- if(icc == 0){
+      prob_estimate_above_threshold(p, p_t, s, v*w)
+    }else{
+      prob_estimate_above_threshold_clustered(mu, sigma, p_t, s, v, w)
+    }
+    if(power < required_power){
+      break
+    }else{
+      answer <- w
+    }
+  }
+  answer
 }
 ```
 
