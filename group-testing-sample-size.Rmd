@@ -1305,6 +1305,14 @@ div(
     step = 1
   ),
   numericInput(
+    "time_max_surveys",
+    "Maximum number of surveys",
+    value = 5,
+    min = 1,
+    max = 20,
+    step = 1
+  ),
+  numericInput(
     "time_pool_size",
     "Mosquitoes per pool",
     value = 10,
@@ -1326,14 +1334,6 @@ div(
     value = 50,
     min = 1,
     max = 2000,
-    step = 1
-  ),
-  numericInput(
-    "time_max_surveys",
-    "Maximum number of surveys",
-    value = 5,
-    min = 1,
-    max = 20,
     step = 1
   )
 )
