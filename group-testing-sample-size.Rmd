@@ -790,8 +790,9 @@ div(
 )
 ```
 
-```{r recommended-sample-sizes-table}
-renderDataTable({
+# Shared calculation for the recommended designs. Both the table and the
+# false-discovery section use these same precomputed designs.
+recommended_sample_size_designs <- reactive({
   required_power <- input$recommended_required_power / 100
   design_prevalence_multiplier <- input$recommended_design_prevalence_multiplier
   icc <- input$recommended_icc
@@ -829,7 +830,7 @@ renderDataTable({
          "The resulting design prevalences must be less than 100%.")
   )
 
-  # Keep the clustered search to a maximum of 100,000 pools per EU.
+  # Keep the clustered search to a maximum of 1,000 trapping locations.
   max_locations <- 1000
   genera$minimum_pools <- vapply(
     seq_len(nrow(genera)),
@@ -861,6 +862,12 @@ renderDataTable({
     pools_per_location
   genera$clustered_sample_size <- genera$clustered_pools * pool_size
 
+  genera
+})
+
+renderDataTable({
+  genera <- recommended_sample_size_designs()
+
   display_value <- function(x) {
     ifelse(
       is.na(x),
@@ -872,15 +879,15 @@ renderDataTable({
   table_data <- data.frame(
     Genus = genera$genus,
     Threshold = sprintf("%.3g%%", 100 * genera$threshold),
-    `Design prevalence` = sprintf("%.3g%%", 100 * genera$design_prevalence),
-    `# mosquitoes` = display_value(genera$minimum_sample_size),
-    `# mosquitoes clustered` = display_value(genera$clustered_sample_size),
-    `# locations` = display_value(genera$minimum_locations_clustered),
+    \`Design prevalence\` = sprintf("%.3g%%", 100 * genera$design_prevalence),
+    \`# mosquitoes\` = display_value(genera$minimum_sample_size),
+    \`# mosquitoes clustered\` = display_value(genera$clustered_sample_size),
+    \`# locations\` = display_value(genera$minimum_locations_clustered),
     check.names = FALSE
   )
 
   icc_label <- paste0(
-    "ICC = ", format(icc, trim = TRUE, scientific = FALSE)
+    "ICC = ", format(input$recommended_icc, trim = TRUE, scientific = FALSE)
   )
   table_header <- htmltools::withTags(
     table(
@@ -918,7 +925,6 @@ renderDataTable({
     )
   )
 })
-```
 
 ## What about false discovery?
 
@@ -948,54 +954,26 @@ div(
 )
 ```
 
-```{r false-discovery-plot}
 renderPlotly({
-  required_power <- input$recommended_required_power / 100
-  design_prevalence_multiplier <- input$recommended_design_prevalence_multiplier
-  pool_size <- input$recommended_pool_size
-  pools_per_location <- input$recommended_pools_per_location
-  icc <- input$recommended_icc
-  account_clustering <- isTRUE(input$false_discovery_account_clustering)
+  designs <- recommended_sample_size_designs()
   genus <- input$false_discovery_genus
+  account_clustering <- isTRUE(input$false_discovery_account_clustering)
 
   validate(
-    need(is.finite(required_power) && required_power > 0 && required_power < 1,
-         "Required power must be between 0% and 100%."),
-    need(is.finite(design_prevalence_multiplier) &&
-           design_prevalence_multiplier >= 1,
-         "The design-prevalence multiplier must be at least 1."),
-    need(is.finite(pool_size) && pool_size >= 1 &&
-           pool_size == as.integer(pool_size),
-         "Pool size must be a positive integer."),
-    need(is.finite(pools_per_location) && pools_per_location >= 1 &&
-           pools_per_location == as.integer(pools_per_location),
-         "Pools per trapping location must be a positive integer."),
-    need(is.finite(icc) && icc >= 0 && icc < 1,
-         "ICC must be at least 0 and less than 1."),
-    need(genus %in% c("Aedes", "Culex", "Mansonia", "Anopheles"),
-         "Please select a genus.")
+    need(genus %in% designs$genus, "Please select a genus.")
   )
 
-  thresholds <- c(Aedes = 0.001, Culex = 0.0025,
-                  Mansonia = 0.005, Anopheles = 0.01)
-  p_t <- unname(thresholds[genus])
-  design_prevalence <- p_t * design_prevalence_multiplier
-  validate(need(design_prevalence < 1,
-                "The design prevalence must be less than 100%."))
+  design <- designs[designs$genus == genus, , drop = FALSE]
+  p_t <- design$threshold
+  design_prevalence <- design$design_prevalence
+  pool_size <- as.integer(input$recommended_pool_size)
+  pools_per_location <- as.integer(input$recommended_pools_per_location)
+  icc <- input$recommended_icc
 
   if (account_clustering) {
-    n_locations <- minimum_locations_for_power(
-      p = design_prevalence,
-      p_t = p_t,
-      s = as.integer(pool_size),
-      v = as.integer(pools_per_location),
-      required_power = required_power,
-      max_locations = 1000,
-      icc = icc
-    )
+    n_locations <- design$minimum_locations_clustered
     validate(need(!is.na(n_locations),
-                  "The recommended sample size was not reached within 1,000 trapping locations."))
-    n_pools <- n_locations * as.integer(pools_per_location)
+                  "The clustered recommended sample size was not reached within 1,000 trapping locations."))
     true_prevalence <- sort(unique(c(
       seq(0, design_prevalence, by = 0.0001),
       p_t,
@@ -1003,23 +981,23 @@ renderPlotly({
     )))
     probability <- vapply(true_prevalence, function(p) {
       if (p <= 0) return(0)
+      if (p >= 1) return(1)
       parameters <- logit_normal_parameters_from_icc(p, icc)
       prob_estimate_above_threshold_clustered(
         unname(parameters[["mu"]]), unname(parameters[["sigma"]]),
-        p_t, as.integer(pool_size), as.integer(pools_per_location),
-        as.integer(n_locations)
+        p_t, pool_size, pools_per_location, as.integer(n_locations)
       )
     }, numeric(1))
-  } else {
-    n_pools <- minimum_pools_for_power(
-      p = design_prevalence,
-      p_t = p_t,
-      s = as.integer(pool_size),
-      required_power = required_power,
-      max_pools = 100000L
+    design_description <- paste0(
+      "Clustered design: ", format(n_locations, big.mark = ","),
+      " trapping locations, ", pools_per_location,
+      " pools per location (", format(n_locations * pools_per_location,
+                                       big.mark = ","), " pools total)."
     )
+  } else {
+    n_pools <- design$minimum_pools
     validate(need(!is.na(n_pools),
-                  "The recommended sample size was not reached within 100,000 pools."))
+                  "The unclustered recommended sample size was not reached within 100,000 pools."))
     true_prevalence <- sort(unique(c(
       seq(0, design_prevalence, by = 0.0001),
       p_t,
@@ -1027,9 +1005,15 @@ renderPlotly({
     )))
     probability <- vapply(
       true_prevalence,
-      function(p) prob_estimate_above_threshold(p, p_t,
-                                                 as.integer(pool_size), n_pools),
+      function(p) prob_estimate_above_threshold(
+        p, p_t, pool_size, as.integer(n_pools)
+      ),
       numeric(1)
+    )
+    design_description <- paste0(
+      "Unclustered design: ", format(n_pools, big.mark = ","),
+      " pools (", format(n_pools * pool_size, big.mark = ","),
+      " mosquitoes total)."
     )
   }
 
@@ -1064,6 +1048,7 @@ renderPlotly({
       )
     ) |>
     plotly::layout(
+      title = list(text = design_description, x = 0),
       xaxis = list(title = "True prevalence (%)"),
       yaxis = list(
         title = "Probability that the MLE exceeds the threshold",
@@ -1088,99 +1073,55 @@ renderPlotly({
         xanchor = "left",
         yanchor = "bottom"
       ),
-      margin = list(t = 90, b = 65, l = 85)
+      margin = list(t = 115, b = 65, l = 85)
     )
 })
-```
 
-```{r false-discovery-assumptions}
 renderUI({
-  required_power <- input$recommended_required_power / 100
-  design_prevalence_multiplier <- input$recommended_design_prevalence_multiplier
-  pool_size <- input$recommended_pool_size
-  pools_per_location <- input$recommended_pools_per_location
-  icc <- input$recommended_icc
-  account_clustering <- isTRUE(input$false_discovery_account_clustering)
+  designs <- recommended_sample_size_designs()
   genus <- input$false_discovery_genus
+  account_clustering <- isTRUE(input$false_discovery_account_clustering)
 
-  validate(
-    need(is.finite(required_power) && required_power > 0 && required_power < 1,
-         "Required power must be between 0% and 100%."),
-    need(is.finite(design_prevalence_multiplier) &&
-           design_prevalence_multiplier >= 1,
-         "The design-prevalence multiplier must be at least 1."),
-    need(is.finite(pool_size) && pool_size >= 1 &&
-           pool_size == as.integer(pool_size),
-         "Pool size must be a positive integer."),
-    need(is.finite(pools_per_location) && pools_per_location >= 1 &&
-           pools_per_location == as.integer(pools_per_location),
-         "Pools per trapping location must be a positive integer."),
-    need(is.finite(icc) && icc >= 0 && icc < 1,
-         "ICC must be at least 0 and less than 1."),
-    need(genus %in% c("Aedes", "Culex", "Mansonia", "Anopheles"),
-         "Please select a genus.")
-  )
-
-  thresholds <- c(Aedes = 0.001, Culex = 0.0025,
-                  Mansonia = 0.005, Anopheles = 0.01)
-  p_t <- unname(thresholds[genus])
-  design_prevalence <- p_t * design_prevalence_multiplier
-  validate(need(design_prevalence < 1,
-                "The design prevalence must be less than 100%."))
+  validate(need(genus %in% designs$genus, "Please select a genus."))
+  design <- designs[designs$genus == genus, , drop = FALSE]
 
   if (account_clustering) {
-    n_locations <- minimum_locations_for_power(
-      p = design_prevalence,
-      p_t = p_t,
-      s = as.integer(pool_size),
-      v = as.integer(pools_per_location),
-      required_power = required_power,
-      max_locations = 1000,
-      icc = icc
-    )
+    n_locations <- design$minimum_locations_clustered
     validate(need(!is.na(n_locations),
-                  "The recommended sample size was not reached within 1,000 trapping locations."))
-    n_pools <- n_locations * as.integer(pools_per_location)
+                  "The clustered recommended sample size was not reached within 1,000 trapping locations."))
+    n_pools <- n_locations * as.integer(input$recommended_pools_per_location)
     tags$p(sprintf(
       paste0(
-        "The figure assumes %s pools of %s mosquitoes (%s mosquitoes total), ",
-        "with %s pools per trapping location across %s trapping locations. ",
-        "The clustered MLE uses the distribution of positive-pool counts ",
-        "across trapping locations, with ICC = %s."
+        "The figure uses the clustered design from the table: %s pools of %s mosquitoes ",
+        "(%s mosquitoes total), with %s pools per trapping location across %s trapping locations. ",
+        "The clustered MLE uses the distribution of positive-pool counts across trapping locations, ",
+        "with ICC = %s."
       ),
       format(n_pools, big.mark = ","),
-      format(as.integer(pool_size), big.mark = ","),
-      format(n_pools * as.integer(pool_size), big.mark = ","),
-      format(as.integer(pools_per_location), big.mark = ","),
+      format(as.integer(input$recommended_pool_size), big.mark = ","),
+      format(n_pools * as.integer(input$recommended_pool_size), big.mark = ","),
+      format(as.integer(input$recommended_pools_per_location), big.mark = ","),
       format(n_locations, big.mark = ","),
-      format(icc, trim = TRUE, scientific = FALSE)
+      format(input$recommended_icc, trim = TRUE, scientific = FALSE)
     ))
   } else {
-    n_pools <- minimum_pools_for_power(
-      p = design_prevalence,
-      p_t = p_t,
-      s = as.integer(pool_size),
-      required_power = required_power,
-      max_pools = 100000L
-    )
+    n_pools <- design$minimum_pools
     validate(need(!is.na(n_pools),
-                  "The recommended sample size was not reached within 100,000 pools."))
-    positive_pools_required <- floor(
-      n_pools * (-expm1(as.integer(pool_size) * log1p(-p_t)))
-    ) + 1L
+                  "The unclustered recommended sample size was not reached within 100,000 pools."))
     tags$p(sprintf(
       paste0(
-        "The figure assumes a total sample size of %s mosquitoes, ",
-        "tested in pools of %s mosquitoes. The MLE exceeds the threshold ",
-        "when at least %s pools test positive."
+        "The figure uses the unclustered design from the table: %s pools of %s mosquitoes ",
+        "(%s mosquitoes total). The MLE exceeds the threshold when at least %s pools test positive."
       ),
-      format(n_pools * as.integer(pool_size), big.mark = ","),
-      format(as.integer(pool_size), big.mark = ","),
-      format(positive_pools_required, big.mark = ",")
+      format(n_pools, big.mark = ","),
+      format(as.integer(input$recommended_pool_size), big.mark = ","),
+      format(n_pools * as.integer(input$recommended_pool_size), big.mark = ","),
+      floor(n_pools * (-expm1(
+        as.integer(input$recommended_pool_size) * log1p(-design$threshold)
+      ))) + 1L
     ))
   }
 })
-```
 
 ## Sampling over time
 
