@@ -784,7 +784,7 @@ div(
     "Pool size (mosquitoes per pool)",
     value = 25,
     min = 1,
-    max = 1000,
+    max = 100,
     step = 1
   )
 )
@@ -831,8 +831,8 @@ recommended_sample_size_designs <- reactive({
          "The resulting design prevalences must be less than 100%.")
   )
 
-  # Keep the clustered search to a maximum of 1,000 trapping locations.
-  max_locations <- 1000
+  # Keep the clustered search to a maximum of 500 trapping locations.
+  max_locations <- 500
   genera$minimum_pools <- vapply(
     seq_len(nrow(genera)),
     function(i) minimum_pools_for_power(
