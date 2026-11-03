@@ -233,6 +233,126 @@ and hence
 \]
 This expression explicitly depends on \(v\) and \(w\), unlike the probability limit.
 
+## Exact asymptotic bias under beta-distributed location prevalence
+
+The preceding inconsistency result applies to any distribution of location-level prevalence supported on \([0,1]\). A beta distribution provides an especially tractable alternative to the logit-normal mixing model, because its moments have closed forms.
+
+Suppose that
+\[
+P_j\overset{\mathrm{iid}}{\sim}\operatorname{Beta}(\alpha,\beta),
+\qquad \alpha,\beta>0,
+\]
+with the same conditional independent-infection and perfect-testing assumptions as above. The marginal prevalence is
+\[
+p=\mathbb E(P_j)=\frac{\alpha}{\alpha+\beta}.
+\]
+Two distinct individuals sampled from the same location have infection indicators with intraclass correlation
+\[
+\rho
+=\frac{\operatorname{Var}(P_j)}{p(1-p)}
+=\frac{1}{\alpha+\beta+1}.
+\]
+Thus a beta mixing distribution is uniquely parameterised by \(p\in(0,1)\) and \(\rho\in(0,1)\), through
+\[
+\alpha=p\frac{1-\rho}{\rho},
+\qquad
+\beta=(1-p)\frac{1-\rho}{\rho}.
+\]
+
+**Proposition (Exact naive-estimator limit under beta mixing).**
+
+For fixed pool size \(s\geq1\) and number of pools per location \(v\geq1\), as the number of independently sampled locations \(w\to\infty\), the naive estimator converges almost surely to
+\[
+\boxed{
+p_{\mathrm{ind},\beta}^*
+=
+1-
+\left\{
+\frac{(\beta)_s}{(\alpha+\beta)_s}
+\right\}^{1/s}
+=
+1-\left[
+\prod_{k=0}^{s-1}
+\frac{(1-p)(1-\rho)+k\rho}
+     {1-\rho+k\rho}
+\right]^{1/s},
+}
+\]
+where \((a)_s=a(a+1)\cdots(a+s-1)\) denotes the rising factorial. Moreover,
+\[
+p_{\mathrm{ind},\beta}^*\leq p,
+\]
+with equality for \(s=1\) and strict inequality for \(s>1\) when \(0<\rho<1\).
+
+**Proof.**
+
+The general probability-limit formula proved above gives
+\[
+p_{\mathrm{ind}}^*
+=1-\left[\mathbb E\{(1-P_j)^s\}\right]^{1/s}.
+\]
+Under the beta distribution, evaluating the integral against its density yields
+\[
+\begin{aligned}
+\mathbb E\{(1-P_j)^s\}
+&=\frac{1}{B(\alpha,\beta)}
+\int_0^1 x^{\alpha-1}(1-x)^{\beta+s-1}\,dx\\
+&=\frac{B(\alpha,\beta+s)}{B(\alpha,\beta)}\\
+&=\frac{(\beta)_s}{(\alpha+\beta)_s}.
+\end{aligned}
+\]
+Substituting the expressions for \(\alpha\) and \(\beta\), and multiplying numerator and denominator of each product factor by \(\rho\), gives the displayed expression in terms of \(p,\rho,s\). Finally, for \(s>1\), strict Jensen inequality for the non-degenerate variable \(1-P_j\) gives
+\[
+\mathbb E\{(1-P_j)^s\}>(1-p)^s,
+\]
+and hence \(p_{\mathrm{ind},\beta}^*<p\). If \(s=1\), the expectation is \(1-p\), so equality holds. \(\square\)
+
+**Corollary (Rare-prevalence approximation).**
+
+For fixed \(s\) and \(0<\rho<1\), as \(p\downarrow0\),
+\[
+\boxed{
+\frac{p_{\mathrm{ind},\beta}^*}{p}
+\longrightarrow
+\frac{1}{s}\sum_{k=0}^{s-1}
+\frac{1-\rho}{1-\rho+k\rho}.
+}
+\]
+In particular, the leading-order *relative* asymptotic bias depends only on \(s\) and \(\rho\).
+
+**Proof.**
+
+Write \(c=(1-\rho)/\rho>0\). The product in the proposition is
+\[
+M_s(p)=\prod_{k=0}^{s-1}\frac{(1-p)c+k}{c+k}.
+\]
+Since \(M_s(0)=1\), differentiating its logarithm at \(p=0\) gives
+\[
+\left.\frac{d}{dp}\log M_s(p)\right|_{p=0}
+=-\sum_{k=0}^{s-1}\frac{c}{c+k}.
+\]
+Consequently,
+\[
+M_s(p)=1-p\sum_{k=0}^{s-1}\frac{c}{c+k}+O(p^2),
+\]
+and the first-order expansion of \(1-M_s(p)^{1/s}\) yields
+\[
+p_{\mathrm{ind},\beta}^*
+=\frac{p}{s}\sum_{k=0}^{s-1}\frac{c}{c+k}+O(p^2).
+\]
+Dividing by \(p\) and substituting for \(c\) proves the result. \(\square\)
+
+**Remark (Dependence on the random-effects distribution).**
+
+For \(p=0.001\), \(\rho=0.10\), and \(s=50\), the exact beta-mixing expression gives
+\[
+p_{\mathrm{ind},\beta}^*\approx0.00034713
+\quad (0.034713\%),
+\]
+or approximately \(34.7\%\) of the true prevalence. For comparison, the logit-normal distribution calibrated to the same marginal prevalence and individual-level ICC gives approximately \(p_{\mathrm{ind},\mathrm{LN}}^*=0.00053071\) (\(0.053071\%\)). Thus matching the first two moments of the location-level prevalence distribution does not determine the nonlinear moment \(\mathbb E\{(1-P_j)^s\}\), and hence does not determine the naive estimator's asymptotic bias. Both limits are independent of the number of pools per location \(v\) under the stated \(w\to\infty\) regime.
+
+The boundary cases are also informative. With \(s=1\), the naive estimator is asymptotically unbiased under either mixing model. As \(\rho\downarrow0\) at fixed \(p\), the beta distribution concentrates at \(p\), so \(p_{\mathrm{ind},\beta}^*\to p\). Conversely, as \(\rho\uparrow1\), the beta mixing distribution approaches a distribution concentrated at zero and one; because \(\mathbb E\{(1-P_j)^s\}\to1-p\), the naive-estimator limit approaches \(1-(1-p)^{1/s}\).
+
 # Sufficiency of the location-count histogram
 
 Define
