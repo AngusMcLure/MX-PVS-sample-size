@@ -456,6 +456,106 @@ The MLR theorem assumes that \(\sigma\) is fixed as \(\mu\) varies. It therefore
 
 
 
+# Fixed-ICC parameterisation
+
+The fixed-\(\sigma\) result above is useful when the random-effects variance is specified independently of the prevalence parameter. In some survey designs, however, the design is specified in terms of an intraclass correlation coefficient (ICC). An analyst might therefore wish to hold the ICC fixed at its design value while allowing both \(\mu\) and \(\sigma\) to vary.
+
+## Defining the fixed-ICC likelihood
+
+Let
+\[
+P=\operatorname{logit}^{-1}(\mu+\sigma Z),\qquad Z\sim N(0,1),
+\]
+and define the marginal individual prevalence and individual-level ICC by
+\[
+p(\mu,\sigma)=\mathbb E(P),
+\qquad
+\rho(\mu,\sigma)
+=\frac{\operatorname{Var}(P)}{p(\mu,\sigma)\{1-p(\mu,\sigma)\}}.
+\]
+For a specified design value \(\rho_d\), the fixed-ICC parameterisation constrains
+\[
+\rho\{\mu,\sigma(\mu)\}=\rho_d.
+\]
+The likelihood is then a one-parameter likelihood along this constraint:
+\[
+L_{\rho_d}(\mu;\boldsymbol n)
+=\prod_{k=0}^{v}
+\pi_k\{\mu,\sigma(\mu)\}^{n_k}.
+\]
+This differs from fixing \(\sigma\): as \(\mu\) changes, \(\sigma\) must generally change as well in order to maintain the chosen ICC.
+
+## Why the fixed-\(\sigma\) MLR proof does not extend
+
+The composition proof above relies on the normal density being TP2 in \((z,\mu)\). That property holds when \(\sigma\) is constant. Along a fixed-ICC curve, the mixing density instead has the form
+\[
+a(z,\mu)=\frac{1}{\sigma(\mu)}
+\phi\!\left(\frac{z-\mu}{\sigma(\mu)}\right).
+\]
+Its log-density has cross-partial derivative
+\[
+\frac{\partial^2\log a(z,\mu)}
+{\partial z\,\partial\mu}
+=
+\frac{1}{\sigma(\mu)^2}
++
+\frac{2\{z-\mu\}\sigma'(\mu)}{\sigma(\mu)^3}.
+\]
+When \(\sigma'(\mu)\ne0\), this expression can be negative for some values of \(z\). Thus the normal mixing kernel is not generally TP2 along a varying-\(\sigma\) parameterisation, and the composition argument used for the fixed-\(\sigma\) theorem is no longer available.
+
+This observation alone would show only that the previous proof does not apply. In fact, numerical evaluation also gives a counterexample to MLR itself.
+
+## Numerical counterexample
+
+Consider \(s=5\) individuals per pool, \(v=5\) pools per trapping location, and a fixed individual-level ICC of \(\rho_d=0.10\). For each value of \(\mu\), \(\sigma\) was numerically chosen to satisfy the ICC constraint. The following two parameter values give:
+
+| Quantity | \(\mu_1=-4.5\) | \(\mu_2=-4.0\) |
+|:--|--:|--:|
+| \(\sigma\) | 1.502473 | 1.380352 |
+| Marginal prevalence \(p\) | 0.028737 | 0.039382 |
+| Individual-level ICC | 0.10 | 0.10 |
+
+The location-count probabilities, in order \(k=0,\ldots,5\), are approximately
+\[
+\begin{aligned}
+\boldsymbol\pi(\mu_1,\sigma_1)
+&=(0.660091,\ 0.201468,\ 0.076190,\ 0.034629,\ 0.017670,\ 0.009952),\\
+\boldsymbol\pi(\mu_2,\sigma_2)
+&=(0.568229,\ 0.235592,\ 0.103595,\ 0.050782,\ 0.026821,\ 0.014982).
+\end{aligned}
+\]
+Consequently, the likelihood ratios are
+\[
+\left(
+\frac{\pi_k(\mu_2,\sigma_2)}
+     {\pi_k(\mu_1,\sigma_1)}
+\right)_{k=0}^{5}
+\approx
+(0.860835,\ 1.169372,\ 1.359692,\ 1.466460,\ 1.517843,\ 1.505456).
+\]
+The ratio decreases between \(k=4\) and \(k=5\). This violates the required non-decreasing ordering, so the location-count family does **not** have a general MLR property under the fixed-ICC parameterisation.
+
+The counterexample is in a relatively low-prevalence range (approximately 2.9% to 3.9%) and uses a moderate ICC of 0.10. It is therefore not confined to an obviously extreme parameter setting. The numerical values were evaluated using high-order Gauss--Hermite quadrature; they are numerical evidence for this counterexample, rather than a symbolic characterisation of all fixed-ICC parameter values.
+
+## Consequences for score ordering and computation
+
+The score contribution from a location with \(k\) positive pools, when differentiating along the fixed-ICC curve, is
+\[
+u_k^{(\rho)}
+=
+\frac{d}{d\mu}
+\log\pi_k\{\mu,\sigma(\mu)\}.
+\]
+The fixed-\(\sigma\) corollary does not establish an ordering of these contributions, because its MLR premise is not available here. For example, at \(\mu=-4.25\), with \(s=v=5\) and \(\rho_d=0.10\), numerical differentiation along the fixed-ICC curve gives
+\[
+(u_0^{(\rho)},\ldots,u_5^{(\rho)})
+\approx
+(-0.298112,\ 0.314334,\ 0.615532,\ 0.766194,\ 0.834506,\ 0.817483).
+\]
+In this example, the contribution for \(k=5\) is slightly smaller than that for \(k=4\). This is a numerical example showing that the fixed-\(\sigma\) score ordering cannot simply be carried over; it is not a proof that score contributions are unordered for every fixed-ICC design.
+
+A fixed-ICC model can nevertheless be fitted as a one-dimensional likelihood, provided the ICC constraint defines an appropriate \(\sigma(\mu)\) over the parameter range of interest. What is lost is the general MLR guarantee, and hence the theoretical justification for algorithms that rely on monotone likelihood ratios or ordered threshold-score contributions. Such calculations should instead use direct enumeration or establish the relevant ordering separately over the design's parameter range. In practice, it is also important to examine sensitivity to the assumed design ICC: holding the design ICC fixed is a modelling constraint, not evidence that the realised population ICC is known.
+
 # Implications for threshold calculations
 
 For a fixed threshold \(p_t\) and fixed assumed \(\sigma\), let \(\mu_t\) be the unique value satisfying
