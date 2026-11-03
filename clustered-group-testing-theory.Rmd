@@ -233,6 +233,121 @@ and hence
 \]
 This expression explicitly depends on \(v\) and \(w\), unlike the probability limit.
 
+## Arbitrary mixtures of pool sizes: asymptotic bias and bounds
+
+The downward asymptotic bias is not restricted to pools of equal size. Consider an arbitrary finite set of pool-size classes \(a=1,\ldots,k\). Each of \(w\) independently sampled locations contributes \(v_a\geq1\) pools of size \(s_a\geq1\) in class \(a\), where the \(s_a\) and \(v_a\) are fixed as \(w\to\infty\). The pool-size allocation is identical across locations and does not depend on the location-specific prevalence.
+
+In this section only, the location prevalences \(P_1,\ldots,P_w\) may follow *any* common distribution \(F\) on \([0,1]\), rather than necessarily the logit-normal model introduced above. Write \(p=\mathbb E(P_j)\), and continue to assume that individual infection indicators are independent conditional on \(P_j\), that distinct pools do not overlap, and that all pool tests are perfect.
+
+Let \(K_{ja}\) be the number of positive pools of size \(s_a\) at location \(j\), and \(X_a=\sum_{j=1}^w K_{ja}\). Conditional on \(P_j\),
+\[
+K_{ja}\mid P_j
+\sim\operatorname{Binomial}\left(v_a,1-(1-P_j)^{s_a}\right).
+\]
+An analyst ignoring the location structure, but correctly retaining each pool's actual size, maximises the independent-pool log-likelihood
+\[
+\ell_w(\theta)
+=\sum_{a=1}^k
+\left[
+X_a\log\{1-(1-\theta)^{s_a}\}
++(wv_a-X_a)s_a\log(1-\theta)
+\right].
+\]
+For unequal \(s_a\), its maximiser generally has no closed-form expression.
+
+**Theorem (Asymptotic underestimation for an arbitrary finite mixture of pool sizes).**
+
+Suppose \(0<p<1\), the distribution of \(P_j\) is non-degenerate, and at least one pool-size class satisfies \(s_a>1\). Then, as \(w\to\infty\) with \(k\), \(s_a\), and \(v_a\) fixed, the naive MLE satisfies
+\[
+\widehat p_{\mathrm{naive},w}
+\xrightarrow{\mathrm{a.s.}}p_{\mathrm{mix}}^*<p.
+\]
+Define, for every positive integer \(s\),
+\[
+\bar q_s=1-\mathbb E\{(1-P_j)^s\},
+\qquad
+p_s^*=1-\left[\mathbb E\{(1-P_j)^s\}\right]^{1/s}.
+\]
+Then \(p_{\mathrm{mix}}^*\) is the unique solution in \((0,1)\) of
+\[
+\boxed{
+\sum_{a=1}^k
+v_as_a
+\frac{\bar q_{s_a}-\{1-(1-p_{\mathrm{mix}}^*)^{s_a}\}}
+     {1-(1-p_{\mathrm{mix}}^*)^{s_a}}
+=0,
+}
+\]
+and it obeys the bounds
+\[
+\boxed{
+p_{s_{\max}}^*
+\ \leq\ p_{\mathrm{mix}}^*
+\ \leq\ p_{s_{\min}}^*
+\ \leq\ p,
+\qquad
+s_{\min}=\min_a s_a,\quad s_{\max}=\max_a s_a.
+}
+\]
+If \(s_{\min}<s_{\max}\), both inequalities bounding \(p_{\mathrm{mix}}^*\) between the single-size limits are strict.
+
+**Proof.**
+
+The strong law of large numbers across independent locations gives, for every class \(a\),
+\[
+\frac{X_a}{wv_a}\xrightarrow{\mathrm{a.s.}}\bar q_{s_a}.
+\]
+Reparameterise the naive prevalence as \(\theta=1-e^{-h}\), with \(h>0\). The normalised log-likelihood converges pointwise almost surely to
+\[
+L(h)=\sum_{a=1}^k v_a
+\left[
+\bar q_{s_a}\log(1-e^{-s_ah})
+-(1-\bar q_{s_a})s_ah
+\right].
+\]
+Writing \(q_s(h)=1-e^{-sh}\), its first two derivatives are
+\[
+L'(h)=
+\sum_{a=1}^k v_as_a
+\frac{\bar q_{s_a}-q_{s_a}(h)}{q_{s_a}(h)}
+\]
+and
+\[
+L''(h)=
+-\sum_{a=1}^k
+v_as_a^2\bar q_{s_a}
+\frac{e^{s_ah}}{(e^{s_ah}-1)^2}<0.
+\]
+Since \(0<\bar q_{s_a}<1\), the derivative \(L'(h)\) decreases continuously from \(+\infty\) as \(h\downarrow0\) to
+\(-\sum_a v_as_a(1-\bar q_{s_a})<0\) as \(h\to\infty\). Thus \(L\) has a unique interior maximiser \(h^*\). The finite-sample score is also strictly decreasing whenever positive pools are observed; the strong law and convergence of its derivative on compact subsets imply that its unique zero converges almost surely to \(h^*\). Consequently the naive MLE converges almost surely to \(p_{\mathrm{mix}}^*=1-e^{-h^*}\).
+
+Now put \(h_p=-\log(1-p)\). Convexity of \(x\mapsto x^{s_a}\) and Jensen's inequality yield
+\[
+\bar q_{s_a}
+=1-\mathbb E\{(1-P_j)^{s_a}\}
+\leq1-(1-p)^{s_a}
+=q_{s_a}(h_p).
+\]
+The inequality is strict for \(s_a>1\), because \(P_j\) is non-degenerate. Every summand in \(L'(h_p)\) is therefore non-positive and at least one is strictly negative, so \(L'(h_p)<0\). The unique zero must satisfy \(h^*<h_p\), proving \(p_{\mathrm{mix}}^*<p\). Re-expressing \(L'(h^*)=0\) in terms of \(p_{\mathrm{mix}}^*\) gives the displayed estimating equation.
+
+Finally, \(p_s^*\) is precisely the value of \(\theta\) for which \(\bar q_s=1-(1-\theta)^s\), and hence the zero of the corresponding individual summand in \(L'\). The sum is positive below \(\min_a p_{s_a}^*\) and negative above \(\max_a p_{s_a}^*\). Therefore
+\[
+\min_a p_{s_a}^*
+\leq p_{\mathrm{mix}}^*
+\leq\max_a p_{s_a}^*.
+\]
+The power-mean inequality applied to the non-negative non-degenerate variable \(1-P_j\) shows that
+\[
+\left[\mathbb E\{(1-P_j)^{s}\}\right]^{1/s}
+\]
+is strictly increasing in \(s>0\). Consequently \(p_s^*\) is strictly decreasing in \(s\), establishing the stated bounds and their strictness when the smallest and largest pool sizes differ. \(\square\)
+
+**Remark (Equality cases and scope).**
+
+If every pool has size one, then \(p_{\mathrm{mix}}^*=p\), even when location prevalence varies. The same equality holds for arbitrary pool sizes if \(P_j=p\) almost surely (no between-location heterogeneity). With heterogeneous prevalence and at least one pool of size greater than one, the asymptotic inequality is strict, including when some other pools contain only one individual.
+
+The theorem concerns the limit as the *number of independent locations* increases, not a fixed number of locations with ever more pools per location. It does not assert a deterministic ordering between the naive and correctly specified clustered MLEs for each realised finite sample, or an ordering of their finite-sample expectations. Its conclusion can also fail if the numbers or sizes of pools contributed by a location depend systematically on that location's prevalence: the identical, non-informative pool-size allocation is an explicit assumption.
+
 ## Exact asymptotic bias under beta-distributed location prevalence
 
 The preceding inconsistency result applies to any distribution of location-level prevalence supported on \([0,1]\). A beta distribution provides an especially tractable alternative to the logit-normal mixing model, because its moments have closed forms.
@@ -341,6 +456,61 @@ p_{\mathrm{ind},\beta}^*
 =\frac{p}{s}\sum_{k=0}^{s-1}\frac{c}{c+k}+O(p^2).
 \]
 Dividing by \(p\) and substituting for \(c\) proves the result. \(\square\)
+
+**Corollary (Rare-prevalence limit for an arbitrary beta-mixed pool-size design).**
+
+Under the arbitrary-\(k\) design of the preceding theorem, suppose that \(P_j\sim\operatorname{Beta}(\alpha,\beta)\), parameterised by marginal prevalence \(p\) and fixed individual-level ICC \(\rho\in(0,1)\) as above. Then, as \(p\downarrow0\) with \(\rho\), \(s_a\), and \(v_a\) fixed,
+\[
+\boxed{
+\frac{p_{\mathrm{mix},\beta}^*}{p}
+\longrightarrow
+\frac{\displaystyle\sum_{a=1}^k v_a
+\sum_{m=0}^{s_a-1}
+\frac{1-\rho}{1-\rho+m\rho}}
+{\displaystyle\sum_{a=1}^k v_a s_a}.
+}
+\]
+Equivalently, the limiting relative prevalence estimate is a weighted average of the single-pool-size rare-prevalence ratios, with weights proportional to \(v_as_a\), the number of individuals sampled in each pool-size class per location.
+
+**Proof.**
+
+Set \(c=(1-\rho)/\rho\), and write
+\[
+A_s=\sum_{m=0}^{s-1}\frac{c}{c+m}.
+\]
+The beta moment calculation above gives
+\[
+\bar q_s
+=1-\prod_{m=0}^{s-1}\frac{(1-p)c+m}{c+m}
+=pA_s+O(p^2).
+\]
+By the bounds in the arbitrary-mixture theorem and the preceding rare-prevalence corollary, \(p_{\mathrm{mix},\beta}^*=O(p)\). Hence \(h^*=-\log(1-p_{\mathrm{mix},\beta}^*)=O(p)\), and
+\[
+q_{s_a}(h^*)=s_ah^*+O(p^2).
+\]
+Substitute these expansions into the equivalent score equation
+\[
+0=\sum_{a=1}^k v_as_a
+\left[\frac{\bar q_{s_a}}{q_{s_a}(h^*)}-1\right].
+\]
+It follows, to leading order, that
+\[
+h^*
+=p\frac{\sum_a v_aA_{s_a}}{\sum_a v_as_a}+O(p^2).
+\]
+Since \(p_{\mathrm{mix},\beta}^*=1-e^{-h^*}=h^*+O(p^2)\), division by \(p\) and substitution for \(c\) prove the result. \(\square\)
+
+**Numerical illustration (two pool sizes).**
+
+With \(p=0.001\), \(\rho=0.10\), \(v_1=v_2=10\), \(s_1=25\), and \(s_2=50\), the exact beta moment expressions and the one-dimensional limiting-score equation give
+\[
+\begin{aligned}
+p_{25}^*&\approx0.000493559,\\
+p_{\mathrm{mix},\beta}^*&\approx0.000396026,\\
+p_{50}^*&\approx0.000347133.
+\end{aligned}
+\]
+The rare-prevalence corollary gives \(p_{\mathrm{mix},\beta}^*\approx0.000395921\) at first order. The mixed-size limit is strictly between those for the two component pool sizes, but substantially below the true prevalence of \(0.001\).
 
 **Remark (Dependence on the random-effects distribution).**
 
