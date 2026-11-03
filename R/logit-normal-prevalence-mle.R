@@ -177,11 +177,14 @@ logit_normal_pool_count_mle <- function(
 
 
 logit_normal_clustered_mle_setup <- function(
-    mu, sigma, p_t, s, v, n_quad = 120L
+    mu, sigma, p_t, s, v, n_quad = 120L,
+    sigma_assumed = sigma
 ) {
   stopifnot(
     length(mu) == 1L, is.finite(mu),
     length(sigma) == 1L, is.finite(sigma), sigma >= 0,
+    length(sigma_assumed) == 1L, is.finite(sigma_assumed),
+    sigma_assumed >= 0,
     length(p_t) == 1L, is.finite(p_t), p_t > 0, p_t < 1,
     length(s) == 1L, is.finite(s), s >= 1, s == as.integer(s),
     length(v) == 1L, is.finite(v), v >= 1, v == as.integer(v)
@@ -192,8 +195,8 @@ logit_normal_clustered_mle_setup <- function(
       mu, sigma, s, v, n_quad
     ),
     score = logit_normal_pool_count_score(
-      logit_normal_mu_from_grand_mean(p_t, sigma, n_quad),
-      sigma, s, v, n_quad
+      logit_normal_mu_from_grand_mean(p_t, sigma_assumed, n_quad),
+      sigma_assumed, s, v, n_quad
     )
   )
 }
@@ -215,11 +218,14 @@ prob_estimate_above_threshold_clustered <- function(
     mu, sigma, p_t, s, v, w,
     n_quad = 120L,
     max_configurations = 1e6,
-    setup = NULL
+    setup = NULL,
+    sigma_assumed = sigma
 ) {
   stopifnot(
     length(mu) == 1L, is.finite(mu),
     length(sigma) == 1L, is.finite(sigma), sigma >= 0,
+    length(sigma_assumed) == 1L, is.finite(sigma_assumed),
+    sigma_assumed >= 0,
     length(p_t) == 1L, is.finite(p_t), p_t >= 0, p_t < 1,
     length(s) == 1L, is.finite(s), s >= 1, s == as.integer(s),
     length(v) == 1L, is.finite(v), v >= 1, v == as.integer(v),
@@ -240,8 +246,11 @@ prob_estimate_above_threshold_clustered <- function(
     return(1 - true_probabilities[1]^w)
   }
 
-  # With no location heterogeneity, this is the ordinary pooled MLE.
-  if (sigma == 0) {
+  # If both the true and assumed models have no heterogeneity, this is the
+  # ordinary pooled MLE. Otherwise retain the location-level calculation:
+  # the true sigma governs the sampling distribution and sigma_assumed
+  # governs the estimator's likelihood and threshold decision.
+  if (sigma == 0 && sigma_assumed == 0) {
     q <- -expm1(s * log1p(-plogis(mu)))
     q_t <- -expm1(s * log1p(-p_t))
     return(pbinom(floor(w * v * q_t), size = w * v,
@@ -250,7 +259,8 @@ prob_estimate_above_threshold_clustered <- function(
 
   if (is.null(setup)) {
     setup <- logit_normal_clustered_mle_setup(
-      mu, sigma, p_t, s, v, n_quad
+      mu, sigma, p_t, s, v, n_quad,
+      sigma_assumed = sigma_assumed
     )
   }
   true_probabilities <- setup$probabilities
