@@ -1080,6 +1080,7 @@ renderPlotly({
     )
 })
 ```
+```{r false-discovery-assumptions}
 renderUI({
   designs <- recommended_sample_size_designs()
   genus <- input$false_discovery_genus
