@@ -345,7 +345,7 @@ u_k=
 \]
 Then
 \[
-u_0<u_1<\cdots<u_v.
+u_0\leq u_1\leq\cdots\leq u_v.
 \]
 \end{corollary}
 
@@ -361,7 +361,7 @@ is increasing in \(\mu\). Differentiating gives
 \frac{\partial}{\partial\mu}\log\pi_k(\mu,\sigma)
 \geq0.
 \]
-Under the strict MLR property, the inequality is strict.
+The MLR property implies the non-strict inequality. Strict MLR over finite parameter intervals does not, by itself, guarantee a strictly positive derivative at every individual parameter value.
 \end{proof}
 
 \begin{remark}[Scope of the result]
