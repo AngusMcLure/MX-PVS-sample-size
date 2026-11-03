@@ -160,6 +160,79 @@ p_{\mathrm{ind}}^*\leq p,
 \]
 with strict inequality whenever \(P_j\) is non-degenerate and \(s>1\). Thus, under this model, ignoring between-location heterogeneity leads to an asymptotic downward bias for the marginal individual prevalence.
 
+## Does the number of pools per trapping location affect naive-estimator bias?
+
+The probability limit above is independent of \(v\), but this statement requires a precise asymptotic regime: the number of independent trapping locations \(w\) tends to infinity while \(v\) and \(s\) are fixed. In particular, increasing \(v\) cannot remove the inconsistency caused by unmodelled between-location heterogeneity.
+
+For finite \(w\), the mean of the naive estimator can depend on both \(v\) and \(w\). Define the observed positive-pool fraction
+\[
+T=\frac{X}{vw}=\frac{1}{w}\sum_{j=1}^w\frac{K_j}{v},
+\qquad
+g(t)=1-(1-t)^{1/s}.
+\]
+Then \(\widehat p_{\mathrm{ind}}=g(T)\) and
+\[
+\mathbb{E}(T)=\mathbb{E}(Q_j)=\bar q
+\]
+regardless of \(v\). For \(s>1\), however,
+\[
+g''(t)=\frac{s-1}{s^2}(1-t)^{1/s-2}>0
+\quad(0\leq t<1).
+\]
+Consequently, Jensen's inequality gives
+\[
+\mathbb{E}(\widehat p_{\mathrm{ind}})
+=\mathbb{E}\{g(T)\}
+\geq g(\bar q)=p_{\mathrm{ind}}^*.
+\]
+Thus the finite-sample mean is *at least* the asymptotic probability limit; its additional upward Jensen bias depends on the variability of \(T\). This does not imply that the finite-sample mean is always below the true marginal prevalence \(p\).
+
+The variance of \(T\) separates the within-location and between-location components. Since \(K_j\mid Q_j\sim\operatorname{Binomial}(v,Q_j)\),
+\[
+\begin{aligned}
+\operatorname{Var}(T)
+&=\frac{1}{w}\operatorname{Var}(K_j/v)\\
+&=\frac{1}{w}\left[
+\operatorname{Var}(Q_j)+
+\frac{\mathbb{E}\{Q_j(1-Q_j)\}}{v}
+\right].
+\end{aligned}
+\]
+The first term persists as \(v\) increases, while the second decreases as \(1/v\). For sufficiently concentrated \(T\) away from 1, a second-order delta-method approximation is
+\[
+\mathbb{E}(\widehat p_{\mathrm{ind}})
+\approx p_{\mathrm{ind}}^*
++\frac{g''(\bar q)}{2w}
+\left[
+\operatorname{Var}(Q_j)+
+\frac{\mathbb{E}\{Q_j(1-Q_j)\}}{v}
+\right].
+\]
+This approximation predicts a \(v\)-dependent finite-sample correction, but not a \(v\)-dependent probability limit as \(w\to\infty\).
+
+For completeness, when \(w\) is fixed and \(v\to\infty\), conditional laws of large numbers instead give
+\[
+T\ \longrightarrow\ \frac{1}{w}\sum_{j=1}^w Q_j,
+\qquad
+\widehat p_{\mathrm{ind}}\ \longrightarrow\
+g\left(\frac{1}{w}\sum_{j=1}^w Q_j\right).
+\]
+The limit is generally random because only \(w\) independent location effects have been sampled. Taking \(w\to\infty\) afterwards recovers \(p_{\mathrm{ind}}^*\).
+
+The exact finite-sample mean, if needed, can be calculated from the location-level probabilities \(\pi_k\) using the probability-generating function
+\[
+H(z)=\sum_{k=0}^v\pi_k z^k,\qquad
+\Pr(X=x)=[z^x]H(z)^w,
+\]
+and hence
+\[
+\mathbb{E}(\widehat p_{\mathrm{ind}})
+=\sum_{x=0}^{vw}
+\left[1-\left(1-\frac{x}{vw}\right)^{1/s}\right]
+[z^x]H(z)^w.
+\]
+This expression explicitly depends on \(v\) and \(w\), unlike the probability limit.
+
 # Sufficiency of the location-count histogram
 
 Define
