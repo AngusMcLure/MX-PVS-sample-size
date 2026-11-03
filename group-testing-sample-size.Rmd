@@ -1051,7 +1051,6 @@ renderPlotly({
       )
     ) |>
     plotly::layout(
-      title = list(text = design_description, x = 0),
       xaxis = list(title = "True prevalence (%)"),
       yaxis = list(
         title = "Probability that the MLE exceeds the threshold",
