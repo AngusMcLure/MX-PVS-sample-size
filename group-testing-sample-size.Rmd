@@ -123,7 +123,7 @@ If all pools are negative, the likelihood is maximised at the boundary $\hat\mu=
 The vector $(n_0,\ldots,n_v)$ has a multinomial distribution with $w$ locations and cell probabilities $\pi_0,\ldots,\pi_v$. We calculate the exact probability that the MLE of population mean prevalence exceeds the threshold by summing over the possible location-count patterns. This event generally depends on how positive pools are distributed across trapping locations, not just on their total number. For the common design with two pools per trapping location, the exact calculation can be reduced to a one-dimensional sum of binomial probabilities.
 
 
-<div style="color: red; font-size: 1.4em; font-weight: bold;">All code and figures below are a work in progress and may change as I improve the methods. I'm am reasonably confident that the outputs are approximately correct, but increasing the number of pools per trapping location above 2 may not work temporarily.</div>
+<div style="color: red; font-size: 1.4em; font-weight: bold;">All code and figures below are a work in progress and may change as I improve the methods. I am reasonably confident that the outputs are approximately correct. However, increasing the number of pools per trapping location to 3 or more will temporarily not work (or run very slowly) until I come up with a better algorithm</div>
 
 ## Power of a single survey
 
@@ -936,7 +936,7 @@ The sample sizes recommended above do not have any consideration for false disco
 
 The probability of false discovery is highest when the true prevalence is close to (but below) the threshold. This is, to my mind, not such a bad thing since if the prevalence is still close to the threshold when the Pre-VS survey is taking place (which is probably a number of years after the last TAS), then this indicates transmission is not decreasing substantially and some action may be required anyway.
 
-When the true prevalence is about half the threshold, the false discovery probability is roughly 10-15\% if ignoring clustering and <5\% if accounting for clustering. (Though this depends on choice of assumptions above). **Is this acceptable?** Again, this is an *operational decision*, not a statistical one.
+When the true prevalence is about half the threshold, the false discovery probability is roughly 10-16\% if ignoring clustering slightly less if accounting for clustering. (Though this depends on choice of assumptions above). **Is this acceptable?** Again, this is an *operational decision*, not a statistical one.
 
 If, operationally, avoiding false discovery is of similar importance to ensuring true discoveries, then our sample size calculations should account for this. For instance, instead of comparing the MLE to the threshold we could consider comparing the one-sided lower confidence bound (e.g. 75%) to the threshold and only recommend EU-wide action if this lower bound is above the threshold. But this is not the framework that was decided on in the London meeting.
 
@@ -1503,6 +1503,3 @@ renderDataTable({
   )
 })
 ```
-
-
-Note that for the genera with low thresholds (*Aedes* and *Culex* in particular) if the first survey happens before the doubling time has elapsed then the probability that resurgence is detected on the first survey is not much above 50% and is hard to increase with increasing numbers of samples. Moreover the probability of a false detection under the scenario of gradual halving of prevalence over time (i.e. a negative doubling time) is also very high. I.e. if the assumptions above hold then there's not much point in doing a small/moderate MX sized survey soon after TAS-3 as there is a high chance of a false positive detection and a low chance of a true detection. However this is all predicated on the assumptions above and should be considered even more tentative then other recommendations in this document so far.
