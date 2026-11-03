@@ -123,6 +123,8 @@ If all pools are negative, the likelihood is maximised at the boundary $\hat\mu=
 The vector $(n_0,\ldots,n_v)$ has a multinomial distribution with $w$ locations and cell probabilities $\pi_0,\ldots,\pi_v$. We calculate the exact probability that the MLE of population mean prevalence exceeds the threshold by summing over the possible location-count patterns. This event generally depends on how positive pools are distributed across trapping locations, not just on their total number. For the common design with two pools per trapping location, the exact calculation can be reduced to a one-dimensional sum of binomial probabilities.
 
 
+<div style="color: red; font-size: 1.4em; font-weight: bold;">All code and figures below are a work in progress and may change as I improve the methods. I'm am reasonably confident that the outputs are approximately correct, but increasing the number of pools per trapping location above 2 may not work temporarily.</div>
+
 ## Power of a single survey
 
 <details>
