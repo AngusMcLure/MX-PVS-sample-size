@@ -1102,62 +1102,67 @@ renderUI({
     validate(need(!is.na(n_locations),
                   "The clustered recommended sample size was not reached within 1,000 trapping locations."))
     n_pools <- n_locations * as.integer(input$recommended_pools_per_location)
+    pool_size <- as.integer(input$recommended_pool_size)
+    pools_per_location <- as.integer(input$recommended_pools_per_location)
     design_prevalence <- design$design_prevalence
     icc <- input$recommended_icc
     assumed_parameters <- logit_normal_parameters_from_icc(
       design_prevalence, icc
     )
-    tags$details(
-      tags$summary("Details"),
+
+    tagList(
       tags$p(sprintf(
         paste0(
           "The figure uses the clustered design from the table: %s pools of %s mosquitoes ",
-          "(%s mosquitoes total), with %s pools per trapping location across %s trapping locations."
+          "(%s mosquitoes total), with %s pools per trapping location across %s trapping locations, ",
+          "accounting for clustering (ICC = %s)."
         ),
         format(n_pools, big.mark = ","),
-        format(as.integer(input$recommended_pool_size), big.mark = ","),
-        format(n_pools * as.integer(input$recommended_pool_size), big.mark = ","),
-        format(as.integer(input$recommended_pools_per_location), big.mark = ","),
-        format(n_locations, big.mark = ",")
-      )),
-      tags$p(sprintf(
-        paste0(
-          "The data-generating model maintains ICC = %s as true prevalence varies. ",
-          "However, the MLE assumes a fixed sigma, calculated from the design prevalence of %.3f%% ",
-          "and ICC = %s, and reuses that value across the entire curve. ",
-          "Consequently, the assumed logit-normal model is correctly specified at the design prevalence ",
-          "but is misspecified at other true prevalences. This represents the practical situation ",
-          "where the analyst uses the clustering assumption selected at the design stage because ",
-          "the true prevalence is not known."
-        ),
-        format(icc, trim = TRUE, scientific = FALSE),
-        100 * design_prevalence,
+        format(pool_size, big.mark = ","),
+        format(n_pools * pool_size, big.mark = ","),
+        format(pools_per_location, big.mark = ","),
+        format(n_locations, big.mark = ","),
         format(icc, trim = TRUE, scientific = FALSE)
       )),
-      tags$p(sprintf(
-        "The fixed assumed sigma is %.4f.",
-        unname(assumed_parameters[["sigma"]])
-      ))
+      tags$details(
+        tags$summary("Details"),
+        tags$p(sprintf(
+          paste0(
+            "The data-generating model maintains ICC = %s as true prevalence varies. ",
+            "However, the MLE assumes a fixed sigma, calculated from the design prevalence of %.3f%% ",
+            "and ICC = %s, and reuses that value across the entire curve. ",
+            "Consequently, the assumed logit-normal model is correctly specified at the design prevalence ",
+            "but is misspecified at other true prevalences. This represents the practical situation ",
+            "where the analyst uses the clustering assumption selected at the design stage because ",
+            "the true prevalence is not known."
+          ),
+          format(icc, trim = TRUE, scientific = FALSE),
+          100 * design_prevalence,
+          format(icc, trim = TRUE, scientific = FALSE)
+        )),
+        tags$p(sprintf(
+          "The fixed assumed sigma is %.4f.",
+          unname(assumed_parameters[["sigma"]])
+        ))
+      )
     )
   } else {
     n_pools <- design$minimum_pools
     validate(need(!is.na(n_pools),
                   "The unclustered recommended sample size was not reached within 100,000 pools."))
-    tags$details(
-      tags$summary("Details"),
-      tags$p(sprintf(
-        paste0(
-          "The figure uses the unclustered design from the table: %s pools of %s mosquitoes ",
-          "(%s mosquitoes total). The MLE exceeds the threshold when at least %s pools test positive."
-        ),
-        format(n_pools, big.mark = ","),
-        format(as.integer(input$recommended_pool_size), big.mark = ","),
-        format(n_pools * as.integer(input$recommended_pool_size), big.mark = ","),
-        floor(n_pools * (-expm1(
-          as.integer(input$recommended_pool_size) * log1p(-design$threshold)
-        ))) + 1L
-      ))
-    )
+    pool_size <- as.integer(input$recommended_pool_size)
+    tags$p(sprintf(
+      paste0(
+        "The figure uses the unclustered design from the table: %s pools of %s mosquitoes ",
+        "(%s mosquitoes total). The MLE exceeds the threshold when at least %s pools test positive."
+      ),
+      format(n_pools, big.mark = ","),
+      format(pool_size, big.mark = ","),
+      format(n_pools * pool_size, big.mark = ","),
+      floor(n_pools * (-expm1(
+        pool_size * log1p(-design$threshold)
+      ))) + 1L
+    ))
   }
 })
 ```
