@@ -790,6 +790,7 @@ div(
 )
 ```
 
+```{r recommended-sample-sizes-table}
 # Shared calculation for the recommended designs. Both the table and the
 # false-discovery section use these same precomputed designs.
 recommended_sample_size_designs <- reactive({
@@ -879,10 +880,10 @@ renderDataTable({
   table_data <- data.frame(
     Genus = genera$genus,
     Threshold = sprintf("%.3g%%", 100 * genera$threshold),
-    \`Design prevalence\` = sprintf("%.3g%%", 100 * genera$design_prevalence),
-    \`# mosquitoes\` = display_value(genera$minimum_sample_size),
-    \`# mosquitoes clustered\` = display_value(genera$clustered_sample_size),
-    \`# locations\` = display_value(genera$minimum_locations_clustered),
+    `Design prevalence` = sprintf("%.3g%%", 100 * genera$design_prevalence),
+    `# mosquitoes` = display_value(genera$minimum_sample_size),
+    `# mosquitoes clustered` = display_value(genera$clustered_sample_size),
+    `# locations` = display_value(genera$minimum_locations_clustered),
     check.names = FALSE
   )
 
@@ -925,6 +926,7 @@ renderDataTable({
     )
   )
 })
+```
 
 ## What about false discovery?
 
@@ -954,6 +956,7 @@ div(
 )
 ```
 
+```{r false-discovery-plot}
 renderPlotly({
   designs <- recommended_sample_size_designs()
   genus <- input$false_discovery_genus
@@ -1076,7 +1079,7 @@ renderPlotly({
       margin = list(t = 115, b = 65, l = 85)
     )
 })
-
+```
 renderUI({
   designs <- recommended_sample_size_designs()
   genus <- input$false_discovery_genus
@@ -1122,6 +1125,8 @@ renderUI({
     ))
   }
 })
+```
+
 
 ## Sampling over time
 
