@@ -237,20 +237,24 @@ This expression explicitly depends on \(v\) and \(w\), unlike the probability li
 
 The downward asymptotic bias is not restricted to pools of equal size. Consider an arbitrary finite set of pool-size classes \(a=1,\ldots,k\). Each of \(w\) independently sampled locations contributes \(v_a\geq1\) pools of size \(s_a\geq1\) in class \(a\), where the \(s_a\) and \(v_a\) are fixed as \(w\to\infty\). The pool-size allocation is identical across locations and does not depend on the location-specific prevalence.
 
-In this section only, the location prevalences \(P_1,\ldots,P_w\) may follow *any* common distribution \(F\) on \([0,1]\), rather than necessarily the logit-normal model introduced above. Write \(p=\mathbb E(P_j)\), and continue to assume that individual infection indicators are independent conditional on \(P_j\), that distinct pools do not overlap, and that all pool tests are perfect.
+In this section only, the location prevalences \(P_1,\ldots,P_w\) may follow *any* common distribution \(F\) on \([0,1]\), rather than necessarily the logit-normal model introduced above. Write \(p=\mathbb E(P_j)\) for the **true marginal population prevalence**, and continue to assume that individual infection indicators are independent conditional on \(P_j\), that distinct pools do not overlap, and that all pool tests are perfect.
 
 Let \(K_{ja}\) be the number of positive pools of size \(s_a\) at location \(j\), and \(X_a=\sum_{j=1}^w K_{ja}\). Conditional on \(P_j\),
 \[
 K_{ja}\mid P_j
 \sim\operatorname{Binomial}\left(v_a,1-(1-P_j)^{s_a}\right).
 \]
-An analyst ignoring the location structure, but correctly retaining each pool's actual size, maximises the independent-pool log-likelihood
+An analyst ignoring the location structure, but correctly retaining each pool's actual size, maximises the independent-pool log-likelihood. To distinguish the argument of this likelihood from the true prevalence \(p\), let \(t\in(0,1)\) denote a *candidate prevalence value* and define
 \[
-\ell_w(\theta)
+q_s(t)=1-(1-t)^s.
+\]
+The naive log-likelihood is
+\[
+\ell_w(t)
 =\sum_{a=1}^k
 \left[
-X_a\log\{1-(1-\theta)^{s_a}\}
-+(wv_a-X_a)s_a\log(1-\theta)
+X_a\log q_{s_a}(t)
++(wv_a-X_a)s_a\log(1-t)
 \right].
 \]
 For unequal \(s_a\), its maximiser generally has no closed-form expression.
@@ -273,8 +277,8 @@ Then \(p_{\mathrm{mix}}^*\) is the unique solution in \((0,1)\) of
 \boxed{
 \sum_{a=1}^k
 v_as_a
-\frac{\bar q_{s_a}-\{1-(1-p_{\mathrm{mix}}^*)^{s_a}\}}
-     {1-(1-p_{\mathrm{mix}}^*)^{s_a}}
+\frac{\bar q_{s_a}-q_{s_a}(p_{\mathrm{mix}}^*)}
+     {q_{s_a}(p_{\mathrm{mix}}^*)}
 =0,
 }
 \]
@@ -297,40 +301,61 @@ The strong law of large numbers across independent locations gives, for every cl
 \[
 \frac{X_a}{wv_a}\xrightarrow{\mathrm{a.s.}}\bar q_{s_a}.
 \]
-Reparameterise the naive prevalence as \(\theta=1-e^{-h}\), with \(h>0\). The normalised log-likelihood converges pointwise almost surely to
+For a candidate prevalence \(t\in(0,1)\), the normalised naive log-likelihood therefore converges almost surely to
 \[
-L(h)=\sum_{a=1}^k v_a
+L(t)=\sum_{a=1}^k v_a
 \left[
-\bar q_{s_a}\log(1-e^{-s_ah})
--(1-\bar q_{s_a})s_ah
+\bar q_{s_a}\log q_{s_a}(t)
++(1-\bar q_{s_a})s_a\log(1-t)
 \right].
 \]
-Writing \(q_s(h)=1-e^{-sh}\), its first two derivatives are
+Differentiation directly with respect to prevalence gives
 \[
-L'(h)=
-\sum_{a=1}^k v_as_a
-\frac{\bar q_{s_a}-q_{s_a}(h)}{q_{s_a}(h)}
+L'(t)=\frac{1}{1-t}\,G(t),
+\qquad
+G(t)=\sum_{a=1}^k
+v_as_a
+\frac{\bar q_{s_a}-q_{s_a}(t)}{q_{s_a}(t)}.
 \]
-and
+The factor \(1/(1-t)\) is strictly positive. Moreover,
 \[
-L''(h)=
--\sum_{a=1}^k
-v_as_a^2\bar q_{s_a}
-\frac{e^{s_ah}}{(e^{s_ah}-1)^2}<0.
+G'(t)
+=-\sum_{a=1}^k
+v_as_a\bar q_{s_a}
+\frac{q_{s_a}'(t)}{q_{s_a}(t)^2}
+<0,
+\qquad
+q_s'(t)=s(1-t)^{s-1}>0.
 \]
-Since \(0<\bar q_{s_a}<1\), the derivative \(L'(h)\) decreases continuously from \(+\infty\) as \(h\downarrow0\) to
-\(-\sum_a v_as_a(1-\bar q_{s_a})<0\) as \(h\to\infty\). Thus \(L\) has a unique interior maximiser \(h^*\). The finite-sample score is also strictly decreasing whenever positive pools are observed; the strong law and convergence of its derivative on compact subsets imply that its unique zero converges almost surely to \(h^*\). Consequently the naive MLE converges almost surely to \(p_{\mathrm{mix}}^*=1-e^{-h^*}\).
+Because \(0<\bar q_{s_a}<1\), the function \(G\) decreases continuously from \(+\infty\) as \(t\downarrow0\) to
+\[
+-\sum_{a=1}^k v_as_a(1-\bar q_{s_a})<0
+\]
+as \(t\uparrow1\). Hence \(G\) has a unique zero \(t^*\in(0,1)\). Since \(L'\) has the sign of \(G\), the limiting log-likelihood is strictly increasing before \(t^*\) and strictly decreasing after \(t^*\), so \(t^*\) is its unique maximiser.
 
-Now put \(h_p=-\log(1-p)\). Convexity of \(x\mapsto x^{s_a}\) and Jensen's inequality yield
+The empirical score has the same positive factor \(1/(1-t)\), with \(G(t)\) replaced by
+\[
+G_w(t)=\sum_{a=1}^k
+v_as_a\left\{
+\frac{X_a/(wv_a)}{q_{s_a}(t)}-1
+\right\}.
+\]
+By the strong law, \(G_w(t)\to G(t)\) almost surely for each interior \(t\). For any two interior points on opposite sides of \(t^*\), their empirical scores eventually have the same respective signs as the limiting scores. Since \(G_w\) is non-increasing in \(t\), any empirical maximiser eventually lies between these two points. Letting the points approach \(t^*\) establishes
+\[
+\widehat p_{\mathrm{naive},w}
+\xrightarrow{\mathrm{a.s.}}t^*.
+\]
+
+Evaluate \(G\) at the true marginal prevalence \(p\). Convexity of \(x\mapsto x^{s_a}\) and Jensen's inequality yield
 \[
 \bar q_{s_a}
 =1-\mathbb E\{(1-P_j)^{s_a}\}
 \leq1-(1-p)^{s_a}
-=q_{s_a}(h_p).
+=q_{s_a}(p).
 \]
-The inequality is strict for \(s_a>1\), because \(P_j\) is non-degenerate. Every summand in \(L'(h_p)\) is therefore non-positive and at least one is strictly negative, so \(L'(h_p)<0\). The unique zero must satisfy \(h^*<h_p\), proving \(p_{\mathrm{mix}}^*<p\). Re-expressing \(L'(h^*)=0\) in terms of \(p_{\mathrm{mix}}^*\) gives the displayed estimating equation.
+The inequality is strict when \(s_a>1\), because \(P_j\) is non-degenerate. Every summand in \(G(p)\) is therefore non-positive and at least one is strictly negative, so \(G(p)<0\). As \(G\) is strictly decreasing and \(G(t^*)=0\), it follows that \(t^*<p\). Setting \(p_{\mathrm{mix}}^*=t^*\) proves the claimed downward asymptotic bias and the estimating equation.
 
-Finally, \(p_s^*\) is precisely the value of \(\theta\) for which \(\bar q_s=1-(1-\theta)^s\), and hence the zero of the corresponding individual summand in \(L'\). The sum is positive below \(\min_a p_{s_a}^*\) and negative above \(\max_a p_{s_a}^*\). Therefore
+Finally, \(p_s^*\) is precisely the candidate prevalence \(t\) for which \(\bar q_s=q_s(t)\), and hence the zero of the corresponding summand in \(G\). Each summand is positive below its own zero and negative above it. Therefore
 \[
 \min_a p_{s_a}^*
 \leq p_{\mathrm{mix}}^*
@@ -338,7 +363,7 @@ Finally, \(p_s^*\) is precisely the value of \(\theta\) for which \(\bar q_s=1-(
 \]
 The power-mean inequality applied to the non-negative non-degenerate variable \(1-P_j\) shows that
 \[
-\left[\mathbb E\{(1-P_j)^{s}\}\right]^{1/s}
+\left[\mathbb E\{(1-P_j)^s\}\right]^{1/s}
 \]
 is strictly increasing in \(s>0\). Consequently \(p_s^*\) is strictly decreasing in \(s\), establishing the stated bounds and their strictness when the smallest and largest pool sizes differ. \(\square\)
 
@@ -484,21 +509,32 @@ The beta moment calculation above gives
 =1-\prod_{m=0}^{s-1}\frac{(1-p)c+m}{c+m}
 =pA_s+O(p^2).
 \]
-By the bounds in the arbitrary-mixture theorem and the preceding rare-prevalence corollary, \(p_{\mathrm{mix},\beta}^*=O(p)\). Hence \(h^*=-\log(1-p_{\mathrm{mix},\beta}^*)=O(p)\), and
+By the bounds in the arbitrary-mixture theorem and the preceding rare-prevalence corollary, each single-size limit \(p_s^*/p\) tends to a strictly positive finite constant. Consequently \(p_{\mathrm{mix},\beta}^*\) is of order \(p\), and
 \[
-q_{s_a}(h^*)=s_ah^*+O(p^2).
+q_{s_a}(p_{\mathrm{mix},\beta}^*)
+=s_a p_{\mathrm{mix},\beta}^*+O(p^2).
 \]
-Substitute these expansions into the equivalent score equation
+The limiting naive score equation, written entirely on the prevalence scale, is
 \[
-0=\sum_{a=1}^k v_as_a
-\left[\frac{\bar q_{s_a}}{q_{s_a}(h^*)}-1\right].
+\sum_{a=1}^k v_as_a
+\frac{\bar q_{s_a}}
+     {q_{s_a}(p_{\mathrm{mix},\beta}^*)}
+=\sum_{a=1}^k v_as_a.
 \]
-It follows, to leading order, that
+Substituting the expansions gives
 \[
-h^*
-=p\frac{\sum_a v_aA_{s_a}}{\sum_a v_as_a}+O(p^2).
+\frac{p}{p_{\mathrm{mix},\beta}^*}
+\sum_{a=1}^k v_aA_{s_a}
++O(p)
+=\sum_{a=1}^k v_as_a.
 \]
-Since \(p_{\mathrm{mix},\beta}^*=1-e^{-h^*}=h^*+O(p^2)\), division by \(p\) and substitution for \(c\) prove the result. \(\square\)
+It follows that
+\[
+p_{\mathrm{mix},\beta}^*
+=p\,\frac{\sum_a v_aA_{s_a}}{\sum_a v_as_a}
++O(p^2).
+\]
+Dividing by \(p\) and substituting for \(c\) proves the result. \(\square\)
 
 **Numerical illustration (two pool sizes).**
 
