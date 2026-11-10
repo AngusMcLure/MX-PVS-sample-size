@@ -362,7 +362,7 @@ If every pool has size one, then $p_{\mathrm{mix}}^*=p$, even when location prev
 
 The theorem concerns the limit as the *number of independent locations* increases, not a fixed number of locations with ever more pools per location. It does not assert a deterministic ordering between the naive and correctly specified clustered MLEs for each realised finite sample, or an ordering of their finite-sample expectations. Its conclusion can also fail if the numbers or sizes of pools contributed by a location depend systematically on that location's prevalence: the identical, non-informative pool-size allocation is an explicit assumption.
 
-## Exact asymptotic bias under beta-distributed location prevalence
+# Beta mixing: exact asymptotic bias and rare-prevalence results
 
 The preceding inconsistency result applies to any distribution of location-level prevalence supported on $[0,1]$. A beta distribution is a tractable first specialisation because its moments have closed forms.
 
