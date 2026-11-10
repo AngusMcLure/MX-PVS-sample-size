@@ -399,9 +399,9 @@ p_{\mathrm{ind},\Beta}^*
 \right\}^{1/s}
 =
 1-\left[
-\prod_{k=0}^{s-1}
-\frac{(1-p)(1-\rho)+k\rho}
-     {1-\rho+k\rho}
+\prod_{k=0}^{s-1} \left(
+1 - p\frac{1-\rho}
+     {1-\rho+k\rho} \right)
 \right]^{1/s},
 $$
 where $(a)_s=a(a+1)\cdots(a+s-1)$ denotes the rising factorial. Moreover,
@@ -447,20 +447,16 @@ In particular, the leading-order *relative* asymptotic bias depends only on $s$ 
 
 **Proof.**
 
-Write $c=(1-\rho)/\rho>0$. The product in the proposition is
+Writing $c=(1-\rho)/\rho$, the product in the proposition expands to
 $$
-M_s(p)=\prod_{k=0}^{s-1}\frac{(1-p)c+k}{c+k}.
+\begin{align}
+M_s(p)
+
+&= \prod_{k=0}^{s-1}\left(1 - p\frac{c}{c+k} \right)\\
+&= 1-p\sum_{k=0}^{s-1}\frac{c}{c+k}+O(p^2).
+\end{align}
 $$
-Since $M_s(0)=1$, differentiating its logarithm at $p=0$ gives
-$$
-\left.\frac{d}{dp}\log M_s(p)\right|_{p=0}
-=-\sum_{k=0}^{s-1}\frac{c}{c+k}.
-$$
-Consequently,
-$$
-M_s(p)=1-p\sum_{k=0}^{s-1}\frac{c}{c+k}+O(p^2),
-$$
-and the first-order expansion of $1-M_s(p)^{1/s}$ yields
+The first-order binomial expansion of $1-M_s(p)^{1/s}$ yields
 $$
 p_{\mathrm{ind},\beta}^*
 =\frac{p}{s}\sum_{k=0}^{s-1}\frac{c}{c+k}+O(p^2).
