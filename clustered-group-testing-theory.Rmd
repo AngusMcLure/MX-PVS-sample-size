@@ -25,9 +25,11 @@ knitr::opts_chunk$set(
 
 # Introduction
 
-This note develops the likelihood theory for group testing when pools are collected in clusters, such as multiple mosquito pools collected at each trapping location. It first establishes notation for ordinary group testing, then introduces a random-effects model for clustered sampling. Two results are central: the histogram of location-level positive-pool counts is sufficient for the prevalence parameter, and the location-level count distribution has a monotone likelihood ratio (MLR) in the number of positive pools when the random-effects variance is fixed.
+This note develops likelihood theory for group testing when pools are collected in clusters, such as multiple mosquito pools collected at each trapping location. We first consider iid location-specific prevalences drawn from an arbitrary non-degenerate distribution on $[0,1]$. This general formulation establishes the asymptotic behaviour of the naive independent-pool estimator, including results for unequal pool sizes, without assuming a particular mixing distribution.
 
-Throughout, the number of pools per location is assumed equal for notational simplicity. The results extend to unequal numbers of pools only with additional bookkeeping, and the simple iid location-level formulation then needs modification.
+We then specialise to beta mixing, for which exact moment expressions and rare-prevalence approximations are available. Finally, we introduce logit-normal mixing as an alternative for the subsequent location-level likelihood, sufficiency, monotone-likelihood-ratio and fixed-ICC analyses.
+
+The basic sampling model uses the same number of pools at each independent location. The general mixed-pool-size theorem additionally allows several pool sizes per location, provided the design is identical across locations and independent of location prevalence.
 
 # Preliminaries: unclustered group testing
 
@@ -62,68 +64,40 @@ $$
 $$
 This estimator targets the common individual prevalence $p$ under the independent, identically distributed individual-level model.
 
-# Cluster sampling generalisation
+# Clustered sampling with a general prevalence distribution
 
-## Sampling structure and random-effects model
+## Sampling structure and conditional model
 
-Now suppose sampling is organised into $w$ trapping locations, with $v$ pools collected at each location and $s$ individuals (for example, mosquitoes) in each pool. The total number of pools is $vw$, and the total number of sampled individuals is $svw$.
+Suppose sampling is organised into $w$ independent trapping locations, with $v$ non-overlapping pools of size $s$ collected at each location. The total number of pools is $vw$, and the total number of sampled individuals is $svw$.
 
-Let $K_j$ denote the number of positive pools at location $j$, for $j=1,\ldots,w$. Thus
+Let the location-specific prevalences $P_1,\ldots,P_w$ be iid draws from an arbitrary non-degenerate distribution $F$ supported on $[0,1]$, with marginal prevalence
 $$
-K_j\in\{0,1,\ldots,v\},\qquad
-X=\sum_{j=1}^{w}K_j
+p=\mathbb E(P_j),\qquad 0<p<1.
 $$
-is the total number of positive pools across all locations.
-
-To represent between-location heterogeneity, let the individual prevalence at location $j$ be $P_j$, with
-$$
-\operatorname{logit}(P_j)=Z_j,\qquad
-Z_j\overset{\mathrm{iid}}{\sim}N(\mu,\sigma^2).
-$$
-Conditional on $P_j=p_j$, assume individuals are independently infected with probability $p_j$, and that pools are tested perfectly. The probability that a pool from location $j$ is positive is therefore
+Conditional on $P_j$, assume that individuals at location $j$ are infected independently with probability $P_j$ and that pool tests are perfectly sensitive and specific. Define
 $$
 Q_j=1-(1-P_j)^s.
 $$
-Conditional on $P_j$, the number of positive pools at that location follows
+If $K_j$ denotes the number of positive pools at location $j$, then
 $$
-K_j\mid P_j\sim\operatorname{Binomial}(v,Q_j).
+K_j\mid P_j\sim\operatorname{Binomial}(v,Q_j),
+\qquad
+X=\sum_{j=1}^w K_j.
 $$
+The distribution $F$ is not specified in the general results below. In particular, their conclusions do not require beta or logit-normal mixing.
 
-The marginal individual prevalence, which is the population quantity of interest under this model, is
-$$
-p=\mathbb{E}(P_j)
-=\mathbb{E}\{\operatorname{logit}^{-1}(\mu+\sigma Z)\},
-\qquad Z\sim N(0,1).
-$$
-For fixed $\sigma$, this is a strictly increasing function of $\mu$. Thus inference about $p$ is equivalent to inference about $\mu$, provided $\sigma$ is treated as fixed.
+## Marginal location-count distribution
 
-## Location-level probabilities and likelihood
-
-For $k=0,\ldots,v$, define
+For $r=0,\ldots,v$, the marginal probability of observing $r$ positive pools at a location is
 $$
-\pi_k(\mu,\sigma)
-=\Pr(K_j=k)
-=\mathbb{E}\left[
-{v\choose k}Q_j^k(1-Q_j)^{v-k}
-\right].
+\pi_r(F)=\Pr(K_j=r)
+=\mathbb E_F\left[{v\choose r}Q_j^r(1-Q_j)^{v-r}\right].
 $$
-Equivalently, writing $Z_j=\mu+\sigma Z$,
+For a parametric family $F_\eta$, the correctly specified location-level likelihood is
 $$
-\pi_k(\mu,\sigma)
-=\int_{-\infty}^{\infty}
-{v\choose k}q(z)^k\{1-q(z)\}^{v-k}
-\phi(z;\mu,\sigma^2)\,dz,
+L(\eta;\boldsymbol K)=\prod_{j=1}^w\pi_{K_j}(F_\eta).
 $$
-where
-$$
-q(z)=1-\{1-\operatorname{logit}^{-1}(z)\}^{s}
-$$
-and $\phi(\cdot;\mu,\sigma^2)$ is the normal density.
-
-The location-level counts $K_1,\ldots,K_w$ are iid with probabilities $\pi_0,\ldots,\pi_v$. The likelihood for $\mu$, conditional on fixed $\sigma$, is
-$$
-L(\mu;\boldsymbol K)=\prod_{j=1}^{w}\pi_{K_j}(\mu,\sigma).
-$$
+The locations are independent, but pools from the same location are generally dependent after marginalising over $P_j$.
 
 ## Why the ordinary pooled estimator does not generally target marginal prevalence
 
@@ -219,9 +193,9 @@ g\left(\frac{1}{w}\sum_{j=1}^w Q_j\right).
 $$
 The limit is generally random because only $w$ independent location effects have been sampled. Taking $w\to\infty$ afterwards recovers $p_{\mathrm{ind}}^*$.
 
-The exact finite-sample mean, if needed, can be calculated from the location-level probabilities $\pi_k$ using the probability-generating function
+The exact finite-sample mean, if needed, can be calculated from the location-level probabilities $\pi_k(F)$ using the probability-generating function
 $$
-H(z)=\sum_{k=0}^v\pi_k z^k,\qquad
+H(z)=\sum_{k=0}^v\pi_k(F) z^k,\qquad
 \Pr(X=x)=[z^x]H(z)^w,
 $$
 and hence
@@ -237,7 +211,7 @@ This expression explicitly depends on $v$ and $w$, unlike the probability limit.
 
 The downward asymptotic bias is not restricted to pools of equal size. Consider an arbitrary finite set of pool-size classes $a=1,\ldots,k$. Each of $w$ independently sampled locations contributes $v_a\geq1$ pools of size $s_a\geq1$ in class $a$, where the $s_a$ and $v_a$ are fixed as $w\to\infty$. The pool-size allocation is identical across locations and does not depend on the location-specific prevalence.
 
-In this section only, the location prevalences $P_1,\ldots,P_w$ may follow *any* common distribution $F$ on $[0,1]$, rather than necessarily the logit-normal model introduced above. Write $p=\mathbb E(P_j)$ for the **true marginal population prevalence**, and continue to assume that individual infection indicators are independent conditional on $P_j$, that distinct pools do not overlap, and that all pool tests are perfect.
+As above, the location prevalences $P_1,\ldots,P_w$ are iid from the arbitrary distribution $F$ on $[0,1]$, with true marginal population prevalence $p=\mathbb E(P_j)$. Conditional independence, non-overlapping pools and perfect testing continue to be assumed.
 
 Let $K_{ja}$ be the number of positive pools of size $s_a$ at location $j$, and $X_a=\sum_{j=1}^w K_{ja}$. Conditional on $P_j$,
 $$
@@ -390,7 +364,7 @@ The theorem concerns the limit as the *number of independent locations* increase
 
 ## Exact asymptotic bias under beta-distributed location prevalence
 
-The preceding inconsistency result applies to any distribution of location-level prevalence supported on $[0,1]$. A beta distribution provides an especially tractable alternative to the logit-normal mixing model, because its moments have closed forms.
+The preceding inconsistency result applies to any distribution of location-level prevalence supported on $[0,1]$. A beta distribution is a tractable first specialisation because its moments have closed forms.
 
 Suppose that
 $$
@@ -562,6 +536,42 @@ p_{50}^*&\approx0.000347133.
 \end{aligned}
 $$
 The rare-prevalence corollary gives $p_{\mathrm{mix},\beta}^*\approx0.000395921$ at first order. The mixed-size limit is strictly between those for the two component pool sizes, but substantially below the true prevalence of $0.001$.
+
+# Logit-normal mixing model
+
+The preceding general results do not require a particular distribution for $P_j$. The beta model gives closed-form expressions for the naive estimator's probability limit. We now introduce a logit-normal alternative, which will be used for the likelihood and monotone-likelihood-ratio results that follow.
+
+Suppose
+$$
+\operatorname{logit}(P_j)=Z_j,\qquad
+Z_j\overset{\mathrm{iid}}{\sim}N(\mu,\sigma^2).
+$$
+The marginal prevalence is
+$$
+p=\mathbb E(P_j)
+=\mathbb E\{\operatorname{logit}^{-1}(\mu+\sigma Z)\},
+\qquad Z\sim N(0,1).
+$$
+For fixed $\sigma$, this is strictly increasing in $\mu$, so inference about $p$ is equivalent to inference about $\mu$.
+
+For $r=0,\ldots,v$, the general location-count probabilities specialise to
+$$
+\pi_r(\mu,\sigma)
+=\Pr(K_j=r)
+=\int_{-\infty}^{\infty}
+{v\choose r}q(z)^r\{1-q(z)\}^{v-r}
+\phi(z;\mu,\sigma^2)\,dz,
+$$
+where
+$$
+q(z)=1-\{1-\operatorname{logit}^{-1}(z)\}^{s}
+$$
+and $\phi(\cdot;\mu,\sigma^2)$ denotes the normal density. Conditional on fixed $\sigma$, the likelihood for $\mu$ is
+$$
+L(\mu;\boldsymbol K)=\prod_{j=1}^w\pi_{K_j}(\mu,\sigma).
+$$
+
+## Comparison with beta mixing
 
 **Remark (Dependence on the random-effects distribution).**
 
