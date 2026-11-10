@@ -248,22 +248,20 @@ $$
 $$
 where $p_{\mathrm{mix}}^*$ is the unique solution in $(0,1)$ of
 $$
-
 \sum_{a=1}^k
 v_as_a
 \frac{\bar q_{s_a}-q_{s_a}(p_{\mathrm{mix}}^*)}
      {q_{s_a}(p_{\mathrm{mix}}^*)}
-=0,
+=0,
 $$
 and obeys the bounds
 $$
-
 p_{s_{\max}}^*
 \ \leq\ p_{\mathrm{mix}}^*
 \ \leq\ p_{s_{\min}}^*
 \ \leq\ p,
 \qquad
-s_{\min}=\min_a s_a,\quad s_{\max}=\max_a s_a.
+s_{\min}=\min_a s_a,\quad s_{\max}=\max_a s_a.
 $$
 If $s_{\min}<s_{\max}$, both inequalities bounding $p_{\mathrm{mix}}^*$ between the single-size limits are strict.
 
@@ -364,39 +362,37 @@ The theorem concerns the limit as the *number of independent locations* increase
 ## Small-ICC approximation to asymptotic bias
 
 For equal pools of fixed size $s$, let
-$
+$$
 \rho=\frac{\operatorname{Var}(P_j)}{p(1-p)}
-$
+$$
 denote the intraclass correlation between infection indicators for two individuals sampled at the same location. Consider a family of location-prevalence distributions with fixed $p\in(0,1)$ and $\rho\downarrow0$. If the heterogeneity is sufficiently concentrated that $\mathbb E|P_j-p|^3=o(\rho)$, the asymptotic **absolute bias** and **relative bias** of the naive estimator satisfy
-$
-\boxed{
+$$
 p_{\mathrm{ind}}^*-p
 =-\frac{s-1}{2}p\rho+o(\rho),
 \qquad
 \frac{p_{\mathrm{ind}}^*-p}{p}
 =-\frac{s-1}{2}\rho+o(\rho).
-}
-$
+$$
 
 **Proof.**
 
 A second-order Taylor expansion of $(1-P_j)^s$ around $p$, taking expectations and using $\mathbb E(P_j-p)=0$, gives
-$
+$$
 \begin{aligned}
 \mathbb E\{(1-P_j)^s\}
 &=(1-p)^s+\frac{s(s-1)}{2}(1-p)^{s-2}\operatorname{Var}(P_j)+o(\rho)\\
 &=(1-p)^s\left\{1+\frac{s(s-1)p}{2(1-p)}\rho+o(\rho)\right\}.
 \end{aligned}
-$
+$$
 Taking the $1/s$ power and expanding to first order in $\rho$ yields
-$
+$$
 \begin{aligned}
 p_{\mathrm{ind}}^*
 &=1-\left[\mathbb E\{(1-P_j)^s\}\right]^{1/s}\\
 &=1-(1-p)\left\{1+\frac{(s-1)p}{2(1-p)}\rho+o(\rho)\right\}\\
 &=p-\frac{s-1}{2}p\rho+o(\rho).
 \end{aligned}
-$
+$$
 Subtracting $p$ gives the absolute bias; dividing by the fixed positive prevalence $p$ gives the relative bias. $\square$
 
 The additional concentration condition is important: a small ICC by itself does not ensure that higher-order moments are negligible at first order in $\rho$ for an arbitrary mixing distribution. The approximation holds, for example, along beta or logit-normal families with fixed $p$ as $\rho\downarrow0$, but need not be accurate for large $s$ or distributions with rare, extreme location prevalences.
@@ -477,11 +473,10 @@ and hence $p_{\mathrm{ind},\Beta}^*<p$. If $s=1$, the expectation is $1-p$, so e
 
 For fixed $s$ and $0<\rho<1$, as $p\downarrow0$,
 $$
-
 \frac{p_{\mathrm{ind},\Beta}^*}{p}
 \longrightarrow
 \frac{1}{s}\sum_{k=0}^{s-1}
-\frac{1-\rho}{1-\rho+k\rho}.
+\frac{1-\rho}{1-\rho+k\rho}.
 $$
 In particular, the leading-order *relative* asymptotic bias depends only on $s$ and $\rho$.
 
