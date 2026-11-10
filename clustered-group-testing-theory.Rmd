@@ -330,11 +330,10 @@ $$
 \left[
 \bar q_{s_a}\frac{q_{s_a}'(t)}{q_{s_a}(t)}
 -\frac{(1-\bar q_{s_a})s_a}{1-t}
-\right].
+\right],
 $$
-Differentiating once more yields
+and
 $$
-\boxed{
 \ell''(t)=\sum_{a=1}^k v_a
 \left[
 \bar q_{s_a}\left\{
@@ -343,14 +342,13 @@ $$
 \right\}
 -\frac{(1-\bar q_{s_a})s_a}{(1-t)^2}
 \right]<0.
-}
 $$
-Indeed, $q_{s_a}(t)>0$, $q_{s_a}'(t)>0$, $q_{s_a}''(t)\leq0$ and $0<\bar q_{s_a}<1$ for $0<t<1$. Thus $\ell$ is strictly concave in $t$. Moreover, $\ell'(t)\to+\infty$ as $t\downarrow0$ and $\ell'(t)\to-\infty$ as $t\uparrow1$. Hence $\ell$ has exactly one stationary point $t^*\in(0,1)$, which is its unique global maximum.
+Indeed, $q_{s_a}(t)>0$, $q_{s_a}'(t)>0$, $q_{s_a}''(t)\leq0$ and $0<\bar q_{s_a}<1$ for $0<t<1$. Thus $\ell$ is strictly concave in $t$. Moreover, $\ell'(t)\to+\infty$ as $t\downarrow0$ and $\ell'(t)\to-\infty$ as $t\uparrow1$. Hence $\ell$ has exactly one stationary point $p_{\mathrm{mix}}^* \in(0,1)$, which is its unique global maximum.
 
-To establish convergence of the finite-sample naive MLE, note that the strong law also implies $\ell_w'(t)/w\to\ell'(t)$ almost surely at each interior $t$. For any $t_-<t^*<t_+$, strict concavity gives $\ell'(t_-)>0$ and $\ell'(t_+)<0$. Eventually the finite-sample derivatives have these same signs. As the finite-sample log-likelihood is concave in $t$ for every dataset, its maximiser eventually lies in $(t_-,t_+)$. Taking $t_-$ and $t_+$ arbitrarily close to $t^*$ proves
+To establish convergence of the finite-sample naive MLE, note that the strong law also implies $\ell_w'(t)/w\to\ell'(t)$ almost surely at each interior $t$. For any $t_-<t^*<t_+$, strict concavity gives $\ell'(t_-)>0$ and $\ell'(t_+)<0$. Eventually the finite-sample derivatives have these same signs. As the finite-sample log-likelihood is concave in $t$ for every dataset, its maximiser eventually lies in $(t_-,t_+)$. Taking $t_-$ and $t_+$ arbitrarily close to $p_{\mathrm{mix}}^*$ proves
 $$
 \widehat p_{\mathrm{naive},w}
-\xrightarrow{\mathrm{a.s.}}t^*.
+\xrightarrow{\mathrm{a.s.}}p_{\mathrm{mix}}^*.
 $$
 
 The expression for $\ell'(t)$ can also be written, using $(1-t)^{s_a}=1-q_{s_a}(t)$, as
@@ -359,18 +357,16 @@ $$
 v_as_a
 \frac{\bar q_{s_a}-q_{s_a}(t)}{q_{s_a}(t)}.
 $$
-This identity establishes the estimating equation in the theorem without introducing any auxiliary function.
-
 Now evaluate $\ell'$ at the true marginal prevalence $p$. Convexity of $x\mapsto x^{s_a}$ and Jensen's inequality give
 $$
-\bar q_{s_a}
+0 < \bar q_{s_a}
 =1-\mathbb E\{(1-P_j)^{s_a}\}
 \leq1-(1-p)^{s_a}
 =q_{s_a}(p).
 $$
-The inequality is strict when $s_a>1$, because $P_j$ is non-degenerate. Thus every summand in $\ell'(p)$ is non-positive and at least one is strictly negative; hence $\ell'(p)<0$. Since $\ell'$ is strictly decreasing and $\ell'(t^*)=0$, we obtain $t^*<p$. Setting $p_{\mathrm{mix}}^*=t^*$ proves the claimed downward asymptotic bias.
+The inequality is strict when $s_a>1$ and $P_j$ is non-degenerate. Thus every summand in $\ell'(p)$ is non-positive and at least one is strictly negative; hence $\ell'(p)<0$. Since $\ell'$ is strictly decreasing and $\ell'(p_{\mathrm{mix}}^*)=0$, we obtain $p_{\mathrm{mix}}^*<p$.
 
-Finally, $p_s^*$ is precisely the candidate prevalence $t$ for which $\bar q_s=q_s(t)$. Each individual summand in $\ell'(t)$ is positive below its corresponding $p_{s_a}^*$ and negative above it. Therefore the unique zero of $\ell'$ satisfies
+Finally, $p_s^*$ is precisely the candidate prevalence $t$ for which $\bar q_s=q_s(t)$. Each individual summand in $\ell'(t)$ above is positive for $t < p_{s_a}^*$ and negative for $t > p_{s_a}^*$. Therefore $p_{\mathrm{mix}}^*$, the unique zero of $\ell'(t)$, satisfies
 $$
 \min_a p_{s_a}^*
 \leq p_{\mathrm{mix}}^*
@@ -380,7 +376,11 @@ The power-mean inequality applied to the non-negative non-degenerate variable $1
 $$
 \left[\mathbb E\{(1-P_j)^s\}\right]^{1/s}
 $$
-is strictly increasing in $s>0$. Consequently $p_s^*$ is strictly decreasing in $s$, establishing the stated bounds and their strictness when the smallest and largest pool sizes differ. $\square$
+is strictly increasing in $s>0$. Consequently $p_s^*$ is strictly decreasing in $s$ and 
+$$
+\min_a p_{s_a}^* = p_{s_{\max}}^*, \quad \max_a p_{s_a}^* = p_{s_{\min}}^* \quad 
+$$
+establishing the stated bounds and their strictness when the smallest and largest pool sizes differ. $\square$
 
 **Remark (Equality cases and scope).**
 
