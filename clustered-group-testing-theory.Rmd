@@ -361,6 +361,46 @@ If every pool has size one, then $p_{\mathrm{mix}}^*=p$, even when location prev
 
 The theorem concerns the limit as the *number of independent locations* increases, not a fixed number of locations with ever more pools per location. It does not assert a deterministic ordering between the naive and correctly specified clustered MLEs for each realised finite sample, or an ordering of their finite-sample expectations. Its conclusion can also fail if the numbers or sizes of pools contributed by a location depend systematically on that location's prevalence: the identical, non-informative pool-size allocation is an explicit assumption.
 
+## Small-ICC approximation to asymptotic bias
+
+For equal pools of fixed size $s$, let
+$
+\rho=\frac{\operatorname{Var}(P_j)}{p(1-p)}
+$
+denote the intraclass correlation between infection indicators for two individuals sampled at the same location. Consider a family of location-prevalence distributions with fixed $p\in(0,1)$ and $\rho\downarrow0$. If the heterogeneity is sufficiently concentrated that $\mathbb E|P_j-p|^3=o(\rho)$, the asymptotic **absolute bias** and **relative bias** of the naive estimator satisfy
+$
+\boxed{
+p_{\mathrm{ind}}^*-p
+=-\frac{s-1}{2}p\rho+o(\rho),
+\qquad
+\frac{p_{\mathrm{ind}}^*-p}{p}
+=-\frac{s-1}{2}\rho+o(\rho).
+}
+$
+
+**Proof.**
+
+A second-order Taylor expansion of $(1-P_j)^s$ around $p$, taking expectations and using $\mathbb E(P_j-p)=0$, gives
+$
+\begin{aligned}
+\mathbb E\{(1-P_j)^s\}
+&=(1-p)^s+\frac{s(s-1)}{2}(1-p)^{s-2}\operatorname{Var}(P_j)+o(\rho)\\
+&=(1-p)^s\left\{1+\frac{s(s-1)p}{2(1-p)}\rho+o(\rho)\right\}.
+\end{aligned}
+$
+Taking the $1/s$ power and expanding to first order in $\rho$ yields
+$
+\begin{aligned}
+p_{\mathrm{ind}}^*
+&=1-\left[\mathbb E\{(1-P_j)^s\}\right]^{1/s}\\
+&=1-(1-p)\left\{1+\frac{(s-1)p}{2(1-p)}\rho+o(\rho)\right\}\\
+&=p-\frac{s-1}{2}p\rho+o(\rho).
+\end{aligned}
+$
+Subtracting $p$ gives the absolute bias; dividing by the fixed positive prevalence $p$ gives the relative bias. $\square$
+
+The additional concentration condition is important: a small ICC by itself does not ensure that higher-order moments are negligible at first order in $\rho$ for an arbitrary mixing distribution. The approximation holds, for example, along beta or logit-normal families with fixed $p$ as $\rho\downarrow0$, but need not be accurate for large $s$ or distributions with rare, extreme location prevalences.
+
 # Beta mixing: exact asymptotic bias and rare-prevalence results
 
 The preceding inconsistency result applies to any distribution of location-level prevalence supported on $[0,1]$. A beta distribution is a tractable first specialisation because its moments have closed forms.
