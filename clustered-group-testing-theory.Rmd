@@ -31,164 +31,164 @@ Throughout, the number of pools per location is assumed equal for notational sim
 
 # Preliminaries: unclustered group testing
 
-Suppose a sample consists of \(N\) individuals, arranged into \(m\) non-overlapping pools, each containing \(s\) individuals, so that \(N=ms\). Let \(p\) denote the individual-level prevalence. Under the usual assumptions that individuals are independently infected with common probability \(p\), and that the pool test is perfectly sensitive and specific, a pool is positive if and only if at least one member is infected.
+Suppose a sample consists of $N$ individuals, arranged into $m$ non-overlapping pools, each containing $s$ individuals, so that $N=ms$. Let $p$ denote the individual-level prevalence. Under the usual assumptions that individuals are independently infected with common probability $p$, and that the pool test is perfectly sensitive and specific, a pool is positive if and only if at least one member is infected.
 
-Let \(X_i\) indicate whether pool \(i\) tests positive, and let
-\[
+Let $X_i$ indicate whether pool $i$ tests positive, and let
+$$
 X=\sum_{i=1}^{m}X_i
-\]
+$$
 be the total number of positive pools. The pool-level positive probability is
-\[
+$$
 q(p)=1-(1-p)^s.
-\]
+$$
 Consequently,
-\[
+$$
 X\mid p\sim\operatorname{Binomial}\left(m,1-(1-p)^s\right).
-\]
+$$
 
 The likelihood is proportional to
-\[
+$$
 \{1-(1-p)^s\}^{X}\{(1-p)^s\}^{m-X}.
-\]
+$$
 Maximising this likelihood gives the familiar maximum likelihood estimator
-\[
+$$
 \widehat p_{\mathrm{ind}}
 =1-\left(1-\frac{X}{m}\right)^{1/s}.
-\]
-Since \(m=N/s\), this can equivalently be written as
-\[
+$$
+Since $m=N/s$, this can equivalently be written as
+$$
 \widehat p_{\mathrm{ind}}
 =1-\left(1-\frac{X}{N/s}\right)^{1/s}.
-\]
-This estimator targets the common individual prevalence \(p\) under the independent, identically distributed individual-level model.
+$$
+This estimator targets the common individual prevalence $p$ under the independent, identically distributed individual-level model.
 
 # Cluster sampling generalisation
 
 ## Sampling structure and random-effects model
 
-Now suppose sampling is organised into \(w\) trapping locations, with \(v\) pools collected at each location and \(s\) individuals (for example, mosquitoes) in each pool. The total number of pools is \(vw\), and the total number of sampled individuals is \(svw\).
+Now suppose sampling is organised into $w$ trapping locations, with $v$ pools collected at each location and $s$ individuals (for example, mosquitoes) in each pool. The total number of pools is $vw$, and the total number of sampled individuals is $svw$.
 
-Let \(K_j\) denote the number of positive pools at location \(j\), for \(j=1,\ldots,w\). Thus
-\[
+Let $K_j$ denote the number of positive pools at location $j$, for $j=1,\ldots,w$. Thus
+$$
 K_j\in\{0,1,\ldots,v\},\qquad
 X=\sum_{j=1}^{w}K_j
-\]
+$$
 is the total number of positive pools across all locations.
 
-To represent between-location heterogeneity, let the individual prevalence at location \(j\) be \(P_j\), with
-\[
+To represent between-location heterogeneity, let the individual prevalence at location $j$ be $P_j$, with
+$$
 \operatorname{logit}(P_j)=Z_j,\qquad
 Z_j\overset{\mathrm{iid}}{\sim}N(\mu,\sigma^2).
-\]
-Conditional on \(P_j=p_j\), assume individuals are independently infected with probability \(p_j\), and that pools are tested perfectly. The probability that a pool from location \(j\) is positive is therefore
-\[
+$$
+Conditional on $P_j=p_j$, assume individuals are independently infected with probability $p_j$, and that pools are tested perfectly. The probability that a pool from location $j$ is positive is therefore
+$$
 Q_j=1-(1-P_j)^s.
-\]
-Conditional on \(P_j\), the number of positive pools at that location follows
-\[
+$$
+Conditional on $P_j$, the number of positive pools at that location follows
+$$
 K_j\mid P_j\sim\operatorname{Binomial}(v,Q_j).
-\]
+$$
 
 The marginal individual prevalence, which is the population quantity of interest under this model, is
-\[
+$$
 p=\mathbb{E}(P_j)
 =\mathbb{E}\{\operatorname{logit}^{-1}(\mu+\sigma Z)\},
 \qquad Z\sim N(0,1).
-\]
-For fixed \(\sigma\), this is a strictly increasing function of \(\mu\). Thus inference about \(p\) is equivalent to inference about \(\mu\), provided \(\sigma\) is treated as fixed.
+$$
+For fixed $\sigma$, this is a strictly increasing function of $\mu$. Thus inference about $p$ is equivalent to inference about $\mu$, provided $\sigma$ is treated as fixed.
 
 ## Location-level probabilities and likelihood
 
-For \(k=0,\ldots,v\), define
-\[
+For $k=0,\ldots,v$, define
+$$
 \pi_k(\mu,\sigma)
 =\Pr(K_j=k)
 =\mathbb{E}\left[
 {v\choose k}Q_j^k(1-Q_j)^{v-k}
 \right].
-\]
-Equivalently, writing \(Z_j=\mu+\sigma Z\),
-\[
+$$
+Equivalently, writing $Z_j=\mu+\sigma Z$,
+$$
 \pi_k(\mu,\sigma)
 =\int_{-\infty}^{\infty}
 {v\choose k}q(z)^k\{1-q(z)\}^{v-k}
 \phi(z;\mu,\sigma^2)\,dz,
-\]
+$$
 where
-\[
+$$
 q(z)=1-\{1-\operatorname{logit}^{-1}(z)\}^{s}
-\]
-and \(\phi(\cdot;\mu,\sigma^2)\) is the normal density.
+$$
+and $\phi(\cdot;\mu,\sigma^2)$ is the normal density.
 
-The location-level counts \(K_1,\ldots,K_w\) are iid with probabilities \(\pi_0,\ldots,\pi_v\). The likelihood for \(\mu\), conditional on fixed \(\sigma\), is
-\[
+The location-level counts $K_1,\ldots,K_w$ are iid with probabilities $\pi_0,\ldots,\pi_v$. The likelihood for $\mu$, conditional on fixed $\sigma$, is
+$$
 L(\mu;\boldsymbol K)=\prod_{j=1}^{w}\pi_{K_j}(\mu,\sigma).
-\]
+$$
 
 ## Why the ordinary pooled estimator does not generally target marginal prevalence
 
-The ordinary estimator treats all \(vw\) pools as though they had a common positive probability. It is
-\[
+The ordinary estimator treats all $vw$ pools as though they had a common positive probability. It is
+$$
 \widehat p_{\mathrm{ind}}
 =1-\left(1-\frac{X}{vw}\right)^{1/s}.
-\]
+$$
 Under the clustered model, however,
-\[
+$$
 \frac{X}{vw}\ \xrightarrow[]{\mathrm{a.s.}}\
 \frac{\mathbb{E}(K_j)}{v}
 =\mathbb{E}(Q_j)
 =1-\mathbb{E}\{(1-P_j)^s\},
-\]
-as the number of locations \(w\) increases (with \(v\) fixed). Hence the probability limit of the ordinary estimator is
-\[
+$$
+as the number of locations $w$ increases (with $v$ fixed). Hence the probability limit of the ordinary estimator is
+$$
 p_{\mathrm{ind}}^*
 =1-\left[\mathbb{E}\{(1-P_j)^s\}\right]^{1/s}.
-\]
+$$
 In general,
-\[
+$$
 p_{\mathrm{ind}}^*\ne \mathbb{E}(P_j)=p.
-\]
+$$
 The ordinary estimator therefore does not generally target the marginal individual prevalence in the clustered model. It targets a nonlinear functional of the distribution of location-specific prevalence.
 
-For \(s=1\), the two quantities coincide. For \(s>1\), strict convexity of \(x\mapsto x^s\) on the positive half-line, applied to \(1-P_j\), gives
-\[
+For $s=1$, the two quantities coincide. For $s>1$, strict convexity of $x\mapsto x^s$ on the positive half-line, applied to $1-P_j$, gives
+$$
 \mathbb{E}\{(1-P_j)^s\}\geq \{1-\mathbb{E}(P_j)\}^s.
-\]
+$$
 It follows that
-\[
+$$
 p_{\mathrm{ind}}^*\leq p,
-\]
-with strict inequality whenever \(P_j\) is non-degenerate and \(s>1\). Thus, under this model, ignoring between-location heterogeneity leads to an asymptotic downward bias for the marginal individual prevalence.
+$$
+with strict inequality whenever $P_j$ is non-degenerate and $s>1$. Thus, under this model, ignoring between-location heterogeneity leads to an asymptotic downward bias for the marginal individual prevalence.
 
 ## Does the number of pools per trapping location affect naive-estimator bias?
 
-The probability limit above is independent of \(v\), but this statement requires a precise asymptotic regime: the number of independent trapping locations \(w\) tends to infinity while \(v\) and \(s\) are fixed. In particular, increasing \(v\) cannot remove the inconsistency caused by unmodelled between-location heterogeneity.
+The probability limit above is independent of $v$, but this statement requires a precise asymptotic regime: the number of independent trapping locations $w$ tends to infinity while $v$ and $s$ are fixed. In particular, increasing $v$ cannot remove the inconsistency caused by unmodelled between-location heterogeneity.
 
-For finite \(w\), the mean of the naive estimator can depend on both \(v\) and \(w\). Define the observed positive-pool fraction
-\[
+For finite $w$, the mean of the naive estimator can depend on both $v$ and $w$. Define the observed positive-pool fraction
+$$
 T=\frac{X}{vw}=\frac{1}{w}\sum_{j=1}^w\frac{K_j}{v},
 \qquad
 g(t)=1-(1-t)^{1/s}.
-\]
-Then \(\widehat p_{\mathrm{ind}}=g(T)\) and
-\[
+$$
+Then $\widehat p_{\mathrm{ind}}=g(T)$ and
+$$
 \mathbb{E}(T)=\mathbb{E}(Q_j)=\bar q
-\]
-regardless of \(v\). For \(s>1\), however,
-\[
+$$
+regardless of $v$. For $s>1$, however,
+$$
 g''(t)=\frac{s-1}{s^2}(1-t)^{1/s-2}>0
 \quad(0\leq t<1).
-\]
+$$
 Consequently, Jensen's inequality gives
-\[
+$$
 \mathbb{E}(\widehat p_{\mathrm{ind}})
 =\mathbb{E}\{g(T)\}
 \geq g(\bar q)=p_{\mathrm{ind}}^*.
-\]
-Thus the finite-sample mean is *at least* the asymptotic probability limit; its additional upward Jensen bias depends on the variability of \(T\). This does not imply that the finite-sample mean is always below the true marginal prevalence \(p\).
+$$
+Thus the finite-sample mean is *at least* the asymptotic probability limit; its additional upward Jensen bias depends on the variability of $T$. This does not imply that the finite-sample mean is always below the true marginal prevalence $p$.
 
-The variance of \(T\) separates the within-location and between-location components. Since \(K_j\mid Q_j\sim\operatorname{Binomial}(v,Q_j)\),
-\[
+The variance of $T$ separates the within-location and between-location components. Since $K_j\mid Q_j\sim\operatorname{Binomial}(v,Q_j)$,
+$$
 \begin{aligned}
 \operatorname{Var}(T)
 &=\frac{1}{w}\operatorname{Var}(K_j/v)\\
@@ -197,9 +197,9 @@ The variance of \(T\) separates the within-location and between-location compone
 \frac{\mathbb{E}\{Q_j(1-Q_j)\}}{v}
 \right].
 \end{aligned}
-\]
-The first term persists as \(v\) increases, while the second decreases as \(1/v\). For sufficiently concentrated \(T\) away from 1, a second-order delta-method approximation is
-\[
+$$
+The first term persists as $v$ increases, while the second decreases as $1/v$. For sufficiently concentrated $T$ away from 1, a second-order delta-method approximation is
+$$
 \mathbb{E}(\widehat p_{\mathrm{ind}})
 \approx p_{\mathrm{ind}}^*
 +\frac{g''(\bar q)}{2w}
@@ -207,73 +207,73 @@ The first term persists as \(v\) increases, while the second decreases as \(1/v\
 \operatorname{Var}(Q_j)+
 \frac{\mathbb{E}\{Q_j(1-Q_j)\}}{v}
 \right].
-\]
-This approximation predicts a \(v\)-dependent finite-sample correction, but not a \(v\)-dependent probability limit as \(w\to\infty\).
+$$
+This approximation predicts a $v$-dependent finite-sample correction, but not a $v$-dependent probability limit as $w\to\infty$.
 
-For completeness, when \(w\) is fixed and \(v\to\infty\), conditional laws of large numbers instead give
-\[
+For completeness, when $w$ is fixed and $v\to\infty$, conditional laws of large numbers instead give
+$$
 T\ \longrightarrow\ \frac{1}{w}\sum_{j=1}^w Q_j,
 \qquad
 \widehat p_{\mathrm{ind}}\ \longrightarrow\
 g\left(\frac{1}{w}\sum_{j=1}^w Q_j\right).
-\]
-The limit is generally random because only \(w\) independent location effects have been sampled. Taking \(w\to\infty\) afterwards recovers \(p_{\mathrm{ind}}^*\).
+$$
+The limit is generally random because only $w$ independent location effects have been sampled. Taking $w\to\infty$ afterwards recovers $p_{\mathrm{ind}}^*$.
 
-The exact finite-sample mean, if needed, can be calculated from the location-level probabilities \(\pi_k\) using the probability-generating function
-\[
+The exact finite-sample mean, if needed, can be calculated from the location-level probabilities $\pi_k$ using the probability-generating function
+$$
 H(z)=\sum_{k=0}^v\pi_k z^k,\qquad
 \Pr(X=x)=[z^x]H(z)^w,
-\]
+$$
 and hence
-\[
+$$
 \mathbb{E}(\widehat p_{\mathrm{ind}})
 =\sum_{x=0}^{vw}
 \left[1-\left(1-\frac{x}{vw}\right)^{1/s}\right]
 [z^x]H(z)^w.
-\]
-This expression explicitly depends on \(v\) and \(w\), unlike the probability limit.
+$$
+This expression explicitly depends on $v$ and $w$, unlike the probability limit.
 
 ## Arbitrary mixtures of pool sizes: asymptotic bias and bounds
 
-The downward asymptotic bias is not restricted to pools of equal size. Consider an arbitrary finite set of pool-size classes \(a=1,\ldots,k\). Each of \(w\) independently sampled locations contributes \(v_a\geq1\) pools of size \(s_a\geq1\) in class \(a\), where the \(s_a\) and \(v_a\) are fixed as \(w\to\infty\). The pool-size allocation is identical across locations and does not depend on the location-specific prevalence.
+The downward asymptotic bias is not restricted to pools of equal size. Consider an arbitrary finite set of pool-size classes $a=1,\ldots,k$. Each of $w$ independently sampled locations contributes $v_a\geq1$ pools of size $s_a\geq1$ in class $a$, where the $s_a$ and $v_a$ are fixed as $w\to\infty$. The pool-size allocation is identical across locations and does not depend on the location-specific prevalence.
 
-In this section only, the location prevalences \(P_1,\ldots,P_w\) may follow *any* common distribution \(F\) on \([0,1]\), rather than necessarily the logit-normal model introduced above. Write \(p=\mathbb E(P_j)\) for the **true marginal population prevalence**, and continue to assume that individual infection indicators are independent conditional on \(P_j\), that distinct pools do not overlap, and that all pool tests are perfect.
+In this section only, the location prevalences $P_1,\ldots,P_w$ may follow *any* common distribution $F$ on $[0,1]$, rather than necessarily the logit-normal model introduced above. Write $p=\mathbb E(P_j)$ for the **true marginal population prevalence**, and continue to assume that individual infection indicators are independent conditional on $P_j$, that distinct pools do not overlap, and that all pool tests are perfect.
 
-Let \(K_{ja}\) be the number of positive pools of size \(s_a\) at location \(j\), and \(X_a=\sum_{j=1}^w K_{ja}\). Conditional on \(P_j\),
-\[
+Let $K_{ja}$ be the number of positive pools of size $s_a$ at location $j$, and $X_a=\sum_{j=1}^w K_{ja}$. Conditional on $P_j$,
+$$
 K_{ja}\mid P_j
 \sim\operatorname{Binomial}\left(v_a,1-(1-P_j)^{s_a}\right).
-\]
-An analyst ignoring the location structure, but correctly retaining each pool's actual size, maximises the independent-pool log-likelihood. To distinguish the argument of this likelihood from the true prevalence \(p\), let \(t\in(0,1)\) denote a *candidate prevalence value* and define
-\[
+$$
+An analyst ignoring the location structure, but correctly retaining each pool's actual size, maximises the independent-pool log-likelihood. To distinguish the argument of this likelihood from the true prevalence $p$, let $t\in(0,1)$ denote a *candidate prevalence value* and define
+$$
 q_s(t)=1-(1-t)^s.
-\]
+$$
 The naive log-likelihood is
-\[
+$$
 \ell_w(t)
 =\sum_{a=1}^k
 \left[
 X_a\log q_{s_a}(t)
 +(wv_a-X_a)s_a\log(1-t)
 \right].
-\]
-For unequal \(s_a\), its maximiser generally has no closed-form expression.
+$$
+For unequal $s_a$, its maximiser generally has no closed-form expression.
 
 **Theorem (Asymptotic underestimation for an arbitrary finite mixture of pool sizes).**
 
-Suppose \(0<p<1\), the distribution of \(P_j\) is non-degenerate, and at least one pool-size class satisfies \(s_a>1\). Then, as \(w\to\infty\) with \(k\), \(s_a\), and \(v_a\) fixed, the naive MLE satisfies
-\[
+Suppose $0<p<1$, the distribution of $P_j$ is non-degenerate, and at least one pool-size class satisfies $s_a>1$. Then, as $w\to\infty$ with $k$, $s_a$, and $v_a$ fixed, the naive MLE satisfies
+$$
 \widehat p_{\mathrm{naive},w}
 \xrightarrow{\mathrm{a.s.}}p_{\mathrm{mix}}^*<p.
-\]
-Define, for every positive integer \(s\),
-\[
+$$
+Define, for every positive integer $s$,
+$$
 \bar q_s=1-\mathbb E\{(1-P_j)^s\},
 \qquad
 p_s^*=1-\left[\mathbb E\{(1-P_j)^s\}\right]^{1/s}.
-\]
-Then \(p_{\mathrm{mix}}^*\) is the unique solution in \((0,1)\) of
-\[
+$$
+Then $p_{\mathrm{mix}}^*$ is the unique solution in $(0,1)$ of
+$$
 \boxed{
 \sum_{a=1}^k
 v_as_a
@@ -281,9 +281,9 @@ v_as_a
      {q_{s_a}(p_{\mathrm{mix}}^*)}
 =0,
 }
-\]
+$$
 and it obeys the bounds
-\[
+$$
 \boxed{
 p_{s_{\max}}^*
 \ \leq\ p_{\mathrm{mix}}^*
@@ -292,33 +292,41 @@ p_{s_{\max}}^*
 \qquad
 s_{\min}=\min_a s_a,\quad s_{\max}=\max_a s_a.
 }
-\]
-If \(s_{\min}<s_{\max}\), both inequalities bounding \(p_{\mathrm{mix}}^*\) between the single-size limits are strict.
+$$
+If $s_{\min}<s_{\max}$, both inequalities bounding $p_{\mathrm{mix}}^*$ between the single-size limits are strict.
 
 **Proof.**
 
-The strong law of large numbers across independent locations gives, for every class \(a\),
-\[
+The strong law of large numbers across independent locations gives, for every class $a$,
+$$
 \frac{X_a}{wv_a}\xrightarrow{\mathrm{a.s.}}\bar q_{s_a}.
-\]
-For a candidate prevalence \(t\in(0,1)\), the normalised naive log-likelihood therefore converges almost surely to
-\[
-L(t)=\sum_{a=1}^k v_a
+$$
+For a candidate prevalence $t\in(0,1)$, the normalised naive log-likelihood therefore converges almost surely to
+
+$$
+\begin{align}
+\ell(t) :=& \lim_{w \to \infty} \frac{\ell_w(t)}{w}\\
+=& \lim_{w \to \infty} \sum_{a=1}^k
+v_a \left[
+\frac{X_a}{w v_a}\log q_{s_a}(t)
++ \left( 1 - \frac{X_a}{w v_a} \right) s_a \log(1-t)
+\right]\\
+
+=& \sum_{a=1}^k v_a
 \left[
 \bar q_{s_a}\log q_{s_a}(t)
 +(1-\bar q_{s_a})s_a\log(1-t)
 \right].
-\]
-Differentiation directly with respect to prevalence gives
-\[
-L'(t)=\frac{1}{1-t}\,G(t),
-\qquad
-G(t)=\sum_{a=1}^k
-v_as_a
+\end{align}
+$$
+Differentiation with respect to candidate prevalence, using the identity $\dfrac{d}{dt}\log q_s(t) = \frac{s}{1-t}\frac{1 - q_s(t)}{q_s(t)}$ gives
+$$
+\ell'(t)=\frac{1}{1-t}\sum_{a=1}^k
+v_a s_a
 \frac{\bar q_{s_a}-q_{s_a}(t)}{q_{s_a}(t)}.
-\]
-The factor \(1/(1-t)\) is strictly positive. Moreover,
-\[
+$$
+The factor $1/(1-t)$ is strictly positive. Moreover,
+$$
 G'(t)
 =-\sum_{a=1}^k
 v_as_a\bar q_{s_a}
@@ -326,83 +334,83 @@ v_as_a\bar q_{s_a}
 <0,
 \qquad
 q_s'(t)=s(1-t)^{s-1}>0.
-\]
-Because \(0<\bar q_{s_a}<1\), the function \(G\) decreases continuously from \(+\infty\) as \(t\downarrow0\) to
-\[
+$$
+Because $0<\bar q_{s_a}<1$, the function $G$ decreases continuously from $+\infty$ as $t\downarrow0$ to
+$$
 -\sum_{a=1}^k v_as_a(1-\bar q_{s_a})<0
-\]
-as \(t\uparrow1\). Hence \(G\) has a unique zero \(t^*\in(0,1)\). Since \(L'\) has the sign of \(G\), the limiting log-likelihood is strictly increasing before \(t^*\) and strictly decreasing after \(t^*\), so \(t^*\) is its unique maximiser.
+$$
+as $t\uparrow1$. Hence $G$ has a unique zero $t^*\in(0,1)$. Since $\ell'$ has the sign of $G$, the limiting log-likelihood is strictly increasing before $t^*$ and strictly decreasing after $t^*$, so $t^*$ is its unique maximiser.
 
-The empirical score has the same positive factor \(1/(1-t)\), with \(G(t)\) replaced by
-\[
+The empirical score has the same positive factor $1/(1-t)$, with $G(t)$ replaced by
+$$
 G_w(t)=\sum_{a=1}^k
 v_as_a\left\{
 \frac{X_a/(wv_a)}{q_{s_a}(t)}-1
 \right\}.
-\]
-By the strong law, \(G_w(t)\to G(t)\) almost surely for each interior \(t\). For any two interior points on opposite sides of \(t^*\), their empirical scores eventually have the same respective signs as the limiting scores. Since \(G_w\) is non-increasing in \(t\), any empirical maximiser eventually lies between these two points. Letting the points approach \(t^*\) establishes
-\[
+$$
+By the strong law, $G_w(t)\to G(t)$ almost surely for each interior $t$. For any two interior points on opposite sides of $t^*$, their empirical scores eventually have the same respective signs as the limiting scores. Since $G_w$ is non-increasing in $t$, any empirical maximiser eventually lies between these two points. Letting the points approach $t^*$ establishes
+$$
 \widehat p_{\mathrm{naive},w}
 \xrightarrow{\mathrm{a.s.}}t^*.
-\]
+$$
 
-Evaluate \(G\) at the true marginal prevalence \(p\). Convexity of \(x\mapsto x^{s_a}\) and Jensen's inequality yield
-\[
+Evaluate $G$ at the true marginal prevalence $p$. Convexity of $x\mapsto x^{s_a}$ and Jensen's inequality yield
+$$
 \bar q_{s_a}
 =1-\mathbb E\{(1-P_j)^{s_a}\}
 \leq1-(1-p)^{s_a}
 =q_{s_a}(p).
-\]
-The inequality is strict when \(s_a>1\), because \(P_j\) is non-degenerate. Every summand in \(G(p)\) is therefore non-positive and at least one is strictly negative, so \(G(p)<0\). As \(G\) is strictly decreasing and \(G(t^*)=0\), it follows that \(t^*<p\). Setting \(p_{\mathrm{mix}}^*=t^*\) proves the claimed downward asymptotic bias and the estimating equation.
+$$
+The inequality is strict when $s_a>1$, because $P_j$ is non-degenerate. Every summand in $G(p)$ is therefore non-positive and at least one is strictly negative, so $G(p)<0$. As $G$ is strictly decreasing and $G(t^*)=0$, it follows that $t^*<p$. Setting $p_{\mathrm{mix}}^*=t^*$ proves the claimed downward asymptotic bias and the estimating equation.
 
-Finally, \(p_s^*\) is precisely the candidate prevalence \(t\) for which \(\bar q_s=q_s(t)\), and hence the zero of the corresponding summand in \(G\). Each summand is positive below its own zero and negative above it. Therefore
-\[
+Finally, $p_s^*$ is precisely the candidate prevalence $t$ for which $\bar q_s=q_s(t)$, and hence the zero of the corresponding summand in $G$. Each summand is positive below its own zero and negative above it. Therefore
+$$
 \min_a p_{s_a}^*
 \leq p_{\mathrm{mix}}^*
 \leq\max_a p_{s_a}^*.
-\]
-The power-mean inequality applied to the non-negative non-degenerate variable \(1-P_j\) shows that
-\[
+$$
+The power-mean inequality applied to the non-negative non-degenerate variable $1-P_j$ shows that
+$$
 \left[\mathbb E\{(1-P_j)^s\}\right]^{1/s}
-\]
-is strictly increasing in \(s>0\). Consequently \(p_s^*\) is strictly decreasing in \(s\), establishing the stated bounds and their strictness when the smallest and largest pool sizes differ. \(\square\)
+$$
+is strictly increasing in $s>0$. Consequently $p_s^*$ is strictly decreasing in $s$, establishing the stated bounds and their strictness when the smallest and largest pool sizes differ. $\square$
 
 **Remark (Equality cases and scope).**
 
-If every pool has size one, then \(p_{\mathrm{mix}}^*=p\), even when location prevalence varies. The same equality holds for arbitrary pool sizes if \(P_j=p\) almost surely (no between-location heterogeneity). With heterogeneous prevalence and at least one pool of size greater than one, the asymptotic inequality is strict, including when some other pools contain only one individual.
+If every pool has size one, then $p_{\mathrm{mix}}^*=p$, even when location prevalence varies. The same equality holds for arbitrary pool sizes if $P_j=p$ almost surely (no between-location heterogeneity). With heterogeneous prevalence and at least one pool of size greater than one, the asymptotic inequality is strict, including when some other pools contain only one individual.
 
 The theorem concerns the limit as the *number of independent locations* increases, not a fixed number of locations with ever more pools per location. It does not assert a deterministic ordering between the naive and correctly specified clustered MLEs for each realised finite sample, or an ordering of their finite-sample expectations. Its conclusion can also fail if the numbers or sizes of pools contributed by a location depend systematically on that location's prevalence: the identical, non-informative pool-size allocation is an explicit assumption.
 
 ## Exact asymptotic bias under beta-distributed location prevalence
 
-The preceding inconsistency result applies to any distribution of location-level prevalence supported on \([0,1]\). A beta distribution provides an especially tractable alternative to the logit-normal mixing model, because its moments have closed forms.
+The preceding inconsistency result applies to any distribution of location-level prevalence supported on $[0,1]$. A beta distribution provides an especially tractable alternative to the logit-normal mixing model, because its moments have closed forms.
 
 Suppose that
-\[
+$$
 P_j\overset{\mathrm{iid}}{\sim}\operatorname{Beta}(\alpha,\beta),
 \qquad \alpha,\beta>0,
-\]
+$$
 with the same conditional independent-infection and perfect-testing assumptions as above. The marginal prevalence is
-\[
+$$
 p=\mathbb E(P_j)=\frac{\alpha}{\alpha+\beta}.
-\]
+$$
 Two distinct individuals sampled from the same location have infection indicators with intraclass correlation
-\[
+$$
 \rho
 =\frac{\operatorname{Var}(P_j)}{p(1-p)}
 =\frac{1}{\alpha+\beta+1}.
-\]
-Thus a beta mixing distribution is uniquely parameterised by \(p\in(0,1)\) and \(\rho\in(0,1)\), through
-\[
+$$
+Thus a beta mixing distribution is uniquely parameterised by $p\in(0,1)$ and $\rho\in(0,1)$, through
+$$
 \alpha=p\frac{1-\rho}{\rho},
 \qquad
 \beta=(1-p)\frac{1-\rho}{\rho}.
-\]
+$$
 
 **Proposition (Exact naive-estimator limit under beta mixing).**
 
-For fixed pool size \(s\geq1\) and number of pools per location \(v\geq1\), as the number of independently sampled locations \(w\to\infty\), the naive estimator converges almost surely to
-\[
+For fixed pool size $s\geq1$ and number of pools per location $v\geq1$, as the number of independently sampled locations $w\to\infty$, the naive estimator converges almost surely to
+$$
 \boxed{
 p_{\mathrm{ind},\beta}^*
 =
@@ -417,22 +425,22 @@ p_{\mathrm{ind},\beta}^*
      {1-\rho+k\rho}
 \right]^{1/s},
 }
-\]
-where \((a)_s=a(a+1)\cdots(a+s-1)\) denotes the rising factorial. Moreover,
-\[
+$$
+where $(a)_s=a(a+1)\cdots(a+s-1)$ denotes the rising factorial. Moreover,
+$$
 p_{\mathrm{ind},\beta}^*\leq p,
-\]
-with equality for \(s=1\) and strict inequality for \(s>1\) when \(0<\rho<1\).
+$$
+with equality for $s=1$ and strict inequality for $s>1$ when $0<\rho<1$.
 
 **Proof.**
 
 The general probability-limit formula proved above gives
-\[
+$$
 p_{\mathrm{ind}}^*
 =1-\left[\mathbb E\{(1-P_j)^s\}\right]^{1/s}.
-\]
+$$
 Under the beta distribution, evaluating the integral against its density yields
-\[
+$$
 \begin{aligned}
 \mathbb E\{(1-P_j)^s\}
 &=\frac{1}{B(\alpha,\beta)}
@@ -440,52 +448,52 @@ Under the beta distribution, evaluating the integral against its density yields
 &=\frac{B(\alpha,\beta+s)}{B(\alpha,\beta)}\\
 &=\frac{(\beta)_s}{(\alpha+\beta)_s}.
 \end{aligned}
-\]
-Substituting the expressions for \(\alpha\) and \(\beta\), and multiplying numerator and denominator of each product factor by \(\rho\), gives the displayed expression in terms of \(p,\rho,s\). Finally, for \(s>1\), strict Jensen inequality for the non-degenerate variable \(1-P_j\) gives
-\[
+$$
+Substituting the expressions for $\alpha$ and $\beta$, and multiplying numerator and denominator of each product factor by $\rho$, gives the displayed expression in terms of $p,\rho,s$. Finally, for $s>1$, strict Jensen inequality for the non-degenerate variable $1-P_j$ gives
+$$
 \mathbb E\{(1-P_j)^s\}>(1-p)^s,
-\]
-and hence \(p_{\mathrm{ind},\beta}^*<p\). If \(s=1\), the expectation is \(1-p\), so equality holds. \(\square\)
+$$
+and hence $p_{\mathrm{ind},\beta}^*<p$. If $s=1$, the expectation is $1-p$, so equality holds. $\square$
 
 **Corollary (Rare-prevalence approximation).**
 
-For fixed \(s\) and \(0<\rho<1\), as \(p\downarrow0\),
-\[
+For fixed $s$ and $0<\rho<1$, as $p\downarrow0$,
+$$
 \boxed{
 \frac{p_{\mathrm{ind},\beta}^*}{p}
 \longrightarrow
 \frac{1}{s}\sum_{k=0}^{s-1}
 \frac{1-\rho}{1-\rho+k\rho}.
 }
-\]
-In particular, the leading-order *relative* asymptotic bias depends only on \(s\) and \(\rho\).
+$$
+In particular, the leading-order *relative* asymptotic bias depends only on $s$ and $\rho$.
 
 **Proof.**
 
-Write \(c=(1-\rho)/\rho>0\). The product in the proposition is
-\[
+Write $c=(1-\rho)/\rho>0$. The product in the proposition is
+$$
 M_s(p)=\prod_{k=0}^{s-1}\frac{(1-p)c+k}{c+k}.
-\]
-Since \(M_s(0)=1\), differentiating its logarithm at \(p=0\) gives
-\[
+$$
+Since $M_s(0)=1$, differentiating its logarithm at $p=0$ gives
+$$
 \left.\frac{d}{dp}\log M_s(p)\right|_{p=0}
 =-\sum_{k=0}^{s-1}\frac{c}{c+k}.
-\]
+$$
 Consequently,
-\[
+$$
 M_s(p)=1-p\sum_{k=0}^{s-1}\frac{c}{c+k}+O(p^2),
-\]
-and the first-order expansion of \(1-M_s(p)^{1/s}\) yields
-\[
+$$
+and the first-order expansion of $1-M_s(p)^{1/s}$ yields
+$$
 p_{\mathrm{ind},\beta}^*
 =\frac{p}{s}\sum_{k=0}^{s-1}\frac{c}{c+k}+O(p^2).
-\]
-Dividing by \(p\) and substituting for \(c\) proves the result. \(\square\)
+$$
+Dividing by $p$ and substituting for $c$ proves the result. $\square$
 
 **Corollary (Rare-prevalence limit for an arbitrary beta-mixed pool-size design).**
 
-Under the arbitrary-\(k\) design of the preceding theorem, suppose that \(P_j\sim\operatorname{Beta}(\alpha,\beta)\), parameterised by marginal prevalence \(p\) and fixed individual-level ICC \(\rho\in(0,1)\) as above. Then, as \(p\downarrow0\) with \(\rho\), \(s_a\), and \(v_a\) fixed,
-\[
+Under the arbitrary-$k$ design of the preceding theorem, suppose that $P_j\sim\operatorname{Beta}(\alpha,\beta)$, parameterised by marginal prevalence $p$ and fixed individual-level ICC $\rho\in(0,1)$ as above. Then, as $p\downarrow0$ with $\rho$, $s_a$, and $v_a$ fixed,
+$$
 \boxed{
 \frac{p_{\mathrm{mix},\beta}^*}{p}
 \longrightarrow
@@ -494,89 +502,89 @@ Under the arbitrary-\(k\) design of the preceding theorem, suppose that \(P_j\si
 \frac{1-\rho}{1-\rho+m\rho}}
 {\displaystyle\sum_{a=1}^k v_a s_a}.
 }
-\]
-Equivalently, the limiting relative prevalence estimate is a weighted average of the single-pool-size rare-prevalence ratios, with weights proportional to \(v_as_a\), the number of individuals sampled in each pool-size class per location.
+$$
+Equivalently, the limiting relative prevalence estimate is a weighted average of the single-pool-size rare-prevalence ratios, with weights proportional to $v_as_a$, the number of individuals sampled in each pool-size class per location.
 
 **Proof.**
 
-Set \(c=(1-\rho)/\rho\), and write
-\[
+Set $c=(1-\rho)/\rho$, and write
+$$
 A_s=\sum_{m=0}^{s-1}\frac{c}{c+m}.
-\]
+$$
 The beta moment calculation above gives
-\[
+$$
 \bar q_s
 =1-\prod_{m=0}^{s-1}\frac{(1-p)c+m}{c+m}
 =pA_s+O(p^2).
-\]
-By the bounds in the arbitrary-mixture theorem and the preceding rare-prevalence corollary, each single-size limit \(p_s^*/p\) tends to a strictly positive finite constant. Consequently \(p_{\mathrm{mix},\beta}^*\) is of order \(p\), and
-\[
+$$
+By the bounds in the arbitrary-mixture theorem and the preceding rare-prevalence corollary, each single-size limit $p_s^*/p$ tends to a strictly positive finite constant. Consequently $p_{\mathrm{mix},\beta}^*$ is of order $p$, and
+$$
 q_{s_a}(p_{\mathrm{mix},\beta}^*)
 =s_a p_{\mathrm{mix},\beta}^*+O(p^2).
-\]
+$$
 The limiting naive score equation, written entirely on the prevalence scale, is
-\[
+$$
 \sum_{a=1}^k v_as_a
 \frac{\bar q_{s_a}}
      {q_{s_a}(p_{\mathrm{mix},\beta}^*)}
 =\sum_{a=1}^k v_as_a.
-\]
+$$
 Substituting the expansions gives
-\[
+$$
 \frac{p}{p_{\mathrm{mix},\beta}^*}
 \sum_{a=1}^k v_aA_{s_a}
 +O(p)
 =\sum_{a=1}^k v_as_a.
-\]
+$$
 It follows that
-\[
+$$
 p_{\mathrm{mix},\beta}^*
 =p\,\frac{\sum_a v_aA_{s_a}}{\sum_a v_as_a}
 +O(p^2).
-\]
-Dividing by \(p\) and substituting for \(c\) proves the result. \(\square\)
+$$
+Dividing by $p$ and substituting for $c$ proves the result. $\square$
 
 **Numerical illustration (two pool sizes).**
 
-With \(p=0.001\), \(\rho=0.10\), \(v_1=v_2=10\), \(s_1=25\), and \(s_2=50\), the exact beta moment expressions and the one-dimensional limiting-score equation give
-\[
+With $p=0.001$, $\rho=0.10$, $v_1=v_2=10$, $s_1=25$, and $s_2=50$, the exact beta moment expressions and the one-dimensional limiting-score equation give
+$$
 \begin{aligned}
 p_{25}^*&\approx0.000493559,\\
 p_{\mathrm{mix},\beta}^*&\approx0.000396026,\\
 p_{50}^*&\approx0.000347133.
 \end{aligned}
-\]
-The rare-prevalence corollary gives \(p_{\mathrm{mix},\beta}^*\approx0.000395921\) at first order. The mixed-size limit is strictly between those for the two component pool sizes, but substantially below the true prevalence of \(0.001\).
+$$
+The rare-prevalence corollary gives $p_{\mathrm{mix},\beta}^*\approx0.000395921$ at first order. The mixed-size limit is strictly between those for the two component pool sizes, but substantially below the true prevalence of $0.001$.
 
 **Remark (Dependence on the random-effects distribution).**
 
-For \(p=0.001\), \(\rho=0.10\), and \(s=50\), the exact beta-mixing expression gives
-\[
+For $p=0.001$, $\rho=0.10$, and $s=50$, the exact beta-mixing expression gives
+$$
 p_{\mathrm{ind},\beta}^*\approx0.00034713
 \quad (0.034713\%),
-\]
-or approximately \(34.7\%\) of the true prevalence. For comparison, the logit-normal distribution calibrated to the same marginal prevalence and individual-level ICC gives approximately \(p_{\mathrm{ind},\mathrm{LN}}^*=0.00053071\) (\(0.053071\%\)). Thus matching the first two moments of the location-level prevalence distribution does not determine the nonlinear moment \(\mathbb E\{(1-P_j)^s\}\), and hence does not determine the naive estimator's asymptotic bias. Both limits are independent of the number of pools per location \(v\) under the stated \(w\to\infty\) regime.
+$$
+or approximately $34.7\%$ of the true prevalence. For comparison, the logit-normal distribution calibrated to the same marginal prevalence and individual-level ICC gives approximately $p_{\mathrm{ind},\mathrm{LN}}^*=0.00053071$ ($0.053071\%$). Thus matching the first two moments of the location-level prevalence distribution does not determine the nonlinear moment $\mathbb E\{(1-P_j)^s\}$, and hence does not determine the naive estimator's asymptotic bias. Both limits are independent of the number of pools per location $v$ under the stated $w\to\infty$ regime.
 
-The boundary cases are also informative. With \(s=1\), the naive estimator is asymptotically unbiased under either mixing model. As \(\rho\downarrow0\) at fixed \(p\), the beta distribution concentrates at \(p\), so \(p_{\mathrm{ind},\beta}^*\to p\). Conversely, as \(\rho\uparrow1\), the beta mixing distribution approaches a distribution concentrated at zero and one; because \(\mathbb E\{(1-P_j)^s\}\to1-p\), the naive-estimator limit approaches \(1-(1-p)^{1/s}\).
+The boundary cases are also informative. With $s=1$, the naive estimator is asymptotically unbiased under either mixing model. As $\rho\downarrow0$ at fixed $p$, the beta distribution concentrates at $p$, so $p_{\mathrm{ind},\beta}^*\to p$. Conversely, as $\rho\uparrow1$, the beta mixing distribution approaches a distribution concentrated at zero and one; because $\mathbb E\{(1-P_j)^s\}\to1-p$, the naive-estimator limit approaches $1-(1-p)^{1/s}$.
 
 # Sufficiency of the location-count histogram
 
 Define
-\[
+$$
 n_k=\sum_{j=1}^{w}\mathbb{I}(K_j=k),
 \qquad k=0,\ldots,v.
-\]
-The vector \(\boldsymbol n=(n_0,\ldots,n_v)\) records how many locations had exactly \(k\) positive pools. It satisfies
-\[
+$$
+The vector $\boldsymbol n=(n_0,\ldots,n_v)$ records how many locations had exactly $k$ positive pools. It satisfies
+$$
 \sum_{k=0}^{v}n_k=w.
-\]
+$$
 
 
 
 **Theorem (Sufficiency of the histogram)**
 
 
-For fixed \(\sigma\), the histogram \(\boldsymbol n=(n_0,\ldots,n_v)\) is a sufficient statistic for \(\mu\), and hence for the marginal prevalence \(p\).
+For fixed $\sigma$, the histogram $\boldsymbol n=(n_0,\ldots,n_v)$ is a sufficient statistic for $\mu$, and hence for the marginal prevalence $p$.
 
 
 
@@ -587,16 +595,16 @@ For fixed \(\sigma\), the histogram \(\boldsymbol n=(n_0,\ldots,n_v)\) is a suff
 
 
 The likelihood based on the ordered location-level observations is
-\[
+$$
 L(\mu;\boldsymbol K)
 =\prod_{j=1}^{w}\pi_{K_j}(\mu,\sigma).
-\]
-Grouping together locations with the same value of \(K_j\) gives
-\[
+$$
+Grouping together locations with the same value of $K_j$ gives
+$$
 L(\mu;\boldsymbol K)
 =\prod_{k=0}^{v}\pi_k(\mu,\sigma)^{n_k}.
-\]
-The data enter the likelihood only through \(\boldsymbol n\). By the factorisation theorem, \(\boldsymbol n\) is sufficient for \(\mu\). Since, for fixed \(\sigma\), \(p=\mathbb{E}\{\operatorname{logit}^{-1}(\mu+\sigma Z)\}\) is a one-to-one function of \(\mu\), the same statistic is sufficient for \(p\).
+$$
+The data enter the likelihood only through $\boldsymbol n$. By the factorisation theorem, $\boldsymbol n$ is sufficient for $\mu$. Since, for fixed $\sigma$, $p=\mathbb{E}\{\operatorname{logit}^{-1}(\mu+\sigma Z)\}$ is a one-to-one function of $\mu$, the same statistic is sufficient for $p$.
 
 
 
@@ -606,30 +614,30 @@ The data enter the likelihood only through \(\boldsymbol n\). By the factorisati
 **Remark.**
 
 
-The theorem establishes sufficiency; it does not assert that the histogram is minimal sufficient. Nor does it imply that the total number of positive pools \(X=\sum_k k n_k\) is sufficient. In general, the likelihood depends on the full histogram rather than only on \(X\).
+The theorem establishes sufficiency; it does not assert that the histogram is minimal sufficient. Nor does it imply that the total number of positive pools $X=\sum_k k n_k$ is sufficient. In general, the likelihood depends on the full histogram rather than only on $X$.
 
 
 
 
 # Monotone likelihood ratio in the number of positive pools
 
-We now establish that, for fixed \(\sigma\), the family of location-level distributions \(\{\pi_k(\mu,\sigma)\}\) has a monotone likelihood ratio in \(k\).
+We now establish that, for fixed $\sigma$, the family of location-level distributions $\{\pi_k(\mu,\sigma)\}$ has a monotone likelihood ratio in $k$.
 
 
 
 **Definition (Monotone likelihood ratio)**
 
 
-A family of probability mass functions \(\pi_k(\mu)\), indexed by an ordered parameter \(\mu\) and an ordered statistic \(k\), has a monotone likelihood ratio in \(k\) if, whenever \(\mu_2>\mu_1\), the ratio
-\[
+A family of probability mass functions $\pi_k(\mu)$, indexed by an ordered parameter $\mu$ and an ordered statistic $k$, has a monotone likelihood ratio in $k$ if, whenever $\mu_2>\mu_1$, the ratio
+$$
 \frac{\pi_k(\mu_2)}{\pi_k(\mu_1)}
-\]
-is non-decreasing in \(k\). Equivalently, for \(k_1<k_2\),
-\[
+$$
+is non-decreasing in $k$. Equivalently, for $k_1<k_2$,
+$$
 \pi_{k_1}(\mu_1)\pi_{k_2}(\mu_2)
 \geq
 \pi_{k_1}(\mu_2)\pi_{k_2}(\mu_1).
-\]
+$$
 
 
 
@@ -641,11 +649,11 @@ is non-decreasing in \(k\). Equivalently, for \(k_1<k_2\),
 **Lemma (Composition of TP2 kernels)**
 
 
-Let \(a(x,\mu)\) and \(b(k,x)\) be non-negative kernels that are totally positive of order two (TP2) in their respective pairs of arguments. Define
-\[
+Let $a(x,\mu)$ and $b(k,x)$ be non-negative kernels that are totally positive of order two (TP2) in their respective pairs of arguments. Define
+$$
 c(k,\mu)=\int b(k,x)a(x,\mu)\,dx.
-\]
-Under conditions ensuring the integrals exist, \(c(k,\mu)\) is TP2 in \((k,\mu)\).
+$$
+Under conditions ensuring the integrals exist, $c(k,\mu)$ is TP2 in $(k,\mu)$.
 
 
 
@@ -655,8 +663,8 @@ Under conditions ensuring the integrals exist, \(c(k,\mu)\) is TP2 in \((k,\mu)\
 **Proof.**
 
 
-Take \(k_1<k_2\) and \(\mu_1<\mu_2\). Expanding the determinant and symmetrising the double integral gives
-\[
+Take $k_1<k_2$ and $\mu_1<\mu_2$. Expanding the determinant and symmetrising the double integral gives
+$$
 \begin{aligned}
 &c(k_1,\mu_1)c(k_2,\mu_2)
 -c(k_1,\mu_2)c(k_2,\mu_1)\\
@@ -671,8 +679,8 @@ a(x_1,\mu_1)a(x_2,\mu_2)
 -a(x_1,\mu_2)a(x_2,\mu_1)
 \right]\,dx_1\,dx_2.
 \end{aligned}
-\]
-The TP2 property of \(b\) makes the first bracket non-negative, and the TP2 property of \(a\) makes the second bracket non-negative. The integral is therefore non-negative, proving that \(c\) is TP2.
+$$
+The TP2 property of $b$ makes the first bracket non-negative, and the TP2 property of $a$ makes the second bracket non-negative. The integral is therefore non-negative, proving that $c$ is TP2.
 
 
 
@@ -684,11 +692,11 @@ The TP2 property of \(b\) makes the first bracket non-negative, and the TP2 prop
 **Lemma.**
 
 
-For fixed \(\sigma>0\), the normal density
-\[
+For fixed $\sigma>0$, the normal density
+$$
 a(z,\mu)=\phi(z;\mu,\sigma^2)
-\]
-is TP2 in \((z,\mu)\).
+$$
+is TP2 in $(z,\mu)$.
 
 
 
@@ -698,20 +706,20 @@ is TP2 in \((z,\mu)\).
 **Proof.**
 
 
-For \(z_1<z_2\) and \(\mu_1<\mu_2\), the log density ratio is
-\[
+For $z_1<z_2$ and $\mu_1<\mu_2$, the log density ratio is
+$$
 \log\frac{\phi(z;\mu_2,\sigma^2)}
 {\phi(z;\mu_1,\sigma^2)}
 =
 \frac{(\mu_2-\mu_1)z}{\sigma^2}
 +\frac{\mu_1^2-\mu_2^2}{2\sigma^2}.
-\]
-This is strictly increasing in \(z\). Therefore
-\[
+$$
+This is strictly increasing in $z$. Therefore
+$$
 \phi(z_1;\mu_1,\sigma^2)\phi(z_2;\mu_2,\sigma^2)
 >
 \phi(z_1;\mu_2,\sigma^2)\phi(z_2;\mu_1,\sigma^2),
-\]
+$$
 which establishes TP2.
 
 
@@ -724,12 +732,12 @@ which establishes TP2.
 **Lemma.**
 
 
-For fixed \(v\), the binomial probability kernel
-\[
+For fixed $v$, the binomial probability kernel
+$$
 b(k,q)={v\choose k}q^k(1-q)^{v-k},
 \qquad k=0,\ldots,v,
-\]
-is TP2 in \((k,q)\) for \(0<q<1\).
+$$
+is TP2 in $(k,q)$ for $0<q<1$.
 
 
 
@@ -739,16 +747,16 @@ is TP2 in \((k,q)\) for \(0<q<1\).
 **Proof.**
 
 
-Take \(k_1<k_2\) and \(0<q_1<q_2<1\). The ratio
-\[
+Take $k_1<k_2$ and $0<q_1<q_2<1$. The ratio
+$$
 \frac{b(k,q_2)}{b(k,q_1)}
 =
 \left(\frac{1-q_2}{1-q_1}\right)^v
 \left\{
 \frac{q_2(1-q_1)}{q_1(1-q_2)}
 \right\}^{k}
-\]
-is strictly increasing in \(k\), because the expression in braces is greater than one. This is equivalent to the TP2 inequality.
+$$
+is strictly increasing in $k$, because the expression in braces is greater than one. This is equivalent to the TP2 inequality.
 
 
 
@@ -760,16 +768,16 @@ is strictly increasing in \(k\), because the expression in braces is greater tha
 **Theorem (MLR for the clustered location-level count)**
 
 
-Suppose \(s\geq1\), \(v\geq1\), and \(\sigma>0\) is fixed. Under the logit-normal random-effects model,
-\[
+Suppose $s\geq1$, $v\geq1$, and $\sigma>0$ is fixed. Under the logit-normal random-effects model,
+$$
 \pi_k(\mu,\sigma)
 =\Pr(K_j=k)
-\]
-has a monotone likelihood ratio in \(k\) as \(\mu\) increases. That is, for \(\mu_2>\mu_1\), the ratio
-\[
+$$
+has a monotone likelihood ratio in $k$ as $\mu$ increases. That is, for $\mu_2>\mu_1$, the ratio
+$$
 \frac{\pi_k(\mu_2,\sigma)}{\pi_k(\mu_1,\sigma)}
-\]
-is strictly increasing in \(k\).
+$$
+is strictly increasing in $k$.
 
 
 
@@ -780,24 +788,24 @@ is strictly increasing in \(k\).
 
 
 Write
-\[
+$$
 q(z)=1-\{1-\operatorname{logit}^{-1}(z)\}^{s}.
-\]
-For \(s\geq1\), \(q(z)\) is strictly increasing in \(z\). The location-level probability can be written as
-\[
+$$
+For $s\geq1$, $q(z)$ is strictly increasing in $z$. The location-level probability can be written as
+$$
 \pi_k(\mu,\sigma)
 =\int_{-\infty}^{\infty}
 b\{k,q(z)\}\phi(z;\mu,\sigma^2)\,dz.
-\]
+$$
 
-By the binomial-kernel lemma and the monotonicity of \(q(z)\), the kernel \(b\{k,q(z)\}\) is TP2 in \((k,z)\). By the normal-family lemma, \(\phi(z;\mu,\sigma^2)\) is TP2 in \((z,\mu)\). Applying the composition lemma, their integral \(\pi_k(\mu,\sigma)\) is TP2 in \((k,\mu)\).
+By the binomial-kernel lemma and the monotonicity of $q(z)$, the kernel $b\{k,q(z)\}$ is TP2 in $(k,z)$. By the normal-family lemma, $\phi(z;\mu,\sigma^2)$ is TP2 in $(z,\mu)$. Applying the composition lemma, their integral $\pi_k(\mu,\sigma)$ is TP2 in $(k,\mu)$.
 
-Thus, for \(k_1<k_2\) and \(\mu_1<\mu_2\),
-\[
+Thus, for $k_1<k_2$ and $\mu_1<\mu_2$,
+$$
 \pi_{k_1}(\mu_1,\sigma)\pi_{k_2}(\mu_2,\sigma)
 \geq
 \pi_{k_1}(\mu_2,\sigma)\pi_{k_2}(\mu_1,\sigma),
-\]
+$$
 which is the MLR property. Strictness follows from the strict TP2 inequalities of the two component kernels and the fact that the mixing distribution has positive density over the real line.
 
 
@@ -808,18 +816,18 @@ which is the MLR property. Strictness follows from the strict TP2 inequalities o
 **Corollary (Ordering of threshold score contributions)**
 
 
-For fixed \(\sigma>0\) and finite \(\mu_t\), define
-\[
+For fixed $\sigma>0$ and finite $\mu_t$, define
+$$
 u_k=
 \left.
 \frac{\partial}{\partial\mu}
 \log\pi_k(\mu,\sigma)
 \right|_{\mu=\mu_t}.
-\]
+$$
 Then
-\[
+$$
 u_0\leq u_1\leq\cdots\leq u_v.
-\]
+$$
 
 
 
@@ -829,17 +837,17 @@ u_0\leq u_1\leq\cdots\leq u_v.
 **Proof.**
 
 
-The MLR property implies that, for each \(k<v\),
-\[
+The MLR property implies that, for each $k<v$,
+$$
 \log\pi_{k+1}(\mu,\sigma)-\log\pi_k(\mu,\sigma)
-\]
-is increasing in \(\mu\). Differentiating gives
-\[
+$$
+is increasing in $\mu$. Differentiating gives
+$$
 \frac{\partial}{\partial\mu}\log\pi_{k+1}(\mu,\sigma)
 -
 \frac{\partial}{\partial\mu}\log\pi_k(\mu,\sigma)
 \geq0.
-\]
+$$
 The MLR property implies the non-strict inequality. Strict MLR over finite parameter intervals does not, by itself, guarantee a strictly positive derivative at every individual parameter value.
 
 
@@ -850,128 +858,128 @@ The MLR property implies the non-strict inequality. Strict MLR over finite param
 **Remark (Scope of the result)**
 
 
-The MLR theorem assumes that \(\sigma\) is fixed as \(\mu\) varies. It therefore applies directly to inference under a specified random-effects variance, including threshold decisions in which the assumed clustering variance is held fixed. It does not, by itself, establish MLR when \(\sigma\) is jointly estimated with \(\mu\), or when \(\sigma\) is allowed to vary as a function of \(\mu\).
+The MLR theorem assumes that $\sigma$ is fixed as $\mu$ varies. It therefore applies directly to inference under a specified random-effects variance, including threshold decisions in which the assumed clustering variance is held fixed. It does not, by itself, establish MLR when $\sigma$ is jointly estimated with $\mu$, or when $\sigma$ is allowed to vary as a function of $\mu$.
 
 
 
 
 # Fixed-ICC parameterisation
 
-The fixed-\(\sigma\) result above is useful when the random-effects variance is specified independently of the prevalence parameter. In some survey designs, however, the design is specified in terms of an intraclass correlation coefficient (ICC). An analyst might therefore wish to hold the ICC fixed at its design value while allowing both \(\mu\) and \(\sigma\) to vary.
+The fixed-$\sigma$ result above is useful when the random-effects variance is specified independently of the prevalence parameter. In some survey designs, however, the design is specified in terms of an intraclass correlation coefficient (ICC). An analyst might therefore wish to hold the ICC fixed at its design value while allowing both $\mu$ and $\sigma$ to vary.
 
 ## Defining the fixed-ICC likelihood
 
 Let
-\[
+$$
 P=\operatorname{logit}^{-1}(\mu+\sigma Z),\qquad Z\sim N(0,1),
-\]
+$$
 and define the marginal individual prevalence and individual-level ICC by
-\[
+$$
 p(\mu,\sigma)=\mathbb E(P),
 \qquad
 \rho(\mu,\sigma)
 =\frac{\operatorname{Var}(P)}{p(\mu,\sigma)\{1-p(\mu,\sigma)\}}.
-\]
-For a specified design value \(\rho_d\), the fixed-ICC parameterisation constrains
-\[
+$$
+For a specified design value $\rho_d$, the fixed-ICC parameterisation constrains
+$$
 \rho\{\mu,\sigma(\mu)\}=\rho_d.
-\]
+$$
 The likelihood is then a one-parameter likelihood along this constraint:
-\[
+$$
 L_{\rho_d}(\mu;\boldsymbol n)
 =\prod_{k=0}^{v}
 \pi_k\{\mu,\sigma(\mu)\}^{n_k}.
-\]
-This differs from fixing \(\sigma\): as \(\mu\) changes, \(\sigma\) must generally change as well in order to maintain the chosen ICC.
+$$
+This differs from fixing $\sigma$: as $\mu$ changes, $\sigma$ must generally change as well in order to maintain the chosen ICC.
 
-## Why the fixed-\(\sigma\) MLR proof does not extend
+## Why the fixed-$\sigma$ MLR proof does not extend
 
-The composition proof above relies on the normal density being TP2 in \((z,\mu)\). That property holds when \(\sigma\) is constant. Along a fixed-ICC curve, the mixing density instead has the form
-\[
+The composition proof above relies on the normal density being TP2 in $(z,\mu)$. That property holds when $\sigma$ is constant. Along a fixed-ICC curve, the mixing density instead has the form
+$$
 a(z,\mu)=\frac{1}{\sigma(\mu)}
 \phi\!\left(\frac{z-\mu}{\sigma(\mu)}\right).
-\]
+$$
 Its log-density has cross-partial derivative
-\[
+$$
 \frac{\partial^2\log a(z,\mu)}
 {\partial z\,\partial\mu}
 =
 \frac{1}{\sigma(\mu)^2}
 +
 \frac{2\{z-\mu\}\sigma'(\mu)}{\sigma(\mu)^3}.
-\]
-When \(\sigma'(\mu)\ne0\), this expression can be negative for some values of \(z\). Thus the normal mixing kernel is not generally TP2 along a varying-\(\sigma\) parameterisation, and the composition argument used for the fixed-\(\sigma\) theorem is no longer available.
+$$
+When $\sigma'(\mu)\ne0$, this expression can be negative for some values of $z$. Thus the normal mixing kernel is not generally TP2 along a varying-$\sigma$ parameterisation, and the composition argument used for the fixed-$\sigma$ theorem is no longer available.
 
 This observation alone would show only that the previous proof does not apply. In fact, numerical evaluation also gives a counterexample to MLR itself.
 
 ## Numerical counterexample
 
-Consider \(s=5\) individuals per pool, \(v=5\) pools per trapping location, and a fixed individual-level ICC of \(\rho_d=0.10\). For each value of \(\mu\), \(\sigma\) was numerically chosen to satisfy the ICC constraint. The following two parameter values give:
+Consider $s=5$ individuals per pool, $v=5$ pools per trapping location, and a fixed individual-level ICC of $\rho_d=0.10$. For each value of $\mu$, $\sigma$ was numerically chosen to satisfy the ICC constraint. The following two parameter values give:
 
-| Quantity | \(\mu_1=-4.5\) | \(\mu_2=-4.0\) |
+| Quantity | $\mu_1=-4.5$ | $\mu_2=-4.0$ |
 |:--|--:|--:|
-| \(\sigma\) | 1.502473 | 1.380352 |
-| Marginal prevalence \(p\) | 0.028737 | 0.039382 |
+| $\sigma$ | 1.502473 | 1.380352 |
+| Marginal prevalence $p$ | 0.028737 | 0.039382 |
 | Individual-level ICC | 0.10 | 0.10 |
 
-The location-count probabilities, in order \(k=0,\ldots,5\), are approximately
-\[
+The location-count probabilities, in order $k=0,\ldots,5$, are approximately
+$$
 \begin{aligned}
 \boldsymbol\pi(\mu_1,\sigma_1)
 &=(0.660091,\ 0.201468,\ 0.076190,\ 0.034629,\ 0.017670,\ 0.009952),\\
 \boldsymbol\pi(\mu_2,\sigma_2)
 &=(0.568229,\ 0.235592,\ 0.103595,\ 0.050782,\ 0.026821,\ 0.014982).
 \end{aligned}
-\]
+$$
 Consequently, the likelihood ratios are
-\[
+$$
 \left(
 \frac{\pi_k(\mu_2,\sigma_2)}
      {\pi_k(\mu_1,\sigma_1)}
 \right)_{k=0}^{5}
 \approx
 (0.860835,\ 1.169372,\ 1.359692,\ 1.466460,\ 1.517843,\ 1.505456).
-\]
-The ratio decreases between \(k=4\) and \(k=5\). This violates the required non-decreasing ordering, so the location-count family does **not** have a general MLR property under the fixed-ICC parameterisation.
+$$
+The ratio decreases between $k=4$ and $k=5$. This violates the required non-decreasing ordering, so the location-count family does **not** have a general MLR property under the fixed-ICC parameterisation.
 
 The counterexample is in a relatively low-prevalence range (approximately 2.9% to 3.9%) and uses a moderate ICC of 0.10. It is therefore not confined to an obviously extreme parameter setting. The numerical values were evaluated using high-order Gauss--Hermite quadrature; they are numerical evidence for this counterexample, rather than a symbolic characterisation of all fixed-ICC parameter values.
 
 ## Consequences for score ordering and computation
 
-The score contribution from a location with \(k\) positive pools, when differentiating along the fixed-ICC curve, is
-\[
+The score contribution from a location with $k$ positive pools, when differentiating along the fixed-ICC curve, is
+$$
 u_k^{(\rho)}
 =
 \frac{d}{d\mu}
 \log\pi_k\{\mu,\sigma(\mu)\}.
-\]
-The fixed-\(\sigma\) corollary does not establish an ordering of these contributions, because its MLR premise is not available here. For example, at \(\mu=-4.25\), with \(s=v=5\) and \(\rho_d=0.10\), numerical differentiation along the fixed-ICC curve gives
-\[
+$$
+The fixed-$\sigma$ corollary does not establish an ordering of these contributions, because its MLR premise is not available here. For example, at $\mu=-4.25$, with $s=v=5$ and $\rho_d=0.10$, numerical differentiation along the fixed-ICC curve gives
+$$
 (u_0^{(\rho)},\ldots,u_5^{(\rho)})
 \approx
 (-0.298112,\ 0.314334,\ 0.615532,\ 0.766194,\ 0.834506,\ 0.817483).
-\]
-In this example, the contribution for \(k=5\) is slightly smaller than that for \(k=4\). This is a numerical example showing that the fixed-\(\sigma\) score ordering cannot simply be carried over; it is not a proof that score contributions are unordered for every fixed-ICC design.
+$$
+In this example, the contribution for $k=5$ is slightly smaller than that for $k=4$. This is a numerical example showing that the fixed-$\sigma$ score ordering cannot simply be carried over; it is not a proof that score contributions are unordered for every fixed-ICC design.
 
-A fixed-ICC model can nevertheless be fitted as a one-dimensional likelihood, provided the ICC constraint defines an appropriate \(\sigma(\mu)\) over the parameter range of interest. What is lost is the general MLR guarantee, and hence the theoretical justification for algorithms that rely on monotone likelihood ratios or ordered threshold-score contributions. Such calculations should instead use direct enumeration or establish the relevant ordering separately over the design's parameter range. In practice, it is also important to examine sensitivity to the assumed design ICC: holding the design ICC fixed is a modelling constraint, not evidence that the realised population ICC is known.
+A fixed-ICC model can nevertheless be fitted as a one-dimensional likelihood, provided the ICC constraint defines an appropriate $\sigma(\mu)$ over the parameter range of interest. What is lost is the general MLR guarantee, and hence the theoretical justification for algorithms that rely on monotone likelihood ratios or ordered threshold-score contributions. Such calculations should instead use direct enumeration or establish the relevant ordering separately over the design's parameter range. In practice, it is also important to examine sensitivity to the assumed design ICC: holding the design ICC fixed is a modelling constraint, not evidence that the realised population ICC is known.
 
 # Implications for threshold calculations
 
-For a fixed threshold \(p_t\) and fixed assumed \(\sigma\), let \(\mu_t\) be the unique value satisfying
-\[
+For a fixed threshold $p_t$ and fixed assumed $\sigma$, let $\mu_t$ be the unique value satisfying
+$$
 p_t=\mathbb{E}\{\operatorname{logit}^{-1}(\mu_t+\sigma Z)\}.
-\]
+$$
 The score at the threshold for an observed histogram is
-\[
+$$
 U(\mu_t)=\sum_{k=0}^{v}n_k u_k.
-\]
-Under the usual concavity of the log-likelihood in \(\mu\), the sign of this score determines whether the maximum likelihood estimate lies above or below \(\mu_t\), subject to boundary and tie conventions.
+$$
+Under the usual concavity of the log-likelihood in $\mu$, the sign of this score determines whether the maximum likelihood estimate lies above or below $\mu_t$, subject to boundary and tie conventions.
 
-The ordering \(u_0<\cdots<u_v\) means that changing one location's result from \(k\) to \(k+1\) positive pools strictly increases the score at the threshold. This provides a useful monotonicity property for exact probability calculations and may support branch-and-bound or other structured enumeration algorithms. It does not, by itself, remove the need to account for the distribution of location-level outcomes.
+The ordering $u_0<\cdots<u_v$ means that changing one location's result from $k$ to $k+1$ positive pools strictly increases the score at the threshold. This provides a useful monotonicity property for exact probability calculations and may support branch-and-bound or other structured enumeration algorithms. It does not, by itself, remove the need to account for the distribution of location-level outcomes.
 
 # Discussion
 
-The clustered model changes the statistical unit that carries independent information: it is the trapping location, not the individual pool. The location-level count \(K_j\) has a finite support of size \(v+1\), and its histogram across locations is sufficient for inference on marginal prevalence when the random-effects variance is fixed.
+The clustered model changes the statistical unit that carries independent information: it is the trapping location, not the individual pool. The location-level count $K_j$ has a finite support of size $v+1$, and its histogram across locations is sufficient for inference on marginal prevalence when the random-effects variance is fixed.
 
 The ordinary pooled estimator based only on the total number of positive pools generally targets a different functional of the random-effects distribution. The likelihood based on the full location-level histogram correctly accounts for the clustering structure.
 
