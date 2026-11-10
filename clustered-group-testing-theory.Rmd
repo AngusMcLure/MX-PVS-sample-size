@@ -106,14 +106,14 @@ $$
 \widehat p_{\mathrm{ind}}
 =1-\left(1-\frac{X}{vw}\right)^{1/s}.
 $$
-Under the clustered model, however,
+Under the clustered model as the number of locations $w$ increases (with $v$ fixed)
 $$
 \frac{X}{vw}\ \xrightarrow[]{\mathrm{a.s.}}\
 \frac{\mathbb{E}(K_j)}{v}
 =\mathbb{E}(Q_j)
 =1-\mathbb{E}\{(1-P_j)^s\},
 $$
-as the number of locations $w$ increases (with $v$ fixed). Hence the probability limit of the ordinary estimator is
+Hence the probability limit of the ordinary estimator is
 $$
 p_{\mathrm{ind}}^*
 =1-\left[\mathbb{E}\{(1-P_j)^s\}\right]^{1/s}.
@@ -235,37 +235,35 @@ For unequal $s_a$, its maximiser generally has no closed-form expression.
 
 **Theorem (Asymptotic underestimation for an arbitrary finite mixture of pool sizes).**
 
-Suppose $0<p<1$, the distribution of $P_j$ is non-degenerate, and at least one pool-size class satisfies $s_a>1$. Then, as $w\to\infty$ with $k$, $s_a$, and $v_a$ fixed, the naive MLE satisfies
-$$
-\widehat p_{\mathrm{naive},w}
-\xrightarrow{\mathrm{a.s.}}p_{\mathrm{mix}}^*<p.
-$$
-Define, for every positive integer $s$,
+Suppose $0<p<1$, the distribution of $P_j$ is non-degenerate, and at least one pool-size class satisfies $s_a>1$. Define, for every positive integer $s$,
 $$
 \bar q_s=1-\mathbb E\{(1-P_j)^s\},
 \qquad
 p_s^*=1-\left[\mathbb E\{(1-P_j)^s\}\right]^{1/s}.
 $$
-Then $p_{\mathrm{mix}}^*$ is the unique solution in $(0,1)$ of
+Then, as $w\to\infty$ with $k$, $s_a$, and $v_a$ fixed, the naive MLE satisfies
 $$
-\boxed{
+\widehat p_{\mathrm{naive},w}
+\xrightarrow{\mathrm{a.s.}}p_{\mathrm{mix}}^*<p,
+$$
+where $p_{\mathrm{mix}}^*$ is the unique solution in $(0,1)$ of
+$$
+
 \sum_{a=1}^k
 v_as_a
 \frac{\bar q_{s_a}-q_{s_a}(p_{\mathrm{mix}}^*)}
      {q_{s_a}(p_{\mathrm{mix}}^*)}
-=0,
-}
+=0,
 $$
-and it obeys the bounds
+and obeys the bounds
 $$
-\boxed{
+
 p_{s_{\max}}^*
 \ \leq\ p_{\mathrm{mix}}^*
 \ \leq\ p_{s_{\min}}^*
 \ \leq\ p,
 \qquad
-s_{\min}=\min_a s_a,\quad s_{\max}=\max_a s_a.
-}
+s_{\min}=\min_a s_a,\quad s_{\max}=\max_a s_a.
 $$
 If $s_{\min}<s_{\max}$, both inequalities bounding $p_{\mathrm{mix}}^*$ between the single-size limits are strict.
 
@@ -293,20 +291,21 @@ v_a \left[
 \right].
 \end{align}
 $$
-Direct differentiation with respect to the candidate prevalence, using
-$$
-q_s'(t)=s(1-t)^{s-1}>0,\qquad
-q_s''(t)=-s(s-1)(1-t)^{s-2}\leq0,
-$$
-gives
+Differentiation with respect to the candidate prevalence give
 $$
 \ell'(t)=\sum_{a=1}^k v_a
 \left[
 \bar q_{s_a}\frac{q_{s_a}'(t)}{q_{s_a}(t)}
 -\frac{(1-\bar q_{s_a})s_a}{1-t}
-\right],
+\right].
 $$
-and
+Differentiating again and using $0<\bar q_s < 1$ together with the inequalities 
+$$
+q_s(t) = 1-(1-t)^s > 0, \qquad
+q_s'(t)=s(1-t)^{s-1} \geq 0, \qquad
+q_s''(t)=-s(s-1)(1-t)^{s-2} \leq 0,
+$$
+gives
 $$
 \ell''(t)=\sum_{a=1}^k v_a
 \left[
@@ -317,7 +316,7 @@ $$
 -\frac{(1-\bar q_{s_a})s_a}{(1-t)^2}
 \right]<0.
 $$
-Indeed, $q_{s_a}(t)>0$, $q_{s_a}'(t)>0$, $q_{s_a}''(t)\leq0$ and $0<\bar q_{s_a}<1$ for $0<t<1$. Thus $\ell$ is strictly concave in $t$. Moreover, $\ell'(t)\to+\infty$ as $t\downarrow0$ and $\ell'(t)\to-\infty$ as $t\uparrow1$. Hence $\ell$ has exactly one stationary point $p_{\mathrm{mix}}^* \in(0,1)$, which is its unique global maximum.
+Thus $\ell$ is strictly concave in $t$. Moreover, $\ell'(t)\to+\infty$ as $t\downarrow0$ and $\ell'(t)\to-\infty$ as $t\uparrow1$. Hence $\ell$ has exactly one stationary point $p_{\mathrm{mix}}^* \in(0,1)$, which is its unique global maximum.
 
 To establish convergence of the finite-sample naive MLE, note that the strong law also implies $\ell_w'(t)/w\to\ell'(t)$ almost surely at each interior $t$. For any $t_-<t^*<t_+$, strict concavity gives $\ell'(t_-)>0$ and $\ell'(t_+)<0$. Eventually the finite-sample derivatives have these same signs. As the finite-sample log-likelihood is concave in $t$ for every dataset, its maximiser eventually lies in $(t_-,t_+)$. Taking $t_-$ and $t_+$ arbitrarily close to $p_{\mathrm{mix}}^*$ proves
 $$
@@ -392,8 +391,7 @@ $$
 
 For fixed pool size $s\geq1$ and number of pools per location $v\geq1$, as the number of independently sampled locations $w\to\infty$, the naive estimator converges almost surely to
 $$
-\boxed{
-p_{\mathrm{ind},\beta}^*
+p_{\mathrm{ind},\Beta}^*
 =
 1-
 \left\{
@@ -405,11 +403,10 @@ p_{\mathrm{ind},\beta}^*
 \frac{(1-p)(1-\rho)+k\rho}
      {1-\rho+k\rho}
 \right]^{1/s},
-}
 $$
 where $(a)_s=a(a+1)\cdots(a+s-1)$ denotes the rising factorial. Moreover,
 $$
-p_{\mathrm{ind},\beta}^*\leq p,
+p_{\mathrm{ind},\Beta}^*\leq p,
 $$
 with equality for $s=1$ and strict inequality for $s>1$ when $0<\rho<1$.
 
@@ -434,18 +431,17 @@ Substituting the expressions for $\alpha$ and $\beta$, and multiplying numerator
 $$
 \mathbb E\{(1-P_j)^s\}>(1-p)^s,
 $$
-and hence $p_{\mathrm{ind},\beta}^*<p$. If $s=1$, the expectation is $1-p$, so equality holds. $\square$
+and hence $p_{\mathrm{ind},\Beta}^*<p$. If $s=1$, the expectation is $1-p$, so equality holds. $\square$
 
 **Corollary (Rare-prevalence approximation).**
 
 For fixed $s$ and $0<\rho<1$, as $p\downarrow0$,
 $$
-\boxed{
-\frac{p_{\mathrm{ind},\beta}^*}{p}
+
+\frac{p_{\mathrm{ind},\Beta}^*}{p}
 \longrightarrow
 \frac{1}{s}\sum_{k=0}^{s-1}
-\frac{1-\rho}{1-\rho+k\rho}.
-}
+\frac{1-\rho}{1-\rho+k\rho}.
 $$
 In particular, the leading-order *relative* asymptotic bias depends only on $s$ and $\rho$.
 
