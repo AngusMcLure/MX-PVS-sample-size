@@ -319,51 +319,58 @@ v_a \left[
 \right].
 \end{align}
 $$
-Differentiation with respect to candidate prevalence, using the identity $\dfrac{d}{dt}\log q_s(t) = \frac{s}{1-t}\frac{1 - q_s(t)}{q_s(t)}$ gives
+Direct differentiation with respect to the candidate prevalence, using
 $$
-\ell'(t)=\frac{1}{1-t}\sum_{a=1}^k
-v_a s_a
-\frac{\bar q_{s_a}-q_{s_a}(t)}{q_{s_a}(t)}.
+q_s'(t)=s(1-t)^{s-1}>0,\qquad
+q_s''(t)=-s(s-1)(1-t)^{s-2}\leq0,
 $$
-The factor $1/(1-t)$ is strictly positive. Moreover,
+gives
 $$
-G'(t)
-=-\sum_{a=1}^k
-v_as_a\bar q_{s_a}
-\frac{q_{s_a}'(t)}{q_{s_a}(t)^2}
-<0,
-\qquad
-q_s'(t)=s(1-t)^{s-1}>0.
+\ell'(t)=\sum_{a=1}^k v_a
+\left[
+\bar q_{s_a}\frac{q_{s_a}'(t)}{q_{s_a}(t)}
+-\frac{(1-\bar q_{s_a})s_a}{1-t}
+\right].
 $$
-Because $0<\bar q_{s_a}<1$, the function $G$ decreases continuously from $+\infty$ as $t\downarrow0$ to
+Differentiating once more yields
 $$
--\sum_{a=1}^k v_as_a(1-\bar q_{s_a})<0
+\boxed{
+\ell''(t)=\sum_{a=1}^k v_a
+\left[
+\bar q_{s_a}\left\{
+\frac{q_{s_a}''(t)}{q_{s_a}(t)}
+-\frac{\{q_{s_a}'(t)\}^2}{q_{s_a}(t)^2}
+\right\}
+-\frac{(1-\bar q_{s_a})s_a}{(1-t)^2}
+\right]<0.
+}
 $$
-as $t\uparrow1$. Hence $G$ has a unique zero $t^*\in(0,1)$. Since $\ell'$ has the sign of $G$, the limiting log-likelihood is strictly increasing before $t^*$ and strictly decreasing after $t^*$, so $t^*$ is its unique maximiser.
+Indeed, $q_{s_a}(t)>0$, $q_{s_a}'(t)>0$, $q_{s_a}''(t)\leq0$ and $0<\bar q_{s_a}<1$ for $0<t<1$. Thus $\ell$ is strictly concave in $t$. Moreover, $\ell'(t)\to+\infty$ as $t\downarrow0$ and $\ell'(t)\to-\infty$ as $t\uparrow1$. Hence $\ell$ has exactly one stationary point $t^*\in(0,1)$, which is its unique global maximum.
 
-The empirical score has the same positive factor $1/(1-t)$, with $G(t)$ replaced by
-$$
-G_w(t)=\sum_{a=1}^k
-v_as_a\left\{
-\frac{X_a/(wv_a)}{q_{s_a}(t)}-1
-\right\}.
-$$
-By the strong law, $G_w(t)\to G(t)$ almost surely for each interior $t$. For any two interior points on opposite sides of $t^*$, their empirical scores eventually have the same respective signs as the limiting scores. Since $G_w$ is non-increasing in $t$, any empirical maximiser eventually lies between these two points. Letting the points approach $t^*$ establishes
+To establish convergence of the finite-sample naive MLE, note that the strong law also implies $\ell_w'(t)/w\to\ell'(t)$ almost surely at each interior $t$. For any $t_-<t^*<t_+$, strict concavity gives $\ell'(t_-)>0$ and $\ell'(t_+)<0$. Eventually the finite-sample derivatives have these same signs. As the finite-sample log-likelihood is concave in $t$ for every dataset, its maximiser eventually lies in $(t_-,t_+)$. Taking $t_-$ and $t_+$ arbitrarily close to $t^*$ proves
 $$
 \widehat p_{\mathrm{naive},w}
 \xrightarrow{\mathrm{a.s.}}t^*.
 $$
 
-Evaluate $G$ at the true marginal prevalence $p$. Convexity of $x\mapsto x^{s_a}$ and Jensen's inequality yield
+The expression for $\ell'(t)$ can also be written, using $(1-t)^{s_a}=1-q_{s_a}(t)$, as
+$$
+\ell'(t)=\frac{1}{1-t}\sum_{a=1}^k
+v_as_a
+\frac{\bar q_{s_a}-q_{s_a}(t)}{q_{s_a}(t)}.
+$$
+This identity establishes the estimating equation in the theorem without introducing any auxiliary function.
+
+Now evaluate $\ell'$ at the true marginal prevalence $p$. Convexity of $x\mapsto x^{s_a}$ and Jensen's inequality give
 $$
 \bar q_{s_a}
 =1-\mathbb E\{(1-P_j)^{s_a}\}
 \leq1-(1-p)^{s_a}
 =q_{s_a}(p).
 $$
-The inequality is strict when $s_a>1$, because $P_j$ is non-degenerate. Every summand in $G(p)$ is therefore non-positive and at least one is strictly negative, so $G(p)<0$. As $G$ is strictly decreasing and $G(t^*)=0$, it follows that $t^*<p$. Setting $p_{\mathrm{mix}}^*=t^*$ proves the claimed downward asymptotic bias and the estimating equation.
+The inequality is strict when $s_a>1$, because $P_j$ is non-degenerate. Thus every summand in $\ell'(p)$ is non-positive and at least one is strictly negative; hence $\ell'(p)<0$. Since $\ell'$ is strictly decreasing and $\ell'(t^*)=0$, we obtain $t^*<p$. Setting $p_{\mathrm{mix}}^*=t^*$ proves the claimed downward asymptotic bias.
 
-Finally, $p_s^*$ is precisely the candidate prevalence $t$ for which $\bar q_s=q_s(t)$, and hence the zero of the corresponding summand in $G$. Each summand is positive below its own zero and negative above it. Therefore
+Finally, $p_s^*$ is precisely the candidate prevalence $t$ for which $\bar q_s=q_s(t)$. Each individual summand in $\ell'(t)$ is positive below its corresponding $p_{s_a}^*$ and negative above it. Therefore the unique zero of $\ell'$ satisfies
 $$
 \min_a p_{s_a}^*
 \leq p_{\mathrm{mix}}^*
