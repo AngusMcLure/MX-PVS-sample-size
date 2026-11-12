@@ -399,7 +399,18 @@ The additional concentration condition is important: a small ICC by itself does 
 
 ## Sharp bound on asymptotic underestimation for fixed mean and ICC
 
-The asymptotic bias of the naive estimator generally depends on moments of the location-prevalence distribution beyond its mean and variance. Nevertheless, for a fixed pool size $s$, these first two moments give a *sharp bound* on the greatest possible underestimation, without specifying the distribution of $P_j$.
+The asymptotic bias of the naive estimator generally depends on moments of the location-prevalence distribution beyond its mean and variance. Nevertheless, for a fixed pool size $s$, these first two moments give a *sharp bound* on maximum and minimum underestimation, without specifying the distribution of $P_j$. Before we present the bounds recall that the naive estimator asymptotic limit is
+
+$$
+p_{\mathrm{ind}}^*
+=1-\left[\mathbb{E}\{(1-P_j)^s\}\right]^{1/s},
+$$
+
+This asymptotic limit is minimised by minimising the probability that a pool is positive $$1 - (1-P_j)^s$$. Intuitively this will happen when as many as possible of the positive individuals are placed in the same pools, i.e. for distributions of $P_j$ which concentrate all the positive individuals in a few locations. For fixed population prevalence $p$, but no other restrictions, this is achieved when $P(P_j = 1) = p$ and $P(P_j  = 0) = 1-p$, i.e. where the individuals at the same locations are perfectly correlated. However, for a given population prevalence ($p$) and ICC ($\rho$) we can prove that this is achieved by another two-point discrete distribution that concentrates all positive individuals in a subset of locations. Namely      
+$$
+\Pr(P_j=0)=1-\frac pb,\qquad \Pr(P_j=b)=\frac pb
+$$
+with $b$ chosen to satisfy the constraints on ICC.
 
 **Theorem (Maximum asymptotic underestimation at fixed prevalence and ICC).**
 
