@@ -410,7 +410,9 @@ This asymptotic limit is minimised by minimising the probability that a pool is 
 $$
 \Pr(P_j=0)=1-\frac pb,\qquad \Pr(P_j=b)=\frac pb
 $$
-with $b$ chosen to satisfy the constraints on ICC. Conversely, the least possible underestimation is attained by a two-point distribution supported at $a=p(1-\rho)$ and $1$. We establish both bounds below.
+with $b$ chosen to satisfy the constraints on ICC.
+
+Conversely, the asymptotic limit is maximised by maximising the probability that a pool is positive, which will happen when the local prevalence is most 'evenly spread' across locations. For a fixed, positive, ICC ($\rho$) this is achieved where the local prevalence in most locations is close to (but somewhat less than) the population average, but a minority of locations have prevalence 1 to impose the required ICC. Specifically, we can prove it is attained by a two-point distribution supported at $a=p(1-\rho)$ and $1$.
 
 **Theorem (Sharp bounds on asymptotic underestimation at fixed prevalence and ICC).**
 
@@ -431,14 +433,12 @@ p_{\mathrm{ind,best}}^*
 $$
 Then the probability limit of the naive estimator satisfies
 $$
-\boxed{
 p_{\mathrm{ind,worst}}^*
 \leq p_{\mathrm{ind}}^*
 \leq p_{\mathrm{ind,best}}^*
 \leq p.
-}
 $$
-The first bound (greatest underestimation) is attained by
+Both bounds are sharp. The final inequality is strict when $\rho>0$ and $s>1$. The first bound (greatest underestimation) is attained when location-level prevalence is distributed as
 $$
 \Pr(P_j=0)=1-\frac{p}{b},
 \qquad
@@ -450,7 +450,7 @@ $$
 \qquad
 \Pr(P_j=1)=\frac{p-a}{1-a}.
 $$
-Both bounds are sharp. The final inequality is strict when $\rho>0$ and $s>1$; the other inequalities allow equality because the extremal distributions attain the bounds.
+
 
 **Proof.**
 
