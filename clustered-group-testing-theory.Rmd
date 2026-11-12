@@ -580,13 +580,11 @@ Finally, Jensen's inequality gives $\mathbb E\{(1-P_j)^s\}\geq(1-p)^s$, and ther
 
 # Distribution-free partial identification of prevalence from clustered pool counts
 
-The preceding section bounds the asymptotic bias of the *independence-based* estimator when true marginal prevalence $p$ and ICC $\rho$ are specified. We now reverse the question: if we account for clustering, but do not prescribe a distributional family for location-specific prevalence $P_j$, what does the observed location-level count distribution tell us about $p=\mathbb E(P_j)$?
-
-As in **Marginal location-count distribution**, assume $v$ non-overlapping pools of fixed size $s$ per independent location and perfect testing. We work in the limiting regime $w\to\infty$ with $v$ and $s$ fixed, so the probabilities $\pi_r=\Pr(K_j=r)$, $r=0,\ldots,v$, are treated as known exactly. The following are *population identification bounds*, not finite-sample confidence intervals.
+The preceding section bounds the asymptotic bias of the *independence-based* estimator when true marginal prevalence $p$ and ICC $\rho$ are specified. We now reverse the question: if we account for clustering, but do not prescribe a distributional family for location-specific prevalence $P_j$, what is the most we can learn about $p=\mathbb E(P_j)$ by observing the distribution of the number of positive pools at each location? As in **Marginal location-count distribution**, assume $v$ non-overlapping pools of fixed size $s$ per independent location and perfect testing. We work in the limiting regime $w\to\infty$ with $v$ and $s$ fixed, so the probabilities $\pi_r=\Pr(K_j=r)$, $r=0,\ldots,v$, are treated as known exactly. We show that in general, even with perfect knowledge of $\boldsymbol\pi$ (attainable only with infinite sampling), $p$ remains only partially constrained if we do know the true distribution of $P_j$. 
 
 ## Binomial mixtures and the truncated moment problem
 
-Write
+As before we write
 $$
 Q_j=1-(1-P_j)^s,\qquad
 f_s(q)=1-(1-q)^{1/s},\quad 0\leq q\leq1.
@@ -596,22 +594,20 @@ $$
 K_j\mid Q_j\sim\operatorname{Binomial}(v,Q_j),
 \qquad p=\mathbb E(P_j)=\mathbb E\{f_s(Q_j)\}.
 $$
-The first relation is a classical *binomial mixture* model: conditional on a location-specific success probability, the $v$ pool outcomes are independent Bernoulli trials. The identifiability limitations of such models are well established (George and Bowman, 1995; Wood, 1999, Introduction and Section 4). Specifically, the distribution of the binomial count identifies the first $v$ moments of its mixing distribution, but not in general the mixing distribution itself.
+The first relation is a classical *binomial mixture* model: conditional on a location-specific success probability, the $v$ pool outcomes are independent Bernoulli trials. The identifiability limitations of such models are well established (George and Bowman, 1995; Wood, 1999, Introduction and Section 4). Specifically, the distribution of the $K_j$ identifies the first $v$ moments of its mixing distribution, but not in general the mixing distribution itself.
 
 For completeness, the link to our notation is particularly simple using the binomial factorial-moment identity:
 $$
 \mathbb E\left\{\binom{K_j}{k}\,\middle|\,Q_j\right\}
 =\binom vk Q_j^k.
 $$
-Thus, setting $m_0=1$, the known count probabilities $\boldsymbol\pi=(\pi_0,\ldots,\pi_v)$ determine
+Thus the known count probabilities $\boldsymbol\pi=(\pi_0,\ldots,\pi_v)$ determine the first $k$ moments of $Q_k$
 $$
-\boxed{
 m_k=\mathbb E(Q_j^k)
 =\frac{\displaystyle\sum_{r=k}^v\binom rk\pi_r}{\binom vk},
 \qquad k=1,\ldots,v.
-}
 $$
-Conversely, $\pi_r=\binom vr\mathbb E\{Q_j^r(1-Q_j)^{v-r}\}$ depends only on $m_0,\ldots,m_v$. The observable law is therefore equivalent to the first $v$ moments of $Q_j$. This is the familiar finite-binomial-mixture result; see Wood (1999, Section 4) for its consequences for nonidentifiability and a geometric account of compatible mixing distributions.
+Conversely, $\pi_r=\binom vr\mathbb E\{Q_j^r(1-Q_j)^{v-r}\}$ depends only on $m_0,\ldots,m_v$. Knowledge of $\mathbb \pi$ as  therefore equivalent to the first $v$ moments of $Q_j$. This is the familiar finite-binomial-mixture result; see Wood (1999, Section 4) for its consequences for nonidentifiability and a geometric account of compatible mixing distributions.
 
 For *unpooled* binary observations ($s=1$), $Q_j=P_j$, so the marginal prevalence is the identified first moment, $p=m_1$. With pooling ($s>1$), $Q_j$ is still described by a binomial mixture, but the target is instead the **nonlinear functional**
 $$
