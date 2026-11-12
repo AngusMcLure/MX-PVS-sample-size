@@ -397,6 +397,119 @@ Subtracting $p$ gives the absolute bias; dividing by the fixed positive prevalen
 
 The additional concentration condition is important: a small ICC by itself does not ensure that higher-order moments are negligible at first order in $\rho$ for an arbitrary mixing distribution. The approximation holds, for example, along beta or logit-normal families with fixed $p$ as $\rho\downarrow0$, but need not be accurate for large $s$ or distributions with rare, extreme location prevalences.
 
+## Sharp bound on asymptotic underestimation for fixed mean and ICC
+
+The asymptotic bias of the naive estimator generally depends on moments of the location-prevalence distribution beyond its mean and variance. Nevertheless, for a fixed pool size $s$, these first two moments give a *sharp bound* on the greatest possible underestimation, without specifying the distribution of $P_j$.
+
+**Theorem (Maximum asymptotic underestimation at fixed prevalence and ICC).**
+
+Let $P_j$ have any distribution on $[0,1]$ with mean $p\in(0,1)$ and intraclass correlation $\rho\in[0,1]$, so that $\operatorname{Var}(P_j)=\rho p(1-p)$. For fixed integer pool size $s\geq1$, set
+$
+b=p+\rho(1-p).
+$
+Then the probability limit of the naive estimator satisfies
+$
+\boxed{
+p_{\mathrm{ind}}^*
+\geq
+1-\left[
+1-\frac{p}{b}\left\{1-(1-b)^s\right\}
+\right]^{1/s}.
+}
+$
+This lower bound is attained by the two-point distribution
+$
+\Pr(P_j=0)=1-\frac{p}{b},
+\qquad
+\Pr(P_j=b)=\frac{p}{b}.
+$
+Consequently, this distribution gives the greatest possible asymptotic underestimation among all distributions with the specified mean and ICC.
+
+**Proof.**
+
+Recall that
+$
+p_{\mathrm{ind}}^*
+=1-\left[\mathbb E\{(1-P_j)^s\}\right]^{1/s}.
+$
+To minimise $p_{\mathrm{ind}}^*$, we must maximise the probability $\mathbb E\{(1-P_j)^s\}$ that a pool tests negative, or equivalently minimise the probability that it tests positive:
+$
+\bar q_s=\mathbb E\{1-(1-P_j)^s\}.
+$
+
+Define
+$
+h_s(x)=\sum_{r=0}^{s-1}(1-x)^r,\qquad 0\leq x\leq1.
+$
+By the geometric-series identity,
+$
+1-(1-x)^s=xh_s(x),
+$
+and therefore
+$
+\bar q_s=\mathbb E\{P_jh_s(P_j)\}.
+$
+The function $h_s$ is convex on $[0,1]$, since
+$
+h_s''(x)=\sum_{r=2}^{s-1}r(r-1)(1-x)^{r-2}\geq0
+$
+(the sum is empty when $s\leq2$). A differentiable convex function lies above each of its tangent lines. In particular, for every $x\in[0,1]$,
+$
+h_s(x)\geq h_s(b)+h_s'(b)(x-b).
+$
+Multiplying by $x\geq0$ and then substituting $x=P_j$ gives
+$
+P_jh_s(P_j)
+\geq P_jh_s(b)+h_s'(b)P_j(P_j-b).
+$
+Taking expectations,
+$
+\bar q_s
+\geq p\,h_s(b)
++h_s'(b)\left\{\mathbb E(P_j^2)-b\mathbb E(P_j)\right\}.
+$
+Now, from the specified mean and ICC,
+$
+\begin{aligned}
+\mathbb E(P_j^2)
+&=p^2+\operatorname{Var}(P_j)\\
+&=p^2+\rho p(1-p)\\
+&=pb.
+\end{aligned}
+$
+Thus the term in braces is zero. Using the geometric-series identity once more,
+$
+\boxed{
+\bar q_s\geq p\,h_s(b)
+=\frac{p}{b}\left\{1-(1-b)^s\right\}.
+}
+$
+Equivalently,
+$
+\mathbb E\{(1-P_j)^s\}
+\leq1-\frac{p}{b}\left\{1-(1-b)^s\right\},
+$
+which, by the expression for $p_{\mathrm{ind}}^*$, proves the stated lower bound.
+
+It remains to show the bound is attainable. Since $p\leq b\leq1$, the proposed two-point distribution is valid. Its first two moments are
+$
+\mathbb E(P_j)=b\frac pb=p,
+\qquad
+\mathbb E(P_j^2)=b^2\frac pb=pb,
+$
+so it has the specified mean and ICC. For this distribution,
+$
+\begin{aligned}
+\bar q_s
+&=\left(1-\frac pb\right)\left\{1-(1-0)^s\right\}
++\frac pb\left\{1-(1-b)^s\right\}\\
+&=\frac pb\left\{1-(1-b)^s\right\},
+\end{aligned}
+$
+attaining equality in the bound. $\square$
+
+**Remark.** The result bounds the *asymptotic* downward bias $p-p_{\mathrm{ind}}^*$, not the bias of the estimator at a finite number of locations. The bound is exact for every $s$. For $s=1$, the naive estimator's probability limit equals $p$ for every prevalence distribution. For $s=2$, the probability limit depends only on the first two moments, so every distribution with the specified mean and ICC attains the same bound. For $s\geq3$, $h_s$ is strictly convex, and the two-point distribution above is the unique distribution attaining the bound (apart from equivalent descriptions of the same distribution).
+
 # Beta mixing: exact asymptotic bias and rare-prevalence results
 
 The preceding inconsistency result applies to any distribution of location-level prevalence supported on $[0,1]$. A beta distribution is a tractable first specialisation because its moments have closed forms.
