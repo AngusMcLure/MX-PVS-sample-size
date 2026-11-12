@@ -397,9 +397,9 @@ Subtracting $p$ gives the absolute bias; dividing by the fixed positive prevalen
 
 The additional concentration condition is important: a small ICC by itself does not ensure that higher-order moments are negligible at first order in $\rho$ for an arbitrary mixing distribution. The approximation holds, for example, along beta or logit-normal families with fixed $p$ as $\rho\downarrow0$, but need not be accurate for large $s$ or distributions with rare, extreme location prevalences.
 
-## Sharp bound on asymptotic underestimation for fixed mean and ICC
+## Sharp bounds on asymptotic underestimation for fixed mean and ICC
 
-The asymptotic bias of the naive estimator generally depends on moments of the location-prevalence distribution beyond its mean and variance. Nevertheless, for a fixed pool size $s$, these first two moments give a *sharp bound* on maximum and minimum underestimation, without specifying the distribution of $P_j$. Before we present the bounds recall that the naive estimator asymptotic limit is
+The asymptotic bias of the naive estimator generally depends on moments of the location-prevalence distribution beyond its mean and variance. Nevertheless, for a fixed pool size $s$, these first two moments give *sharp bounds* on maximum and minimum underestimation, without specifying the distribution of $P_j$. Before we present the bounds recall that the naive estimator asymptotic limit is
 
 $$
 p_{\mathrm{ind}}^*
@@ -410,35 +410,51 @@ This asymptotic limit is minimised by minimising the probability that a pool is 
 $$
 \Pr(P_j=0)=1-\frac pb,\qquad \Pr(P_j=b)=\frac pb
 $$
-with $b$ chosen to satisfy the constraints on ICC.
+with $b$ chosen to satisfy the constraints on ICC. Conversely, the least possible underestimation is attained by a two-point distribution supported at $a=p(1-\rho)$ and $1$. We establish both bounds below.
 
-**Theorem (Maximum asymptotic underestimation at fixed prevalence and ICC).**
+**Theorem (Sharp bounds on asymptotic underestimation at fixed prevalence and ICC).**
 
 Let $P_j$ have any distribution on $[0,1]$ with mean $p\in(0,1)$ and intraclass correlation $\rho\in[0,1]$, so that $\operatorname{Var}(P_j)=\rho p(1-p)$. For fixed integer pool size $s\geq1$, set
 $$
-b=p+\rho(1-p).
+a=p(1-\rho),\qquad b=p+\rho(1-p),
+$$
+and define
+$$
+\begin{aligned}
+p_{\mathrm{ind,worst}}^*
+&=1-\left[
+1-\frac{p}{b}\left\{1-(1-b)^s\right\}
+\right]^{1/s},\\
+p_{\mathrm{ind,best}}^*
+&=1-\left[(1-p)(1-a)^{s-1}\right]^{1/s}.
+\end{aligned}
 $$
 Then the probability limit of the naive estimator satisfies
 $$
 \boxed{
-p_{\mathrm{ind}}^*
-\geq
-1-\left[
-1-\frac{p}{b}\left\{1-(1-b)^s\right\}
-\right]^{1/s}.
+p_{\mathrm{ind,worst}}^*
+\leq p_{\mathrm{ind}}^*
+\leq p_{\mathrm{ind,best}}^*
+\leq p.
 }
 $$
-This lower bound is attained by the two-point distribution
+The first bound (greatest underestimation) is attained by
 $$
 \Pr(P_j=0)=1-\frac{p}{b},
 \qquad
-\Pr(P_j=b)=\frac{p}{b}.
+\Pr(P_j=b)=\frac{p}{b},
 $$
-Consequently, this distribution gives the greatest possible asymptotic underestimation among all distributions with the specified mean and ICC.
+while the second bound (least underestimation) is attained by
+$$
+\Pr(P_j=a)=\frac{1-p}{1-a},
+\qquad
+\Pr(P_j=1)=\frac{p-a}{1-a}.
+$$
+Both bounds are sharp. The final inequality is strict when $\rho>0$ and $s>1$; the other inequalities allow equality because the extremal distributions attain the bounds.
 
 **Proof.**
 
-Recall that
+*Worst-case bound.* Recall that
 $$
 p_{\mathrm{ind}}^*
 =1-\left[\mathbb E\{(1-P_j)^s\}\right]^{1/s}.
@@ -517,9 +533,51 @@ $$
 &=\frac pb\left\{1-(1-b)^s\right\},
 \end{aligned}
 $$
-attaining equality in the bound. $\square$
+attaining equality in the bound.
 
-**Remark.** The result bounds the *asymptotic* downward bias $p-p_{\mathrm{ind}}^*$, not the bias of the estimator at a finite number of locations. The bound is exact for every $s$. For $s=1$, the naive estimator's probability limit equals $p$ for every prevalence distribution. For $s=2$, the probability limit depends only on the first two moments, so every distribution with the specified mean and ICC attains the same bound. For $s\geq3$, $h_s$ is strictly convex, and the two-point distribution above is the unique distribution attaining the bound (apart from equivalent descriptions of the same distribution).
+*Best-case bound.* To maximise $p_{\mathrm{ind}}^*$, we must minimise the probability that a pool tests negative. Write $Y_j=1-P_j$ and $c=1-a=1-p+\rho p$. The specified mean and ICC imply
+$$
+\begin{aligned}
+\mathbb E(Y_j)&=1-p,\\
+\mathbb E(Y_j^2)
+&=(1-p)^2+\rho p(1-p)\\
+&=(1-p)c.
+\end{aligned}
+$$
+For $s\geq1$, the function $g_s(y)=y^{s-1}$ is convex on $[0,1]$ (constant for $s=1$ and linear for $s=2$). Its tangent inequality at $c$ gives
+$$
+g_s(y)\geq g_s(c)+g_s'(c)(y-c).
+$$
+Multiplying by $y\geq0$, substituting $y=Y_j$, and taking expectations yields
+$$
+\begin{aligned}
+\mathbb E\{(1-P_j)^s\}
+=\mathbb E\{Y_jg_s(Y_j)\}
+&\geq (1-p)g_s(c)
++g_s'(c)\left\{\mathbb E(Y_j^2)-c\mathbb E(Y_j)\right\}\\
+&=(1-p)c^{s-1}\\
+&=(1-p)(1-a)^{s-1}.
+\end{aligned}
+$$
+The term in braces vanishes by the second-moment identity above. Since $p_{\mathrm{ind}}^*=1-[\mathbb E\{(1-P_j)^s\}]^{1/s}$, this proves the stated upper bound.
+
+To show it is attainable, note that $0\leq a\leq p<1$, so the proposed distribution on $\{a,1\}$ is valid. Equivalently, $Y_j$ takes the values $c=1-a$ and $0$ with probabilities $(1-p)/c$ and $1-(1-p)/c$, respectively. Hence
+$$
+\mathbb E(Y_j)=c\frac{1-p}{c}=1-p,\qquad
+\mathbb E(Y_j^2)=c^2\frac{1-p}{c}=(1-p)c,
+$$
+which gives the required mean and ICC for $P_j$, and
+$$
+\mathbb E\{(1-P_j)^s\}
+=\mathbb E(Y_j^s)
+=c^s\frac{1-p}{c}
+=(1-p)(1-a)^{s-1},
+$$
+attaining equality in the upper bound.
+
+Finally, Jensen's inequality gives $\mathbb E\{(1-P_j)^s\}\geq(1-p)^s$, and therefore $p_{\mathrm{ind}}^*\leq p$. For $s>1$ and $\rho>0$, $P_j$ is non-degenerate and Jensen's inequality is strict, so $p_{\mathrm{ind}}^*<p$. $\square$
+
+**Remark.** These bounds concern the *asymptotic* downward bias $p-p_{\mathrm{ind}}^*$, not the bias of the estimator at a finite number of locations. Both bounds are exact for every $s$. For $s=1$, the probability limit equals $p$ for every prevalence distribution. For $s=2$, it depends only on the first two moments, so every distribution with the specified mean and ICC attains both bounds. For $s\geq3$, the strict convexity of $h_s$ and $g_s$ makes the respective two-point distributions the unique extremisers (apart from equivalent descriptions). At $\rho=0$ the bounds both equal $p$, and at $\rho=1$ the two extremal distributions coincide.
 
 # Beta mixing: exact asymptotic bias and rare-prevalence results
 
