@@ -611,17 +611,17 @@ Conversely, $\pi_r=\binom vr\mathbb E\{Q_j^r(1-Q_j)^{v-r}\}$ depends only on $m_
 
 For *unpooled* binary observations ($s=1$), $Q_j=P_j$, so the marginal prevalence is the identified first moment, $p=m_1$. With pooling ($s>1$), $Q_j$ is still described by a binomial mixture, but the target is instead the **nonlinear functional**
 $$
-p=\int_0^1 f_s(q)\,d\nu(q),
+p=\int_0^1 f_s(q)\,dG(q),
 $$
-where $\nu$ denotes the unknown mixing distribution of $Q_j$. Since $f_s$ is not a polynomial of degree at most $v$ for $s>1$, this integral is not generally determined by the first $v$ moments. Our problem is consequently an instance of the *truncated Hausdorff moment problem*: bound an integral over all probability measures on $[0,1]$ consistent with finitely many moments.
+where $G$ denotes a candidate mixing distribution of $Q_j$. Since $f_s$ is not a polynomial of degree at most $v$ for $s>1$, this integral is not generally determined by the first $v$ moments. Our problem is consequently an instance of the *truncated Hausdorff moment problem*: bound an integral over all probability measures on $[0,1]$ consistent with finitely many moments.
 
 ## Sharp distribution-free identification bounds
 
 **Theorem (Sharp identification interval for marginal prevalence).** For a feasible vector of count probabilities $\boldsymbol\pi$, let
 $$
 \mathcal M_v(\boldsymbol\pi)
-=\left\{\nu\text{ a probability measure on }[0,1]:
-\int_0^1q^k\,d\nu(q)=m_k,\quad k=0,\ldots,v\right\},
+=\left\{G\text{ a probability measure on }[0,1]:
+\int_0^1q^k\,dG(q)=m_k,\quad k=0,\ldots,v\right\},
 $$
 with $m_k$ as identified above. Then the sharp identified set for prevalence is
 $$
@@ -633,11 +633,11 @@ where
 $$
 \begin{aligned}
 p_{\min}(\boldsymbol\pi)
-&=\min_{\nu\in\mathcal M_v(\boldsymbol\pi)}
-  \int_0^1 f_s(q)\,d\nu(q),\\
+&=\min_{G\in\mathcal M_v(\boldsymbol\pi)}
+  \int_0^1 f_s(q)\,dG(q),\\
 p_{\max}(\boldsymbol\pi)
-&=\max_{\nu\in\mathcal M_v(\boldsymbol\pi)}
-  \int_0^1 f_s(q)\,d\nu(q).
+&=\max_{G\in\mathcal M_v(\boldsymbol\pi)}
+  \int_0^1 f_s(q)\,dG(q).
 \end{aligned}
 $$
 Both endpoints are attained by distributions with at most $v+1$ support points. They also have the dual *polynomial-envelope* representations
@@ -653,7 +653,7 @@ p_{\max}(\boldsymbol\pi)
 \qquad h(q)=\sum_{k=0}^v h_kq^k.
 $$
 
-**Proof.** The binomial-mixture moment correspondence just established, as discussed by Wood (1999), shows that $\mathcal M_v(\boldsymbol\pi)$ contains **exactly** the mixing distributions compatible with the observation law. Every such $\nu$ defines a valid distribution of $P_j=f_s(Q_j)$, so there are no further restrictions on the target functional.
+**Proof.** The binomial-mixture moment correspondence just established, as discussed by Wood (1999), shows that $\mathcal M_v(\boldsymbol\pi)$ contains **exactly** the mixing distributions compatible with the observation law. Every such $G$ defines a valid distribution of $P_j=f_s(Q_j)$, so there are no further restrictions on the target functional.
 
 The set $\mathcal M_v(\boldsymbol\pi)$ is compact and convex in the weak topology. Since $f_s$ is continuous, its integrals over this set attain their extrema, and convexity makes every intermediate value attainable. This proves that the interval is sharp. The classical **extreme-point theorem for moment sets** (Winkler, 1988) provides extremising measures with at most $v+1$ atoms, counting the normalisation constraint. The displayed polynomial-envelope equalities follow from **generalised moment-problem duality**, as developed by Krein and Nudelman (1977, chapter *The abstract $L$-problem, duality principle, and some applications*). These last two steps invoke established results rather than reproving the general theorems. $\square$
 
