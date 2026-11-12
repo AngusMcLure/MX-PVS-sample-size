@@ -501,15 +501,13 @@ $$
 \mathbb E(P_j^2)
 &=p^2+\operatorname{Var}(P_j)\\
 &=p^2+\rho p(1-p)\\
-&=pb.
+&=pb,
 \end{aligned}
 $$
-Thus the term in braces is zero. Using the geometric-series identity once more,
+and thus the term in braces is zero. Using the definition of $h_s(x)$,
 $$
-\boxed{
 \bar q_s\geq p\,h_s(b)
 =\frac{p}{b}\left\{1-(1-b)^s\right\}.
-}
 $$
 Equivalently,
 $$
