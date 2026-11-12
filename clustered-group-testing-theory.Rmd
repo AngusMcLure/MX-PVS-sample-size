@@ -580,49 +580,57 @@ Finally, Jensen's inequality gives $\mathbb E\{(1-P_j)^s\}\geq(1-p)^s$, and ther
 
 # Distribution-free partial identification of prevalence from clustered pool counts
 
-The preceding bounds quantify the asymptotic bias of the naive estimator given the true marginal prevalence $p$ and ICC $\rho$. A different question arises if clustering is acknowledged but the distribution of $P_j$ is not specified: what can be learned about $p=\mathbb E(P_j)$ from the location-level distribution of observed pool counts? Throughout this section, take the asymptotic regime $w\to\infty$ with fixed pool size $s$ and fixed number $v$ of pools per location. We treat the limiting probabilities $\pi_r=\Pr(K_j=r)$ as known exactly, **not** as empirical probabilities in a finite sample.
+The preceding section bounds the asymptotic bias of the *independence-based* estimator when true marginal prevalence $p$ and ICC $\rho$ are specified. We now reverse the question: if we account for clustering, but do not prescribe a distributional family for location-specific prevalence $P_j$, what does the observed location-level count distribution tell us about $p=\mathbb E(P_j)$?
 
-## Observable moments and the sharp identification interval
+As in **Marginal location-count distribution**, assume $v$ non-overlapping pools of fixed size $s$ per independent location and perfect testing. We work in the limiting regime $w\to\infty$ with $v$ and $s$ fixed, so the probabilities $\pi_r=\Pr(K_j=r)$, $r=0,\ldots,v$, are treated as known exactly. The following are *population identification bounds*, not finite-sample confidence intervals.
+
+## Binomial mixtures and the truncated moment problem
 
 Write
 $$
 Q_j=1-(1-P_j)^s,\qquad
 f_s(q)=1-(1-q)^{1/s},\quad 0\leq q\leq1.
 $$
+Then
+$$
+K_j\mid Q_j\sim\operatorname{Binomial}(v,Q_j),
+\qquad p=\mathbb E(P_j)=\mathbb E\{f_s(Q_j)\}.
+$$
+The first relation is a classical *binomial mixture* model: conditional on a location-specific success probability, the $v$ pool outcomes are independent Bernoulli trials. The identifiability limitations of such models are well established (George and Bowman, 1995; Wood, 1999, Introduction and Section 4). Specifically, the distribution of the binomial count identifies the first $v$ moments of its mixing distribution, but not in general the mixing distribution itself.
 
-The transformation between $P_j$ and $Q_j$ is one-to-one, and the target prevalence is
-$$
-p= \mathbb E[P_j] =  \mathbb E\{f_s(Q_j)\}.
-$$
-Because $K_j\mid Q_j\sim\operatorname{Binomial}(v,Q_j)$, its conditional factorial moments satisfy
+For completeness, the link to our notation is particularly simple using the binomial factorial-moment identity:
 $$
 \mathbb E\left\{\binom{K_j}{k}\,\middle|\,Q_j\right\}
 =\binom vk Q_j^k.
 $$
-Thus the exact probabilities $\boldsymbol\pi=(\pi_0,\ldots,\pi_v)$ identify
-$$
-m_k=\mathbb E(Q_j^k)
-=\frac{\displaystyle\sum_{r=k}^{v}\binom rk\pi_r}{\binom vk},
-\quad k=1,\ldots,v.
-$$
-Conversely, each $\pi_r$ is a polynomial combination of these moments, since
-$$
-\pi_r=\binom vr\mathbb E\{Q_j^r(1-Q_j)^{v-r}\}.
-$$
-Consequently, knowing $\boldsymbol\pi$ is equivalent to knowing the first $v$ moments of the distribution of $Q_j$.
-
-**Theorem (Sharp distribution-free identification interval).**
-
-For any feasible vector $\boldsymbol\pi$, let $\mathcal M_v(\boldsymbol\pi)$ be the set of probability measures $\nu$ on $[0,1]$ satisfying
-$$
-\int_0^1q^k\,d\nu(q)=m_k,\qquad k=0,\ldots,v.
-$$
-Then, without specifying a parametric mixing family, the sharp identified set for marginal prevalence is the interval
+Thus, setting $m_0=1$, the known count probabilities $\boldsymbol\pi=(\pi_0,\ldots,\pi_v)$ determine
 $$
 \boxed{
-p_{\min}(\boldsymbol\pi)
-\ \leq\ p\ \leq\
-p_{\max}(\boldsymbol\pi),
+m_k=\mathbb E(Q_j^k)
+=\frac{\displaystyle\sum_{r=k}^v\binom rk\pi_r}{\binom vk},
+\qquad k=1,\ldots,v.
+}
+$$
+Conversely, $\pi_r=\binom vr\mathbb E\{Q_j^r(1-Q_j)^{v-r}\}$ depends only on $m_0,\ldots,m_v$. The observable law is therefore equivalent to the first $v$ moments of $Q_j$. This is the familiar finite-binomial-mixture result; see Wood (1999, Section 4) for its consequences for nonidentifiability and a geometric account of compatible mixing distributions.
+
+For *unpooled* binary observations ($s=1$), $Q_j=P_j$, so the marginal prevalence is the identified first moment, $p=m_1$. With pooling ($s>1$), $Q_j$ is still described by a binomial mixture, but the target is instead the **nonlinear functional**
+$$
+p=\int_0^1 f_s(q)\,d\nu(q),
+$$
+where $\nu$ denotes the unknown mixing distribution of $Q_j$. Since $f_s$ is not a polynomial of degree at most $v$ for $s>1$, this integral is not generally determined by the first $v$ moments. Our problem is consequently an instance of the *truncated Hausdorff moment problem*: bound an integral over all probability measures on $[0,1]$ consistent with finitely many moments.
+
+## Sharp distribution-free identification bounds
+
+**Theorem (Sharp identification interval for marginal prevalence).** For a feasible vector of count probabilities $\boldsymbol\pi$, let
+$$
+\mathcal M_v(\boldsymbol\pi)
+=\left\{\nu\text{ a probability measure on }[0,1]:
+\int_0^1q^k\,d\nu(q)=m_k,\quad k=0,\ldots,v\right\},
+$$
+with $m_k$ as identified above. Then the sharp identified set for prevalence is
+$$
+\boxed{
+p_{\min}(\boldsymbol\pi)\leq p\leq p_{\max}(\boldsymbol\pi),
 }
 $$
 where
@@ -630,88 +638,94 @@ $$
 \begin{aligned}
 p_{\min}(\boldsymbol\pi)
 &=\min_{\nu\in\mathcal M_v(\boldsymbol\pi)}
-\int_0^1 f_s(q)\,d\nu(q),\\
+  \int_0^1 f_s(q)\,d\nu(q),\\
 p_{\max}(\boldsymbol\pi)
 &=\max_{\nu\in\mathcal M_v(\boldsymbol\pi)}
-\int_0^1 f_s(q)\,d\nu(q).
+  \int_0^1 f_s(q)\,d\nu(q).
 \end{aligned}
 $$
-Both endpoints are attainable by discrete mixing distributions with at most $v+1$ support points. Equivalently, writing $h(q)=\sum_{k=0}^v h_kq^k$, they have the polynomial-envelope representations
+Both endpoints are attained by distributions with at most $v+1$ support points. They also have the dual *polynomial-envelope* representations
 $$
 \begin{aligned}
 p_{\min}(\boldsymbol\pi)
 &=\sup_{\substack{\deg h\leq v\\h(q)\leq f_s(q)\;\forall q\in[0,1]}}
-\sum_{k=0}^v h_km_k,\\
+  \sum_{k=0}^v h_km_k,\\
 p_{\max}(\boldsymbol\pi)
 &=\inf_{\substack{\deg h\leq v\\h(q)\geq f_s(q)\;\forall q\in[0,1]}}
-\sum_{k=0}^v h_km_k.
+  \sum_{k=0}^v h_km_k,
 \end{aligned}
+\qquad h(q)=\sum_{k=0}^v h_kq^k.
 $$
 
-**Proof.** The binomial factorial-moment identity above establishes that the observation law fixes exactly the moment constraints defining $\mathcal M_v(\boldsymbol\pi)$. Conversely, every distribution $\nu$ meeting these constraints induces the same probabilities $\pi_r$, because $q^r(1-q)^{v-r}$ is a polynomial of degree $v$. The continuous functional $\nu\mapsto\int f_s\,d\nu$ attains its minimum and maximum on the weakly compact, convex set $\mathcal M_v(\boldsymbol\pi)$. Its image is an interval because the set is convex. The extrema may be attained at extreme points of this set, each of which has support on at most $v+1$ points: more support would allow a nonzero signed perturbation annihilating the $v+1$ moment constraints. Finally, any degree-$v$ polynomial lying below (respectively above) $f_s$ gives a lower (respectively upper) bound on its integral; the displayed equalities follow from moment-problem linear-programming duality (equivalently, separation of the associated compact convex moment set). $\square$
+**Proof.** The binomial-mixture moment correspondence just established, as discussed by Wood (1999), shows that $\mathcal M_v(\boldsymbol\pi)$ contains **exactly** the mixing distributions compatible with the observation law. Every such $\nu$ defines a valid distribution of $P_j=f_s(Q_j)$, so there are no further restrictions on the target functional.
 
-These are **identification** bounds, not confidence intervals: they remain relevant even if the distribution $\boldsymbol\pi$ is known without sampling error. For finite $v$ and $s>1$, they need not coincide; particular moment sequences can nevertheless identify prevalence exactly.
+The set $\mathcal M_v(\boldsymbol\pi)$ is compact and convex in the weak topology. Since $f_s$ is continuous, its integrals over this set attain their extrema, and convexity makes every intermediate value attainable. This proves that the interval is sharp. The classical **extreme-point theorem for moment sets** (Winkler, 1988) provides extremising measures with at most $v+1$ atoms, counting the normalisation constraint. The displayed polynomial-envelope equalities follow from **generalised moment-problem duality**, as developed by Krein and Nudelman (1977, chapter *The abstract $L$-problem, duality principle, and some applications*). These last two steps invoke established results rather than reproving the general theorems. $\square$
+
+The identified set may be a singleton for particular moment vectors, but for fixed finite $v$ and $s>1$ it need not be. The bounds capture ambiguity that remains even with infinitely many independent trapping locations. The novel step for our group-testing problem is the target transformation $f_s$: the mixing distribution of *pool-positive probabilities* is only partially identified, while prevalence depends on an expectation of its nonlinear inverse.
 
 ## Explicit sharp bounds for one or two pools per location
 
-**One pool per location ($v=1$).** Only $m_1=\mathbb E(Q_j)=\pi_1$ is known. For $s\geq1$, $f_s$ is convex and satisfies $f_s(q)\leq q$ for $q\in[0,1]$. Jensen's inequality and this chord bound give
+We can go beyond the general moment-problem result for $v=1$ and $v=2$, obtaining closed-form endpoints and their attaining mixing distributions. The proofs use the same convexity and tangent-line method as **Sharp bounds on asymptotic underestimation for fixed mean and ICC** above, but now the moment constraints are supplied by the observable law rather than by known prevalence and ICC.
+
+**One pool per location ($v=1$).** Only $m_1=\mathbb E(Q_j)=\pi_1$ is identified. Since $f_s$ is convex and $f_s(q)\leq q$ on $[0,1]$, Jensen's inequality and the chord bound imply
 $$
 \boxed{
-1-(1-m_1)^{1/s}
-\leq p\leq m_1,\qquad v=1.
+1-(1-m_1)^{1/s}\leq p\leq m_1,\qquad v=1.
 }
 $$
-The lower bound is attained by constant $Q_j=m_1$ (no heterogeneity), and the upper bound by $Q_j\in\{0,1\}$ with $\Pr(Q_j=1)=m_1$. The lower endpoint is precisely the asymptotic limit of the naive estimator. For $s=1$ both endpoints coincide at $p=m_1$.
+These are sharp: the lower endpoint is attained when $Q_j=m_1$ at every location, and the upper endpoint when $Q_j\in\{0,1\}$ with $\Pr(Q_j=1)=m_1$. The lower endpoint is precisely the naive estimator's probability limit, $p_{\mathrm{ind}}^*$. When $s=1$, both endpoints equal $m_1$.
 
-**Two pools per location ($v=2$).** We know $m_1=\mathbb E(Q_j)$ and $m_2=\mathbb E(Q_j^2)$. For $0<m_1<1$, put
+**Two pools per location ($v=2$).** The first two moments $m_1=\mathbb E(Q_j)$ and $m_2=\mathbb E(Q_j^2)$ are identified. For $0<m_1<1$, define
 $$
 b_Q=\frac{m_2}{m_1},\qquad
 u=1-m_1,\qquad
 z=1-2m_1+m_2,\qquad
-b_Y=\frac zu.
+b_Y=\frac zu,\qquad \alpha=\frac1s.
 $$
-Writing $\alpha=1/s$, the sharp bounds have the explicit form
+Then the sharp bounds are
 $$
 \boxed{
-\frac{m_1}{b_Q}
-\left\{1-(1-b_Q)^\alpha\right\}
-\ \leq\ p\ \leq\
-1-u\,b_Y^{\alpha-1}.
-\qquad (v=2)
+\frac{m_1}{b_Q}\left\{1-(1-b_Q)^\alpha\right\}
+\leq p\leq
+1-u\,b_Y^{\alpha-1},
+\qquad v=2.
 }
 $$
-Both are attained. The lower endpoint corresponds to $Q_j\in\{0,b_Q\}$ with $\Pr(Q_j=b_Q)=m_1/b_Q$. The upper endpoint corresponds to $Y_j=1-Q_j\in\{0,b_Y\}$ with $\Pr(Y_j=b_Y)=u/b_Y$. Boundary cases $m_1\in\{0,1\}$ are identified directly; the displayed formulas extend to other degenerate cases by continuity.
+The lower endpoint is attained by $Q_j\in\{0,b_Q\}$, with $\Pr(Q_j=b_Q)=m_1/b_Q$. The upper endpoint is attained by $Y_j=1-Q_j\in\{0,b_Y\}$, with $\Pr(Y_j=b_Y)=u/b_Y$.
 
-**Proof for $v=2$.** The function $g(q)=f_s(q)/q$ (continuously defined at $q=0$) is convex on $[0,1]$. Indeed, for $0<\alpha<1$ the power series
+**Proof for $v=2$.** Put $g(q)=f_s(q)/q$ for $q>0$, with its continuous value at $q=0$. This function is convex. Indeed, for $0<\alpha\leq1$,
 $$
-f_s(q)=1-(1-q)^\alpha
-=\sum_{k=1}^\infty(-1)^{k+1}\binom{\alpha}{k}q^k
+g(q)=\alpha\int_0^1(1-tq)^{\alpha-1}\,dt,
 $$
-has nonnegative coefficients, and hence so does the power series for $g$; $s=1$ is immediate. By the tangent-line inequality at $b_Q$, multiplying by $Q_j\geq0$ and taking expectations gives
+and each integrand is convex in $q$ (constant if $\alpha=1$). The tangent inequality at $b_Q$, multiplied by $Q_j\geq0$ and averaged, therefore gives
 $$
 \begin{aligned}
 \mathbb E\{f_s(Q_j)\}
 &\geq m_1g(b_Q)
-+g'(b_Q)\{m_2-b_Qm_1\}\\
-&=m_1g(b_Q),
++g'(b_Q)\{\mathbb E(Q_j^2)-b_Q\mathbb E(Q_j)\}\\
+&=m_1g(b_Q).
 \end{aligned}
 $$
-with equality for the stated $\{0,b_Q\}$ distribution. For the upper bound, let $Y_j=1-Q_j$, so $\mathbb E(Y_j)=u$ and $\mathbb E(Y_j^2)=z=ub_Y$. The function $h(y)=y^{\alpha-1}$ is convex for $y>0$. Its tangent inequality at $b_Y$, multiplied by $y$ and extended continuously to $y=0$, gives
+This is the claimed lower bound; equality holds for the proposed distribution on $\{0,b_Q\}$ because its first two moments are $m_1$ and $m_2=m_1b_Q$.
+
+For the other endpoint, let $Y_j=1-Q_j$, so $\mathbb E(Y_j)=u$ and $\mathbb E(Y_j^2)=z=ub_Y$. Since $h(y)=y^{\alpha-1}$ is convex for $y>0$, the tangent inequality at $b_Y$, multiplied by $Y_j$ (and extended to $Y_j=0$ by continuity), yields
 $$
 \begin{aligned}
 \mathbb E(Y_j^\alpha)
 &\geq u\,h(b_Y)
-+h'(b_Y)\{z-b_Yu\}\\
++h'(b_Y)\{\mathbb E(Y_j^2)-b_Yu\}\\
 &=u\,b_Y^{\alpha-1}.
 \end{aligned}
 $$
-Since $p=1-\mathbb E(Y_j^\alpha)$, this proves the upper bound, with equality for the stated $\{0,b_Y\}$ distribution. $\square$
+Thus $p=1-\mathbb E(Y_j^\alpha)\leq1-u\,b_Y^{\alpha-1}$. Equality is attained by the stated $\{0,b_Y\}$ distribution, whose first two moments equal $u$ and $z$. This completes the proof. $\square$
 
-As an illustration, suppose the *true* mixing distribution is beta with $p=1\%$, $\rho=0.1$, and $s=25$. This choice is used only to generate a compatible limiting distribution $\boldsymbol\pi$; the identification analysis itself imposes **no** beta assumption. The resulting sharp intervals are approximately $[0.494\%,\,11.639\%]$ for $v=1$ and $[0.719\%,\,7.275\%]$ for $v=2$. Both contain the true $1\%$ prevalence. They also show how wide the distribution-free range can remain even when infinitely many locations are observed.
+The cases $m_1=0$ or $m_1=1$ identify prevalence directly; other degenerate cases follow by continuity.
 
-## Effect of increasing the number of pools per location
+As an illustration, suppose that the *true* mixing distribution is beta, with $p=1\%$, $\rho=0.1$, and $s=25$. Beta mixing is used **only** to generate a feasible limiting count distribution; the bounds do not assume it. The resulting sharp prevalence intervals are approximately $[0.494\%,\,11.639\%]$ for $v=1$ and $[0.719\%,\,7.275\%]$ for $v=2$. Both contain the true prevalence, illustrating that the partial-identification uncertainty can be substantial.
 
-Consider a fixed underlying distribution of $Q_j$, and let $\boldsymbol\pi^{(v)}$ denote the corresponding count distribution for a design using $v$ pools per location. The first $v$ moments identified by $\boldsymbol\pi^{(v)}$ are also among the first $v+1$ identified by $\boldsymbol\pi^{(v+1)}$. The feasible distributions therefore form nested sets, giving
+## How identification improves with more pools per location
+
+Fix a true distribution of $Q_j$ and let $\boldsymbol\pi^{(v)}$ be its count distribution for $v$ pools per location. Observing the law for $v+1$ pools identifies every moment identified by $v$ pools, plus one more. The moment-feasible sets are therefore nested:
 $$
 p_{\min}(\boldsymbol\pi^{(v)})
 \leq p_{\min}(\boldsymbol\pi^{(v+1)})
@@ -719,18 +733,19 @@ p_{\min}(\boldsymbol\pi^{(v)})
 \leq p_{\max}(\boldsymbol\pi^{(v+1)})
 \leq p_{\max}(\boldsymbol\pi^{(v)}).
 $$
-Thus the exact asymptotic identification interval cannot widen as $v$ increases. For $s=1$, $f_s(q)=q$ and $p$ is already identified at $v=1$. For any fixed $s>1$, the identification interval shrinks to the true $p$ as $v\to\infty$, because polynomials are uniformly dense in the continuous functions on $[0,1]$.
+For $s=1$, prevalence is already identified at $v=1$. For fixed $s>1$, the interval shrinks to $p$ as $v\to\infty$, by the classical **Weierstrass polynomial approximation theorem**: continuous $f_s$ can be uniformly approximated by polynomials, whose expectations are determined once sufficiently many moments are identified.
 
-A quantitative distribution-free statement follows from polynomial approximation. Define
+We can also quantify the width. Let
 $$
 E_v(f_s)=\inf_{\deg h\leq v}\sup_{q\in[0,1]}|f_s(q)-h(q)|.
 $$
-Because the integral of every polynomial of degree at most $v$ is fixed by $\boldsymbol\pi$, any two feasible distributions $\nu_1,\nu_2$ satisfy
+Any two feasible distributions agree on the integral of every degree-$v$ polynomial; hence, for such a polynomial $h$,
 $$
 \left|\int f_s\,d\nu_1-\int f_s\,d\nu_2\right|
-\leq2E_v(f_s).
+=\left|\int(f_s-h)\,d\nu_1-\int(f_s-h)\,d\nu_2\right|
+\leq2\|f_s-h\|_\infty.
 $$
-In particular,
+Taking the infimum over $h$ yields
 $$
 \boxed{
 0\leq p_{\max}(\boldsymbol\pi^{(v)})
@@ -738,9 +753,9 @@ $$
 \leq2E_v(f_s).
 }
 $$
-In fact, the factor $2E_v(f_s)$ equals the *maximum* identification-interval width across all feasible moment vectors: by Hahn--Banach duality, a norm-one signed measure attaining the best polynomial-approximation error annihilates all degree-$v$ polynomials; since it also annihilates the constant function, twice its positive and negative parts are probability distributions sharing the same first $v$ moments and differing in their integrals of $f_s$ by $2E_v(f_s)$.
+The constant is sharp *uniformly over moment vectors*: standard Hahn--Banach duality for uniform approximation produces a signed measure of total-variation norm one, annihilating degree-$v$ polynomials, whose integral of $f_s$ has absolute value $E_v(f_s)$. Because it annihilates constants, its positive and negative parts each have mass $1/2$; normalising them gives two probability distributions with identical first $v$ moments and prevalences differing by $2E_v(f_s)$. We use this classical duality result rather than reproduce its functional-analytic proof.
 
-For $s\geq2$, writing $\alpha=1/s$, one obtains the uniform decay rate
+For $s\geq2$, let $\alpha=1/s$. A useful upper rate is
 $$
 \boxed{
 \sup_{\boldsymbol\pi\text{ feasible}}
@@ -748,14 +763,25 @@ $$
 =O(v^{-2/s}),\qquad v\to\infty.
 }
 $$
-To see this, set $q=(1+\cos\theta)/2$. Then $(1-q)^\alpha=\sin^{2\alpha}(\theta/2)$ has a uniformly convergent cosine series whose coefficients, for $k\geq1$, are
+Here is the approximation argument for this particular pooled-testing functional. Substitute $q=(1+\cos\theta)/2$, so $(1-q)^\alpha=\sin^{2\alpha}(\theta/2)$. Its cosine-series coefficients for $k\geq1$ are
 $$
 a_k=-\frac{2^{1-2\alpha}\Gamma(2\alpha+1)\sin(\pi\alpha)}{\pi}
-\frac{\Gamma(k-\alpha)}{\Gamma(k+\alpha+1)}.
+\frac{\Gamma(k-\alpha)}{\Gamma(k+\alpha+1)},
 $$
-They have magnitude $O(k^{-1-2\alpha})$. Truncating the series at $k=v$ produces a degree-$v$ polynomial in $q$ because $\cos(k\theta)$ is a Chebyshev polynomial in $2q-1$. Its uniform approximation error is bounded by the sum of the omitted absolute coefficients, $O(\sum_{k>v}k^{-1-2\alpha})=O(v^{-2\alpha})$. Substituting this into the width bound establishes the claim. This rate is a *worst-case uniform upper bound*; identification intervals associated with particular prevalence distributions may shrink faster, or may already have zero width at finite $v$.
+and therefore $|a_k|=O(k^{-1-2\alpha})$. Truncating the cosine series after $v$ terms gives a polynomial in $q$ of degree $v$ (using the Chebyshev-polynomial identity), with uniform error
+$$
+O\left(\sum_{k>v}k^{-1-2\alpha}\right)=O(v^{-2\alpha}).
+$$
+Together with the preceding width bound, this proves the stated rate. It is a **worst-case upper bound**, not necessarily the rate for any particular mixing distribution. For large pools, the exponent $2/s$ is small, so distribution-free identification may remain slow even with many pools per location.
 
-For large pool sizes the exponent $2/s$ is small, so this uniform rate need not guarantee rapid identification. The relevant design quantity is the number of pools **within each location**: increasing only the number of locations $w$ estimates the fixed-$v$ moments more accurately but does not add new moment constraints. Finite-sample confidence bounds would require an additional layer accounting for uncertainty in the observed frequencies of $K_j$.
+Increasing $w$ alone improves estimation of the same fixed-$v$ moments but cannot eliminate the identification interval. Finite-sample confidence intervals would additionally need to account for uncertainty in the observed location-count frequencies.
+
+## References for the identification argument
+
+- George, E. O., and Bowman, D. (1995). A full likelihood procedure for analysing exchangeable binary data. *Biometrics*, **51**, 512–523. https://doi.org/10.2307/2532939
+- Wood, G. R. (1999). Binomial mixtures: Geometric estimation of the mixing distribution. *Annals of Statistics*, **27**, 1706–1721. https://doi.org/10.1214/aos/1017939148 (especially the Introduction and Section 4).
+- Winkler, G. (1988). Extreme points of moment sets. *Mathematics of Operations Research*, **13**, 581–587. https://doi.org/10.1287/moor.13.4.581
+- Krein, M. G., and Nudelman, A. A. (1977). *The Markov Moment Problem and Extremal Problems*. American Mathematical Society, Translations of Mathematical Monographs, Vol. 50. https://doi.org/10.1090/mmono/050
 
 # Beta mixing: exact asymptotic bias and rare-prevalence results
 
