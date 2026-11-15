@@ -580,7 +580,7 @@ Finally, Jensen's inequality gives $\mathbb E\{(1-P_j)^s\}\geq(1-p)^s$, and ther
 
 # Distribution-free partial identification of prevalence from clustered pool counts
 
-The preceding section bounds the asymptotic bias of the *independence-based* estimator when true marginal prevalence $p$ and ICC $\rho$ are specified. We now reverse the question: if we account for clustering, but do not prescribe a distributional family for location-specific prevalence $P_j$, what is the most we can learn about $p=\mathbb E(P_j)$ by observing the distribution of the number of positive pools at each location? As in **Marginal location-count distribution**, assume $v$ non-overlapping pools of fixed size $s$ per independent location and perfect testing. We work in the limiting regime $w\to\infty$ with $v$ and $s$ fixed, so the probabilities $\pi_r=\Pr(K_j=r)$, $r=0,\ldots,v$, are treated as known exactly. We show that in general, even with perfect knowledge of $\boldsymbol\pi$ (attainable only with infinite sampling), $p$ remains only partially constrained if we do know the true distribution of $P_j$. 
+The preceding section bounds the asymptotic bias of the *independence-based* estimator when true marginal prevalence $p$ and ICC $\rho$ are specified. We now reverse the question: if we account for clustering, but do not prescribe a distributional family for location-specific prevalence $P_j$, what is the most we can learn about $p=\mathbb E(P_j)$ by observing the distribution of the number of positive pools at each location? As in **Marginal location-count distribution**, assume $v$ non-overlapping pools of fixed size $s$ per independent location and perfect testing. We work in the limiting regime $w\to\infty$ with $v$ and $s$ fixed, so the probabilities $\pi_r=\Pr(K_j=r)$, $r=0,\ldots,v$, are treated as known exactly. We show that in general, even with perfect knowledge of $\boldsymbol\pi$ (attainable only with infinite sampling), $p$ remains only partially constrained if we do know the true distributional family of $P_j$. 
 
 ## Binomial mixtures and the truncated moment problem
 
@@ -625,9 +625,7 @@ $$
 $$
 with $m_k$ as identified above. Then the sharp identified set for prevalence is
 $$
-\boxed{
 p_{\min}(\boldsymbol\pi)\leq p\leq p_{\max}(\boldsymbol\pi),
-}
 $$
 where
 $$
@@ -655,9 +653,9 @@ $$
 
 **Proof.** The binomial-mixture moment correspondence just established, as discussed by Wood (1999), shows that $\mathcal M_v(\boldsymbol\pi)$ contains **exactly** the mixing distributions compatible with the observation law. Every such $\xi$ defines a valid distribution of $P_j=f_s(Q_j)$, so there are no further restrictions on the target functional.
 
-The set $\mathcal M_v(\boldsymbol\pi)$ is compact and convex in the weak topology. Since $f_s$ is continuous, its integrals over this set attain their extrema, and convexity makes every intermediate value attainable. This proves that the interval is sharp. The classical **extreme-point theorem for moment sets** (Winkler, 1988) provides extremising measures with at most $v+1$ atoms, counting the normalisation constraint. The displayed polynomial-envelope equalities follow from **generalised moment-problem duality**, as developed by Krein and Nudelman (1977, chapter *The abstract $L$-problem, duality principle, and some applications*). These last two steps invoke established results rather than reproving the general theorems. $\square$
+The set $\mathcal M_v(\boldsymbol\pi)$ is compact and convex in the weak topology. Since $f_s$ is continuous, its integrals over this set attain their extrema, and convexity makes every intermediate value attainable. This proves that the interval is sharp. The classical **extreme-point theorem for moment sets** (Winkler, 1988) provides extremising measures with at most $v+1$ atoms, counting the normalisation constraint. The displayed polynomial-envelope equalities follow from **generalised moment-problem duality**, as developed by Krein and Nudelman (1977, chapter *The abstract $L$-problem, duality principle, and some applications*). $\square$
 
-The identified set may be a singleton for particular moment vectors, but for fixed finite $v$ and $s>1$ it need not be. The bounds capture ambiguity that remains even with infinitely many independent trapping locations. The novel step for our group-testing problem is the target transformation $f_s$: the mixing distribution of *pool-positive probabilities* is only partially identified, while prevalence depends on an expectation of its nonlinear inverse.
+**Remark**: The identified set, $\mathcal M_v(\boldsymbol\pi)$, may be a singleton for particular moment vectors, but is not for general fixed finite $v$. In particular, if for each location either every pool is positive or every pool is negative — i.e. $\boldsymbol\pi = (1-p,0,\dots,0, p)$ — then the set consists only of the discrete distribution with mass $1-p$ at $0$ and and $p$ at $1$, and in this case the bounds on  $p$ are equalities. In the general case the bounds capture ambiguity that remains even after infinitely many independent locations are sampled.
 
 ## Explicit sharp bounds for one or two pools per location
 
@@ -665,35 +663,28 @@ We can go beyond the general moment-problem result for $v=1$ and $v=2$, obtainin
 
 **One pool per location ($v=1$).** Only $m_1=\mathbb E(Q_j)=\pi_1$ is identified. Since $f_s$ is convex and $f_s(q)\leq q$ on $[0,1]$, Jensen's inequality and the chord bound imply
 $$
-\boxed{
 1-(1-m_1)^{1/s}\leq p\leq m_1,\qquad v=1.
-}
 $$
 These are sharp: the lower endpoint is attained when $Q_j=m_1$ at every location, and the upper endpoint when $Q_j\in\{0,1\}$ with $\Pr(Q_j=1)=m_1$. The lower endpoint is precisely the naive estimator's probability limit, $p_{\mathrm{ind}}^*$. When $s=1$, both endpoints equal $m_1$.
 
 **Two pools per location ($v=2$).** The first two moments $m_1=\mathbb E(Q_j)$ and $m_2=\mathbb E(Q_j^2)$ are identified. For $0<m_1<1$, define
 $$
 b_Q=\frac{m_2}{m_1},\qquad
-u=1-m_1,\qquad
-z=1-2m_1+m_2,\qquad
-b_Y=\frac zu,\qquad \alpha=\frac1s.
+b_Y=\frac{1-2m_1+m_2}{1-m_1}.
 $$
 Then the sharp bounds are
 $$
-\boxed{
-\frac{m_1}{b_Q}\left\{1-(1-b_Q)^\alpha\right\}
+\frac{m_1}{b_Q}\left\{1-(1-b_Q)^{\frac{1}{s}}\right\}
 \leq p\leq
-1-u\,b_Y^{\alpha-1},
-\qquad v=2.
-}
+1- (1-m_1) \,b_Y^{\frac{1}{s}-1}.
 $$
-The lower endpoint is attained by $Q_j\in\{0,b_Q\}$, with $\Pr(Q_j=b_Q)=m_1/b_Q$. The upper endpoint is attained by $Y_j=1-Q_j\in\{0,b_Y\}$, with $\Pr(Y_j=b_Y)=u/b_Y$.
+The lower endpoint is attained by $Q_j\in\{0,b_Q\}$, with $\Pr(Q_j=b_Q)=m_1/b_Q$. The upper endpoint is attained by $Y_j=1-Q_j\in\{0,b_Y\}$, with $\Pr(Y_j=b_Y)=(1-m_1)/b_Y$.
 
-**Proof for $v=2$.** Put $g(q)=f_s(q)/q$ for $q>0$, with its continuous value at $q=0$. This function is convex. Indeed, for $0<\alpha\leq1$,
+**Proof** Put $g(q)=f_s(q)/q$ for $q>0$, with its continuous value at $q=0$. This function is convex. Indeed, for $0<\frac 1s \leq1$,
 $$
-g(q)=\alpha\int_0^1(1-tq)^{\alpha-1}\,dt,
+g(q)=\frac 1s \int_0^1(1-tq)^{\frac 1s -1}\,dt,
 $$
-and each integrand is convex in $q$ (constant if $\alpha=1$). The tangent inequality at $b_Q$, multiplied by $Q_j\geq0$ and averaged, therefore gives
+and each integrand is convex in $q$ (constant if $s=1$). The tangent inequality at $b_Q$, multiplied by $Q_j\geq0$ and averaged, therefore gives
 $$
 \begin{aligned}
 \mathbb E\{f_s(Q_j)\}
@@ -704,20 +695,20 @@ $$
 $$
 This is the claimed lower bound; equality holds for the proposed distribution on $\{0,b_Q\}$ because its first two moments are $m_1$ and $m_2=m_1b_Q$.
 
-For the other endpoint, let $Y_j=1-Q_j$, so $\mathbb E(Y_j)=u$ and $\mathbb E(Y_j^2)=z=ub_Y$. Since $h(y)=y^{\alpha-1}$ is convex for $y>0$, the tangent inequality at $b_Y$, multiplied by $Y_j$ (and extended to $Y_j=0$ by continuity), yields
+For the other endpoint, let $Y_j=1-Q_j$, so $\mathbb E(Y_j)=1-m_1$ and $\mathbb E(Y_j^2) = (1-m_1)b_Y$. Since $h(y)=y^{\frac 1s -1}$ is convex for $y>0$, the tangent inequality at $b_Y$, multiplied by $Y_j$ (and extended to $Y_j=0$ by continuity), yields
 $$
 \begin{aligned}
-\mathbb E(Y_j^\alpha)
-&\geq u\,h(b_Y)
-+h'(b_Y)\{\mathbb E(Y_j^2)-b_Yu\}\\
-&=u\,b_Y^{\alpha-1}.
+\mathbb E(Y_j^{\frac 1s })
+&\geq (1-m_1)\,h(b_Y)
++h'(b_Y)\{\mathbb E(Y_j^2)-b_Y(1-m_1)\}\\
+&=(1-m_1)\,b_Y^{\frac 1s -1}.
 \end{aligned}
 $$
-Thus $p=1-\mathbb E(Y_j^\alpha)\leq1-u\,b_Y^{\alpha-1}$. Equality is attained by the stated $\{0,b_Y\}$ distribution, whose first two moments equal $u$ and $z$. This completes the proof. $\square$
+Thus $p=1-\mathbb E(Y_j^{\frac 1s })\leq1-(1-m_1)\,b_Y^{\frac 1s -1}$. Equality is attained by the stated $\{0,b_Y\}$ distribution.
 
 The cases $m_1=0$ or $m_1=1$ identify prevalence directly; other degenerate cases follow by continuity.
 
-As an illustration, suppose that the *true* mixing distribution is beta, with $p=1\%$, $\rho=0.1$, and $s=25$. Beta mixing is used **only** to generate a feasible limiting count distribution; the bounds do not assume it. The resulting sharp prevalence intervals are approximately $[0.494\%,\,11.639\%]$ for $v=1$ and $[0.719\%,\,7.275\%]$ for $v=2$. Both contain the true prevalence, illustrating that the partial-identification uncertainty can be substantial.
+As an illustration, suppose that the *true* mixing distribution is beta, such that $p=1\%$, $\rho=0.1$, and $s=25$. If we use  this distribution to generate the $\boldsymbol \pi ^{(v)}$, the resulting sharp prevalence intervals are approximately $[0.494\%,\,11.639\%]$ for $v=1$ and $[0.719\%,\,7.275\%]$ for $v=2$. The true prevalence from the underlying Beta distributed prevalence falls towards the bottom end of these intervals, but the intervals are remarkably wide, illustrating that the partial-identification uncertainty can be substantial.
 
 ## How identification improves with more pools per location
 
@@ -729,7 +720,7 @@ p_{\min}(\boldsymbol\pi^{(v)})
 \leq p_{\max}(\boldsymbol\pi^{(v+1)})
 \leq p_{\max}(\boldsymbol\pi^{(v)}).
 $$
-For $s=1$, prevalence is already identified at $v=1$. For fixed $s>1$, the interval shrinks to $p$ as $v\to\infty$, by the classical **Weierstrass polynomial approximation theorem**: continuous $f_s$ can be uniformly approximated by polynomials, whose expectations are determined once sufficiently many moments are identified.
+For $s=1$, prevalence is already identified at $v=1$. For fixed $s>1$, the interval shrinks to $p$ as $v\to\infty$, by the classical Weierstrass polynomial approximation theorem.
 
 We can also quantify the width. Let
 $$
@@ -737,8 +728,8 @@ E_v(f_s)=\inf_{\deg h\leq v}\sup_{q\in[0,1]}|f_s(q)-h(q)|.
 $$
 Any two feasible distributions agree on the integral of every degree-$v$ polynomial; hence, for such a polynomial $h$,
 $$
-\left|\int f_s\,d\nu_1-\int f_s\,d\nu_2\right|
-=\left|\int(f_s-h)\,d\nu_1-\int(f_s-h)\,d\nu_2\right|
+\left|\int f_s\,d\xi_1-\int f_s\,d\xi_2\right|
+=\left|\int(f_s-h)\,d\xi_1-\int(f_s-h)\,d\xi_2\right|
 \leq2\|f_s-h\|_\infty.
 $$
 Taking the infimum over $h$ yields
@@ -759,7 +750,7 @@ $$
 =O(v^{-2/s}),\qquad v\to\infty.
 }
 $$
-Here is the approximation argument for this particular pooled-testing functional. Substitute $q=(1+\cos\theta)/2$, so $(1-q)^\alpha=\sin^{2\alpha}(\theta/2)$. Its cosine-series coefficients for $k\geq1$ are
+Substitute $q=(1+\cos\theta)/2$, so $(1-q)^\alpha=\sin^{2\alpha}(\theta/2)$. Its cosine-series coefficients for $k\geq1$ are
 $$
 a_k=-\frac{2^{1-2\alpha}\Gamma(2\alpha+1)\sin(\pi\alpha)}{\pi}
 \frac{\Gamma(k-\alpha)}{\Gamma(k+\alpha+1)},
