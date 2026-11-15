@@ -716,26 +716,13 @@ $
 $
 Substitution into the corollary then gives $p_{\min}$ and $p_{\max}$. Thus, for any finite $v$, computing the sharp bounds requires only finite-dimensional linear systems, polynomial roots, and evaluation of $f_s$ at the resulting nodes.
 
-**Justification.** The Markov--Krein theorem identifies the lower and upper principal representations as the extremisers of $\int f\,d\xi$ over a fixed moment class when the augmented system $1,q,\ldots,q^v,f(q)$ is a positively oriented Chebyshev system. Here this holds because, for $s>1$,
-$
-f_s^{(k)}(q)>0,\qquad k\geq1,\quad 0\leq q<1.
-$
-Although derivatives are unbounded at $q=1$, the standard result applies by uniform approximation with the smooth functions $1-(1+\varepsilon-q)^{1/s}$ as $\varepsilon\downarrow0$. The principal representations do not depend on the function being integrated, so the inequalities pass to the limit.
-
-The direction of each bound can also be seen directly from Hermite interpolation. Interpolate the smooth approximating function and its first derivative at each interior quadrature node, and its value at each included endpoint, to obtain a polynomial of degree at most $v$. The interpolation error is a positive multiple of the following node factors, with sign determined by the positive $(v+1)$st derivative:
-$
-\begin{array}{lll}
-v=2n-1,\ \mathrm{lower}:&
-\displaystyle\prod_{i=1}^n(q-x_i^-)^2&\geq0,\\
-v=2n-1,\ \mathrm{upper}:&
-\displaystyle q(q-1)\prod_{i=1}^{n-1}(q-x_i^+)^2&\leq0,\\
-v=2n,\ \mathrm{lower}:&
-\displaystyle q\prod_{i=1}^n(q-x_i^-)^2&\geq0,\\
-v=2n,\ \mathrm{upper}:&
-\displaystyle(q-1)\prod_{i=1}^n(q-x_i^+)^2&\leq0.
-\end{array}
-$
-These yield polynomial minorants and majorants, respectively. The polynomial expectations are fixed by $m_0,\ldots,m_v$, while the corresponding quadrature measures attain equality at every node. This proves sharpness and explains the Gauss-type quadrature orientation for our prevalence functional. The orthogonality conditions defining $R_r$ and the resulting node-and-weight construction are standard properties of these quadrature rules (Gautschi, 2004).
+**Justification.** The Markov--Krein theorem on principal representations (Karlin and Studden, 1966; Krein and Nudelman, 1977) implies that the lower and upper principal representations respectively minimise and maximise $\int f\,d\xi$ among measures with the prescribed first $v$ moments, provided $1,q,\ldots,q^v,f(q)$ form a positively oriented Chebyshev system. A sufficient condition is $f^{(v+1)}(q)>0$ on $(0,1)$. In our case, setting $\alpha=1/s\in(0,1)$,
+$$
+f_s^{(v+1)}(q)
+=\alpha\prod_{j=1}^{v}(j-\alpha)(1-q)^{\alpha-v-1}>0,
+\qquad 0\leq q<1.
+$$
+Although this derivative diverges as $q\uparrow1$, the result follows by applying the theorem to the smooth functions $f_{s,\varepsilon}(q)=1-(1+\varepsilon-q)^\alpha$ and letting $\varepsilon\downarrow0$; convergence is uniform on $[0,1]$, and the principal representations depend only on the moment sequence. Both representations satisfy the specified moments, so the resulting bounds are attained and therefore sharp. Their calculation from modified moments is the standard Gauss-type quadrature construction (Gautschi, 2004).
 
 **Boundary moment sequences and numerical computation.** The displayed Hankel systems assume an interior moment vector. If the moment vector lies on the boundary of the Hausdorff moment space, the compatible mixing distribution is already uniquely determined and the interval collapses; one can recover it from a reduced-rank moment system rather than invert a singular Hankel matrix. Even for interior vectors, raw moments and Vandermonde matrices can become ill-conditioned for large $v$. A stable implementation should use orthogonal-polynomial recurrences and appropriate Gauss-type quadrature algorithms (Gautschi, 2004), with checks on moment reproduction, node locations, and nonnegative weights.
 
