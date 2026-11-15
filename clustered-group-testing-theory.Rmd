@@ -660,70 +660,68 @@ The set $\mathcal M_v(\boldsymbol\pi)$ is compact and convex in the weak topolog
 
 ## Constructive sharp bounds for arbitrary $v$
 
-The optimisation in the preceding theorem need not be performed over probability measures numerically. For the present functional $f_s(q)=1-(1-q)^{1/s}$, a classical result on the *principal representations* of moment sequences provides extremisers determined entirely by $m_0,\ldots,m_v$. This is an application of the **Markov--Krein theorem** (Krein and Nudelman, 1977; Karlin and Studden, 1966, pp. 55--56). The corresponding representations are the Gauss, Gauss--Radau, and Gauss--Lobatto quadrature rules familiar from numerical integration (Gautschi, 2004, Section 1.4.2).
+The optimisation in the preceding theorem need not be performed over probability measures numerically. For the present functional $f_s(q)=1-(1-q)^{1/s}$, a classical result on the *principal representations* of moment sequences provides extremisers determined entirely by $m_0,\ldots,m_v$. This is an application of the **Markov–Krein theorem** (Krein and Nudelman, 1977; Karlin and Studden, 1966, pp. 55--56). The corresponding representations are the Gauss, Gauss--Radau, and Gauss--Lobatto quadrature rules familiar from numerical integration (Gautschi, 2004, Section 1.4.2).
 
 **Corollary (Constructive sharp prevalence bounds for any $v$).** Assume $s>1$ and that $(m_0,\ldots,m_v)$ is an interior point of the feasible moment space on $[0,1]$. Let $\xi^-$ and $\xi^+$ be the lower and upper principal representations of this moment vector, with respective nodes and positive weights
-$
+$$
 \xi^-=\sum_{i=1}^{N_-}w_i^-\delta_{x_i^-},
 \qquad
 \xi^+=\sum_{i=1}^{N_+}w_i^+\delta_{x_i^+}.
-$
+$$
 Then the sharp bounds are the finite sums
-$
-\boxed{
+$$
 p_{\min}(\boldsymbol\pi)=\sum_{i=1}^{N_-}w_i^- f_s(x_i^-),
 \qquad
 p_{\max}(\boldsymbol\pi)=\sum_{i=1}^{N_+}w_i^+ f_s(x_i^+).
-}
-$
+$$
 The two principal representations, and therefore their nodes and weights, depend only on the moments $m_0,\ldots,m_v$, **not** on pool size $s$. Their support follows these rules:
 
 | Available moments | Lower principal representation $\xi^-$ | Upper principal representation $\xi^+$ |
 |:--|:--|:--|
-| $v=2n-1$ (odd) | $n$ interior nodes (Gauss) | $0$, $1$, and $n-1$ interior nodes (Gauss--Lobatto) |
-| $v=2n$ (even) | $0$ and $n$ interior nodes (left Gauss--Radau) | $1$ and $n$ interior nodes (right Gauss--Radau) |
+| $v=2n-1$ (odd) | $n$ interior nodes (Gauss) | $0$, $1$, and $n-1$ interior nodes (Gauss–Lobatto) |
+| $v=2n$ (even) | $0$ and $n$ interior nodes (left Gauss–Radau) | $1$ and $n$ interior nodes (right Gauss–Radau) |
 
 Here "interior" means strictly between $0$ and $1$. The case $n=1$ in the first row permits zero interior nodes for the upper representation.
 
-**Calculation from the moments.** The nodes can be obtained without knowing a density or any particular compatible measure. For the relevant row and bound, set $r$ equal to the number of interior nodes and construct modified moments $t_k$ as follows:
-$
+**Calculation of nodes from the moments.** For the relevant row and bound, set $r$ equal to the number of interior nodes and construct modified moments $t_k$ as follows:
+$$
 \begin{array}{lll}
 v=2n-1,\ \mathrm{lower}: & t_k=m_k, & r=n,\\
 v=2n-1,\ \mathrm{upper}: & t_k=m_{k+1}-m_{k+2}, & r=n-1,\\
 v=2n,\ \mathrm{lower}: & t_k=m_{k+1}, & r=n,\\
 v=2n,\ \mathrm{upper}: & t_k=m_k-m_{k+1}, & r=n.
 \end{array}
-$
+$$
 The modified moments are those of the measure multiplied, respectively, by the nonnegative factors $1$, $q(1-q)$, $q$, or $1-q$. They are available up to $t_{2r-1}$ from the identified moments.
 
 For $r\geq1$, form the monic polynomial
-$
+$$
 R_r(q)=q^r+\sum_{i=0}^{r-1}c_iq^i
-$
+$$
 whose coefficients solve the $r\times r$ Hankel linear system
-$
+$$
 \boxed{
 \sum_{i=0}^{r-1}t_{k+i}c_i=-t_{k+r},
 \qquad k=0,\ldots,r-1.
 }
-$
+$$
 Its $r$ roots are precisely the interior nodes of the required principal representation. For $r=0$, there is no polynomial to solve. Add the endpoint nodes prescribed in the table. If the resulting list has $N$ nodes $x_1,\ldots,x_N$, obtain their weights from the Vandermonde system
-$
+$$
 \boxed{
 \sum_{i=1}^{N}w_ix_i^k=m_k,
 \qquad k=0,\ldots,N-1.
 }
-$
+$$
 Substitution into the corollary then gives $p_{\min}$ and $p_{\max}$. Thus, for any finite $v$, computing the sharp bounds requires only finite-dimensional linear systems, polynomial roots, and evaluation of $f_s$ at the resulting nodes.
 
 **Justification.** The Markov--Krein theorem identifies the lower and upper principal representations as the extremisers of $\int f\,d\xi$ over a fixed moment class when the augmented system $1,q,\ldots,q^v,f(q)$ is a positively oriented Chebyshev system. Here this holds because, for $s>1$,
-$
+$$
 f_s^{(k)}(q)>0,\qquad k\geq1,\quad 0\leq q<1.
-$
+$$
 Although derivatives are unbounded at $q=1$, the standard result applies by uniform approximation with the smooth functions $1-(1+\varepsilon-q)^{1/s}$ as $\varepsilon\downarrow0$. The principal representations do not depend on the function being integrated, so the inequalities pass to the limit.
 
 The direction of each bound can also be seen directly from Hermite interpolation. Interpolate the smooth approximating function and its first derivative at each interior quadrature node, and its value at each included endpoint, to obtain a polynomial of degree at most $v$. The interpolation error is a positive multiple of the following node factors, with sign determined by the positive $(v+1)$st derivative:
-$
+$$
 \begin{array}{lll}
 v=2n-1,\ \mathrm{lower}:&
 \displaystyle\prod_{i=1}^n(q-x_i^-)^2&\geq0,\\
@@ -734,14 +732,14 @@ v=2n,\ \mathrm{lower}:&
 v=2n,\ \mathrm{upper}:&
 \displaystyle(q-1)\prod_{i=1}^n(q-x_i^+)^2&\leq0.
 \end{array}
-$
+$$
 These yield polynomial minorants and majorants, respectively. The polynomial expectations are fixed by $m_0,\ldots,m_v$, while the corresponding quadrature measures attain equality at every node. This proves sharpness and explains the Gauss-type quadrature orientation for our prevalence functional. The orthogonality conditions defining $R_r$ and the resulting node-and-weight construction are standard properties of these quadrature rules (Gautschi, 2004).
 
 **Boundary moment sequences and numerical computation.** The displayed Hankel systems assume an interior moment vector. If the moment vector lies on the boundary of the Hausdorff moment space, the compatible mixing distribution is already uniquely determined and the interval collapses; one can recover it from a reduced-rank moment system rather than invert a singular Hankel matrix. Even for interior vectors, raw moments and Vandermonde matrices can become ill-conditioned for large $v$. A stable implementation should use orthogonal-polynomial recurrences and appropriate Gauss-type quadrature algorithms (Gautschi, 2004), with checks on moment reproduction, node locations, and nonnegative weights.
 
 ## Explicit sharp bounds for one or two pools per location
 
-The general quadrature construction simplifies to closed-form expressions for $v=1$ and $v=2$, which we retain to illustrate how the sharp bounds arise directly from the observable moments. The proofs use the same convexity and tangent-line method as **Sharp bounds on asymptotic underestimation for fixed mean and ICC** above, but now the moment constraints are supplied by the observable law rather than by known prevalence and ICC.
+The general quadrature construction simplifies to closed-form expressions for $v=1$ and $v=2$, which we present to illustrate how the sharp bounds arise directly from the observable moments. The proofs use the same convexity and tangent-line method as **Sharp bounds on asymptotic underestimation for fixed mean and ICC** above, but now the moment constraints are supplied by the observable law rather than by known prevalence and ICC.
 
 **One pool per location ($v=1$).** Only $m_1=\mathbb E(Q_j)=\pi_1$ is identified. Since $f_s$ is convex and $f_s(q)\leq q$ on $[0,1]$, Jensen's inequality and the chord bound imply
 $$
