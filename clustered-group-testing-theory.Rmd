@@ -741,7 +741,7 @@ These yield polynomial minorants and majorants, respectively. The polynomial exp
 
 ## Explicit sharp bounds for one or two pools per location
 
-The general quadrature construction simplifies to closed-form expressions for $v=1$ and $v=2, which we retain to illustrate how the sharp bounds arise directly from the observable moments. The proofs use the same convexity and tangent-line method as **Sharp bounds on asymptotic underestimation for fixed mean and ICC** above, but now the moment constraints are supplied by the observable law rather than by known prevalence and ICC.
+The general quadrature construction simplifies to closed-form expressions for $v=1$ and $v=2$, which we retain to illustrate how the sharp bounds arise directly from the observable moments. The proofs use the same convexity and tangent-line method as **Sharp bounds on asymptotic underestimation for fixed mean and ICC** above, but now the moment constraints are supplied by the observable law rather than by known prevalence and ICC.
 
 **One pool per location ($v=1$).** Only $m_1=\mathbb E(Q_j)=\pi_1$ is identified. Since $f_s$ is convex and $f_s(q)\leq q$ on $[0,1]$, Jensen's inequality and the chord bound imply
 $$
