@@ -756,6 +756,8 @@ For comparison, two pools of size $25$ also sample $50$ individuals per location
 
 The preceding section bounds the asymptotic bias of the *independence-based* estimator when true marginal prevalence $p$ and ICC $\rho$ are specified. We now reverse the question: if we account for clustering, but do not prescribe a distributional family for location-specific prevalence $P_j$, what is the most we can learn about $p=\mathbb E(P_j)$ by observing the distribution of the number of positive pools at each location? As in **Marginal location-count distribution**, assume $v$ non-overlapping pools of fixed size $s$ per independent location and perfect testing. We work in the limiting regime $w\to\infty$ with $v$ and $s$ fixed, so the probabilities $\pi_r=\Pr(K_j=r)$, $r=0,\ldots,v$, are treated as known exactly. We show that in general, even with perfect knowledge of $\boldsymbol\pi$ (attainable only with infinite sampling), $p$ remains only partially constrained if we do not know the true distributional family of $P_j$. 
 
+A closely related partial-identification problem was studied by D'Haultfœuille and Rathelot (2017) for segregation measurement in small establishments. They model the number of minority-group members within an establishment as a nonparametric binomial mixture, show that the count distribution identifies only finitely many moments of the latent establishment-specific probability, and derive sharp bounds on nonlinear segregation indices. In particular, their Section 2.3 obtains the extremising principal representations from polynomial roots and Vandermonde weights, directly paralleling our constructive bounds below. The distinction here is that the binomial mixing probability is itself a pool-positivity probability $Q_j=1-(1-P_j)^s$, so the target marginal *individual* prevalence is a nonlinear functional of that mixing distribution when $s>1$; we also consider mixtures of pool sizes.
+
 ## Binomial mixtures and the truncated moment problem
 
 As before we write
@@ -1195,6 +1197,7 @@ Both intervals contain the true prevalence of $1\%$. For this beta-generated mom
 
 - George, E. O., and Bowman, D. (1995). A full likelihood procedure for analysing exchangeable binary data. *Biometrics*, **51**, 512–523. https://doi.org/10.2307/2532939
 - Wood, G. R. (1999). Binomial mixtures: Geometric estimation of the mixing distribution. *Annals of Statistics*, **27**, 1706–1721. https://doi.org/10.1214/aos/1017939148 (especially the Introduction and Section 4).
+- D'Haultfœuille, X., and Rathelot, R. (2017). Measuring segregation on small units: A partial identification analysis. *Quantitative Economics*, **8**(1), 39–73. https://doi.org/10.3982/QE501 (especially Section 2.3 on principal representations and their computation).
 - Winkler, G. (1988). Extreme points of moment sets. *Mathematics of Operations Research*, **13**, 581–587. https://doi.org/10.1287/moor.13.4.581
 - Karlin, S., and Studden, W. J. (1966). *Tchebycheff Systems: With Applications in Analysis and Statistics*. Interscience Publishers, New York (especially pp. 55--56 on principal representations).
 - Gautschi, W. (2004). *Orthogonal Polynomials: Computation and Approximation*. Oxford University Press (especially Section 1.4.2 on Gauss, Gauss--Radau, and Gauss--Lobatto quadrature). https://doi.org/10.1093/oso/9780198506720.001.0001
