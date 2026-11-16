@@ -875,7 +875,7 @@ The lower and upper principal representations therefore attain, respectively, th
 
 For $v\leq3$, the support patterns in the preceding corollary yield closed-form expressions for the sharp bounds. We obtain the quadrature nodes and weights by matching the identified moments; extremality follows directly from the principal-representation theorem, without separate inequalities for each case.
 
-**One pool per location ($v=1$).** The only nontrivial identified moment is $m_1=\mathbb E(Q_j)=\pi_1$. The lower principal representation is the one-node Gauss rule, $\xi^-=\delta_{m_1}$, i.e. every location has the same (non-zero) prevalence. The upper principal representation is the two-endpoint Gauss--Lobatto rule, i.e. each location either has prevalence of one or zero.  Its weights follow from $w_0^-+w_1^-=1$ and $w_1^-=m_1$, giving
+**One pool per location ($v=1$).** The only nontrivial identified moment is $m_1=\mathbb E(Q_j)=\pi_1$. The lower principal representation is the one-node Gauss rule, $\xi^-=\delta_{m_1}$, i.e. every location has the same (non-zero) prevalence. The upper principal representation is the two-endpoint Gauss--Lobatto rule, i.e. each location either has prevalence of one or zero.  Its weights follow from $w_1^++w_2^+=1$ and $w_2^+=m_1$, giving
 $$
 \xi^-=\delta_{m_1},
 \qquad
@@ -890,67 +890,115 @@ p_{\max}=m_1.
 $$
 The lower endpoint is also the probability limit $p_{\mathrm{ind}}^*$ of the naive estimator. For $s=1$, both endpoints coincide at $m_1$.
 
-**Two pools per location ($v=2$).** The observed moments are $m_1=\mathbb E(Q_j)$ and $m_2=\mathbb E(Q_j^2)$. The lower representation is a left Gauss–Radau rule on $\{0,x_2^-\}$; matching its first two moments gives
+**Two pools per location ($v=2$).** The observed moments are $m_1=\mathbb E(Q_j)$ and $m_2=\mathbb E(Q_j^2)$. The lower principal representation is a left Gauss--Radau rule supported on $x_1^-=0$ and an interior node $x_2^-$. Matching the moments gives
 $$
-m_1=w_2^- x_2^-,\qquad m_2=w_2^- (x_2^-)^2
+m_1=w_2^-x_2^-,\qquad m_2=w_2^-(x_2^-)^2
 \quad\Longrightarrow\quad
 x_2^-=\frac{m_2}{m_1},\qquad
-w_2^-=\frac{(m_1)^2}{m_2}.
+w_2^-=\frac{m_1^2}{m_2},\qquad
+w_1^-=1-\frac{m_1^2}{m_2}.
 $$
-Thus
+Hence
 $$
-\xi^-=\left(1-\frac{(m_1)^2}{m_2}\right)\delta_0
-+\frac{(m_1)^2}{m_2}\delta_{\frac{m_2}{m_1}}.
+\xi^-=\left(1-\frac{m_1^2}{m_2}\right)\delta_0
++\frac{m_1^2}{m_2}\delta_{\frac{m_2}{m_1}}.
 $$
-The upper representation is a right Gauss–Radau rule supported on $\{x_1^+,1\}$; matching its first two moments gives
+The upper principal representation is a right Gauss--Radau rule supported on an interior node $x_1^+$ and $x_2^+=1$. Its moment equations are
 $$
-m_1 = w_1^+ x_1^+ + 1 - w_1^+, \quad m_2 = w_1^+ (x_1^+)^2 + 1 - w_1^+ \quad\Longrightarrow\quad
+m_1=w_1^+x_1^++w_2^+,\qquad
+m_2=w_1^+(x_1^+)^2+w_2^+,\qquad
+w_1^++w_2^+=1.
 $$
-
-
+Solving them gives
+$$
+x_1^+=\frac{m_1-m_2}{1-m_1},\qquad
+w_1^+=\frac{(1-m_1)^2}{1-2m_1+m_2},\qquad
+w_2^+=\frac{m_2-m_1^2}{1-2m_1+m_2}.
+$$
 Therefore
 $$
-\xi^+=.
+\xi^+=\frac{(1-m_1)^2}{1-2m_1+m_2}\,
+\delta_{\frac{m_1-m_2}{1-m_1}}
++\frac{m_2-m_1^2}{1-2m_1+m_2}\delta_1.
 $$
-Evaluating $f_s$ under the two representations gives
-$$
-\begin{aligned}
-p_{\min}
-&=\frac{(m_1)^2}{m_2}f_s\left(\frac{m_2}{m_1}\right)
-=\frac{(m_1)^2}{m_2}\left\{1-\left(1-\frac{m_2}{m_1} \right)^{1/s}\right\},\\
-p_{\max}
-&=
-\end{aligned}
-$$
-**Three pools per location ($v=3$).** Now the lower rule has two interior nodes and the upper rule has one interior node plus the endpoints $0$ and $1$. For an interior moment sequence, set
-$$
-A=\frac{m_3-m_1m_2}{m_2-m_1^2},
-\qquad
-B=Am_1-m_2.
-$$
-The lower nodes $x_1<x_2$ are the roots of $q^2-Aq+B=0$:
-$$
-x_{1,2}=\frac{A\mp\sqrt{A^2-4B}}{2},
-\qquad
-w_1=\frac{x_2-m_1}{x_2-x_1},\qquad
-w_2=\frac{m_1-x_1}{x_2-x_1}.
-$$
-For the upper rule, the interior node and its weight are
-$$
-c=\frac{m_2-m_3}{m_1-m_2},
-\qquad
-w_c=\frac{m_1-m_2}{c(1-c)},
-$$
-and the endpoint weights are $w_R=m_1-cw_c$ at $1$ and $w_L=1-w_c-w_R$ at $0$. Hence
+Evaluating $f_s$ under the two rules gives
 $$
 \boxed{
 \begin{aligned}
-p_{\min}&=w_1f_s(x_1)+w_2f_s(x_2),\\
-p_{\max}&=w_cf_s(c)+w_R.
+p_{\min}&=\frac{m_1^2}{m_2}
+\left\{1-\left(1-\frac{m_2}{m_1}\right)^{1/s}\right\},\\
+p_{\max}&=1-(1-m_1)
+\left(\frac{1-2m_1+m_2}{1-m_1}\right)^{1/s-1}.
+\end{aligned}
+\qquad (v=2)
+}
+$$
+
+**Three pools per location ($v=3$).** The lower principal representation is a two-node Gauss rule, with $0<x_1^-<x_2^-<1$. The nodes are the roots of the degree-two polynomial obtained from the moment conditions,
+$$
+R_2(q)=q^2-\frac{m_3-m_1m_2}{m_2-m_1^2}q
++\frac{m_1m_3-m_2^2}{m_2-m_1^2}.
+$$
+To display the intermediate node-and-weight calculation compactly, set
+$$
+D=m_2-m_1^2,\qquad
+T=m_3-3m_1m_2+2m_1^3,\qquad
+H=\sqrt{T^2+4D^3}.
+$$
+Solving for the nodes and matching the first moment yields
+$$
+\begin{aligned}
+x_1^-&=m_1+\frac{T-H}{2D},&
+w_1^-&=\frac12\left(1+\frac{T}{H}\right),\\
+x_2^-&=m_1+\frac{T+H}{2D},&
+w_2^-&=\frac12\left(1-\frac{T}{H}\right).
+\end{aligned}
+$$
+Eliminating the intermediate quantities, the resulting distribution is
+$$
+\boxed{\xi^-=\frac12\sum_{\varepsilon\in\{-1,1\}}\left(1-\varepsilon\frac{m_3-3m_1m_2+2m_1^3}{\sqrt{(m_3-3m_1m_2+2m_1^3)^2+4(m_2-m_1^2)^3}}\right)\,\delta_{\displaystyle m_1+\frac{m_3-3m_1m_2+2m_1^3+\varepsilon\sqrt{(m_3-3m_1m_2+2m_1^3)^2+4(m_2-m_1^2)^3}}{2(m_2-m_1^2)}}.}
+$$
+
+The upper principal representation is a Gauss--Lobatto rule with nodes $x_1^+=0$, an interior node $x_2^+$, and $x_3^+=1$. Differences of successive moment equations give
+$$
+m_1-m_2=w_2^+x_2^+(1-x_2^+),\qquad
+m_2-m_3=w_2^+(x_2^+)^2(1-x_2^+),
+$$
+so
+$$
+\begin{aligned}
+x_2^+&=\frac{m_2-m_3}{m_1-m_2},\\
+w_1^+&=1-m_1-\frac{(m_1-m_2)^2}{m_2-m_3},\\
+w_2^+&=\frac{(m_1-m_2)^3}{(m_2-m_3)(m_1-2m_2+m_3)},\\
+w_3^+&=\frac{m_1m_3-m_2^2}{m_1-2m_2+m_3}.
+\end{aligned}
+$$
+Hence, directly in terms of the observed moments,
+$$
+\boxed{
+\begin{aligned}
+\xi^+={}&\left(1-m_1-\frac{(m_1-m_2)^2}{m_2-m_3}\right)\delta_0\\
+&+\frac{(m_1-m_2)^3}{(m_2-m_3)(m_1-2m_2+m_3)}
+\delta_{\frac{m_2-m_3}{m_1-m_2}}\\
+&+\frac{m_1m_3-m_2^2}{m_1-2m_2+m_3}\delta_1.
+\end{aligned}
+}
+$$
+The sharp bounds, also written only in terms of $m_1,m_2,m_3$, are
+$$
+\boxed{
+\begin{aligned}
+p_{\min}&=\frac12\sum_{\varepsilon\in\{-1,1\}}\left(1-\varepsilon\frac{m_3-3m_1m_2+2m_1^3}{\sqrt{(m_3-3m_1m_2+2m_1^3)^2+4(m_2-m_1^2)^3}}\right)\left[1-\left(1-m_1+\frac{m_3-3m_1m_2+2m_1^3+\varepsilon\sqrt{(m_3-3m_1m_2+2m_1^3)^2+4(m_2-m_1^2)^3}}{2(m_2-m_1^2)}\right)^{1/s}\right],\\[5pt]
+p_{\max}&=
+\frac{(m_1-m_2)^3}{(m_2-m_3)(m_1-2m_2+m_3)}
+\left[1-\left(\frac{m_1-2m_2+m_3}{m_1-m_2}\right)^{1/s}\right]
++\frac{m_1m_3-m_2^2}{m_1-2m_2+m_3}.
 \end{aligned}
 \qquad (v=3)
 }
 $$
+These formulas for $v=2$ and $v=3$ assume interior feasible moment vectors. For boundary moment vectors the unique reduced-support representation gives coinciding bounds, with limiting forms of these expressions where applicable.
+
 As an illustration, suppose that the *true* mixing distribution is beta, such that $p=1\%$, $\rho=0.1$, and $s=25$. If we use  this distribution to generate the $\boldsymbol \pi ^{(v)}$, the resulting sharp prevalence intervals are approximately $[0.494\%,\,11.639\%]$ for $v=1$, $[0.719\%,\,7.275\%]$ for $v=2$, and $[0.793\%,\,4.925\%]$ for $v=3$. The true prevalence from the underlying Beta distributed prevalence falls towards the bottom end of these intervals, but the intervals are remarkably wide, illustrating that the partial-identification uncertainty can be substantial.
 
 ## How identification improves with more pools per location
