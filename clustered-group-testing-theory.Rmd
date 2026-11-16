@@ -847,7 +847,7 @@ For example, when $v\geq2$ and the only possible counts are $0$ and $v$, the cou
 
 For $v\leq 2$, the support patterns in the preceding theorem yield closed-form expressions for the sharp bounds. We obtain the quadrature nodes and weights by matching the identified moments; extremality follows directly from the principal-representation theorem.
 
-**One pool per location ($v=1$).** The only nontrivial identified moment is $m_1=\mathbb E(Q_j)=\pi_1$. The lower principal representation is the one-node Gauss rule, $\xi^-=\delta_{m_1}$, i.e. every location has the same (non-zero) prevalence. The upper principal representation is the two-endpoint Gauss–Lobatto rule, i.e. each location either has prevalence of one or zero.  Its weights follow from $w_1^++w_2^+=1$ and $w_2^+=m_1$, giving
+**One pool per location ($v=1$).** The only nontrivial identified moment is $m_1=\mathbb E(Q_j)=\pi_1$. The lower principal representation is the one-node Gauss rule i.e. Trivial moment matching gives $1 = w_1^-, m_1 = x_1^-$, i.e. every location has the same (non-zero) prevalence. The upper principal representation is the two-endpoint Gauss–Lobatto rule, i.e. each location either has prevalence of one or zero.  Its weights follow from $w_1^++w_2^+=1$ and $w_2^+=m_1$. Together we have
 $$
 \xi^-=\delta_{m_1},
 \qquad
