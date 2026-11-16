@@ -1178,15 +1178,22 @@ Dividing by $p$ and substituting for $c$ proves the result. $\square$
 
 **Numerical illustration (two pool sizes).**
 
-With $p=0.001$, $\rho=0.10$, $v_1=v_2=10$, $s_1=25$, and $s_2=50$, the exact beta moment expressions and the one-dimensional limiting-score equation give
+To match the mixed-size identification example above, take true marginal prevalence $p=0.01$, ICC $\rho=0.1$, and **one pool of size $10$ and one of size $40$ per location** ($v_1=v_2=1$, $s_1=10$, $s_2=40$). Thus each location contributes two pools containing a total of $50$ individuals. The location prevalence distribution is $P_j\sim\operatorname{Beta}(0.09,8.91)$, and the exact negative-pool probabilities are
+$$
+\mathbb E\{(1-P_j)^{10}\}\approx0.9321971323,\qquad
+\mathbb E\{(1-P_j)^{40}\}\approx0.8546368326.
+$$
+Using the corresponding beta moments in the single-size formula and in the limiting-score equation gives
 $$
 \begin{aligned}
-p_{25}^*&\approx0.000493559,\\
-p_{\mathrm{mix},\beta}^*&\approx0.000396026,\\
-p_{50}^*&\approx0.000347133.
+p_{10}^*&\approx0.006996507,\\
+p_{\mathrm{mix},\beta}^*&\approx0.004557818,\\
+p_{40}^*&\approx0.003919266.
 \end{aligned}
 $$
-The rare-prevalence corollary gives $p_{\mathrm{mix},\beta}^*\approx0.000395921$ at first order. The mixed-size limit is strictly between those for the two component pool sizes, but substantially below the true prevalence of $0.001$.
+Thus, when the clustering is ignored, the mixed-size design gives an asymptotic prevalence estimate of **$0.45578\%$**, compared with the true prevalence of $1\%$. The rare-prevalence approximation from the preceding corollary gives $p_{\mathrm{mix},\beta}^*\approx0.004532744$ ($0.45327\%$).
+
+For comparison, **two pools of size $25$** also sample $50$ individuals per location and have the independence-based limit $p_{25}^*\approx0.004937423$ ($0.49374\%$). Therefore, in this example, the $10+40$ design has slightly *more* asymptotic downward bias in the naive estimator than the $25+25$ design, even though the preceding partial-identification analysis finds a much *narrower* sharp prevalence interval for $10+40$. The naive-estimator bias and the width of the distribution-free identification interval are distinct properties of the designs.
 
 # Logit-normal mixing model
 
