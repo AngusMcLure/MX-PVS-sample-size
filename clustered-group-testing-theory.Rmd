@@ -968,9 +968,9 @@ with the endpoint restrictions and support counts in the theorem. This finite no
 
 ### Example with two different pool sizes
 
-Consider two pools per location, one of size $10$ and one of size $40$ ($v_1=v_2=1$, $s_1=10$, $s_2=40$). As in the comparison design with two pools of size $25$, a total of **50 individuals** is sampled at each location. Here the limiting joint count distribution identifies the exponent set
+Consider two pools per location, one of size $10$ and one of size $40$ ($v_1=v_2=1$, $s_1=10$, $s_2=40$). As in the comparison design with two pools of size $25$, a total of 50 individuals is sampled and tested at each location. Here the limiting joint count distribution identifies the exponent set
 $$
-\boxed{\mathcal A=\{0,10,40,50\},}
+\mathcal A=\{0,10,40,50\},
 $$
 and hence the three nontrivial moments
 $$
@@ -1009,10 +1009,7 @@ Because $d=3$ is odd, the lower prevalence bound is $1-\int x\,d\xi^-(x)$ and th
 | Two pools of size $25$ | 50 | $0.7189\%$ | $7.2746\%$ | $6.5557$ percentage points |
 | One pool of size $10$ and one of size $40$ | 50 | $0.9002\%$ | $2.8513\%$ | $1.9511$ percentage points |
 
-Both intervals contain the true prevalence of $1\%$. For this beta-generated moment sequence, **the mixed-size design gives an identification interval approximately $70.2\%$ narrower**, despite using the same number of pools and sampled individuals per location. This illustrates a possible benefit of varying pool sizes; it is not a general dominance result, since the identified exponent sets are not nested. Moreover, these are *infinite-location identification intervals*: the comparison does not account for the finite-sample precision with which the different moments can be estimated.
-
-
-More generally, heterogeneous pool sizes can identify more distinct moments than the total number of pools per location. For example, two pools of size $5$ identify $\{m_5,m_{10}\}$, whereas one pool of size $5$ and one of size $6$ identify $\{m_5,m_6,m_{11}\}$. Nevertheless, more distinct moments do not by themselves guarantee a narrower identification interval when the exponent sets differ: unlike the nested common-size designs above, neither feasible moment class need contain the other. For two designs with *nested* exponent sets, by contrast, the identification interval cannot widen when additional moments are supplied.
+Both intervals contain the true prevalence of $1\%$. For this beta-generated moment sequence, the mixed-size design gives an identification interval approximately $70.2\%$ narrower, despite using the same number of pools and sampled individuals per location. This illustrates a possible benefit of varying pool sizes; it is not a general dominance result, since the identified exponent sets are not nested. Moreover, these are *infinite-location identification intervals*: the comparison does not account for the finite-sample precision with which the different moments can be estimated.
 
 
 ## References for the identification argument
