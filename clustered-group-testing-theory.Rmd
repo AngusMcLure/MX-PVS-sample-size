@@ -836,7 +836,7 @@ The set $\mathcal M_v(\boldsymbol\pi)$ is compact and convex in the weak topolog
 
 ## Constructive sharp bounds for arbitrary $v$
 
-The bounds in the preceding theorem can be evaluated without optimisation over probability measures. By the Markov--Krein theorem, the extremisers for $f_s(q)=1-(1-q)^{1/s}$ are the *lower and upper principal representations* of the identified moment vector $m_0,\ldots,m_v$ (Karlin and Studden, 1966, pp. 55--56; Krein and Nudelman, 1977). Their computation is a standard moment-based Gauss, Gauss--Radau, or Gauss--Lobatto quadrature problem; see Gautschi (2004, Section 1.4.2) and D'Haultfœuille and Rathelot (2017, Section 2.3), the latter of which applies this construction to sharp identification bounds in a binomial-mixture model.
+The bounds in the preceding theorem can be evaluated without optimisation over probability measures. By the Markov–Krein theorem, the extremisers for $f_s(q)=1-(1-q)^{1/s}$ are the *lower and upper principal representations* of the identified moment vector $m_0,\ldots,m_v$ (Karlin and Studden, 1966, pp. 55--56; Krein and Nudelman, 1977). Their computation is a standard moment-based Gauss, Gauss–Radau, or Gauss–Lobatto quadrature problem; see Gautschi (2004, Section 1.4.2) and D'Haultfœuille and Rathelot (2017, Section 2.3), the latter of which applies this construction to sharp identification bounds in a binomial-mixture model.
 
 **Corollary (Constructive sharp prevalence bounds for any $v$).** Assume $s>1$ and that $(m_0,\ldots,m_v)$ is an interior point of the feasible moment space on $[0,1]$. Let the lower and upper principal representations be
 $$
@@ -846,23 +846,20 @@ $$
 $$
 where $\delta_x$ denotes unit mass at $x$ and the positive weights and nodes reproduce the moments $m_0,\ldots,m_v$. Then the sharp bounds are
 $$
-
 p_{\min}(\boldsymbol\pi)=\sum_{i=1}^{N_-}w_i^-f_s(x_i^-),
 \qquad
-p_{\max}(\boldsymbol\pi)=\sum_{i=1}^{N_+}w_i^+f_s(x_i^+).
+p_{\max}(\boldsymbol\pi)=\sum_{i=1}^{N_+}w_i^+f_s(x_i^+).
 $$
-The principal representations depend on the observed moments, not on the function $f_s$ being evaluated. Their nodes follow the standard support patterns:
+The weights $(w_i^-, w_i^+)$ and the nodes $(x_i^-, x_i^+)$ of these principal representations depend on the observed moments only, not on the function $f_s$ being evaluated. Their nodes follow the following standard support patterns:
 
 | Available moments | Lower principal representation $\xi^-$ | Upper principal representation $\xi^+$ |
 |:--|:--|:--|
-| $v=2n-1$ (odd) | $n$ interior nodes (Gauss) | Endpoints $0,1$ and $n-1$ interior nodes (Gauss--Lobatto) |
-| $v=2n$ (even) | Endpoint $0$ and $n$ interior nodes (left Gauss--Radau) | Endpoint $1$ and $n$ interior nodes (right Gauss--Radau) |
+| $v=2n-1$ (odd) | $n$ interior nodes (Gauss) | Endpoints $0,1$ and $n-1$ interior nodes (Gauss–Lobatto) |
+| $v=2n$ (even) | Endpoint $0$ and $n$ interior nodes (left Gauss–Radau) | Endpoint $1$ and $n$ interior nodes (right Gauss–Radau) |
 
 Here interior nodes lie strictly in $(0,1)$; for $v=1$, the upper representation comprises only the two endpoints.
 
-**Computation.** Given the moments $m_k$ obtained from the observed location-count probabilities, construct the two quadrature rules specified in the table for the moment functional $L(q^k)=m_k$, $k=0,\ldots,v$. Established moment-to-quadrature algorithms recover the requisite nodes and weights, with the endpoint constraints enforced for Radau and Lobatto rules (Gautschi, 2004; D'Haultfœuille and Rathelot, 2017, Section 2.3). Substitution into the finite sums above then yields the sharp bounds. This construction uses only the identified moments: a density for the mixing distribution is neither assumed nor needed. The following subsection gives closed-form expressions for $v\leq3$.
-
-**Justification.** The Markov--Krein extremality result applies because $1,q,\ldots,q^v,f_s(q)$ is a positively oriented Chebyshev system: with $\alpha=1/s\in(0,1)$,
+**Justification.** The Markov–Krein extremality result applies because $1,q,\ldots,q^v,f_s(q)$ is a positively oriented Chebyshev system. To see this note that a sufficient condition to be a positively oriented Chebyshev systems is that $f_s^{(v+1)}(q) > 0$ for all $q \in (0,1)$. With the substitution  $\alpha=1/s\in(0,1)$ we have
 $$
 f_s^{(v+1)}(q)
 =\alpha\prod_{j=1}^{v}(j-\alpha)(1-q)^{\alpha-v-1}>0,
@@ -870,13 +867,15 @@ f_s^{(v+1)}(q)
 $$
 The lower and upper principal representations therefore attain, respectively, the minimum and maximum expectation of $f_s$ among all mixing distributions matching the observed moments.
 
-**Boundary cases and numerical stability.** For a boundary moment vector, the compatible mixing distribution is unique and the bounds coincide; quadrature should then use its reduced support. At larger $v$, direct inversion of raw-moment matrices can be ill-conditioned. Established algorithms based on orthogonal-polynomial recurrences are preferable, with checks that the reconstructed moments agree with $m_0,\ldots,m_v$, all nodes lie in $[0,1]$, and weights are nonnegative (Gautschi, 2004).
+**Computation.** Given the moments $m_k$ obtained from the observed location-count probabilities, construct the two quadrature rules specified in the table for the moment functional $L(q^k)=m_k$, $k=0,\ldots,v$. Established moment-to-quadrature algorithms recover the requisite nodes $x_i^{+/-}$ and weights $w_i^{+/-}$, with the endpoint constraints enforced for Radau and Lobatto rules (Gautschi, 2004; D'Haultfœuille and Rathelot, 2017, Section 2.3). Substitution into the finite sums above then yields the sharp bounds. This construction uses only the identified moments: a density for the mixing distribution is neither assumed nor needed. The following subsection gives closed-form expressions for $v\leq3$.
+
+**Boundary cases and numerical stability.** For a boundary moment vector, the compatible mixing distribution is unique and the bounds coincide. At larger $v$, direct inversion of raw-moment matrices used to calculate the weights and nodes can be ill-conditioned. Established algorithms based on orthogonal-polynomial recurrences are preferable, with checks that the reconstructed moments agree with $m_0,\ldots,m_v$, all nodes lie in $[0,1]$, and weights are nonnegative (Gautschi, 2004).
 
 ## Explicit sharp bounds for up to three pools per location
 
 For $v\leq3$, the support patterns in the preceding corollary yield closed-form expressions for the sharp bounds. We obtain the quadrature nodes and weights by matching the identified moments; extremality follows directly from the principal-representation theorem, without separate inequalities for each case.
 
-**One pool per location ($v=1$).** The only nontrivial identified moment is $m_1=\mathbb E(Q_j)=\pi_1$. The lower principal representation is the one-node Gauss rule, $\xi^-=\delta_{m_1}$. The upper principal representation is the two-endpoint Gauss--Lobatto rule. Its weights follow from $w_0+w_1=1$ and $w_1=m_1$, giving
+**One pool per location ($v=1$).** The only nontrivial identified moment is $m_1=\mathbb E(Q_j)=\pi_1$. The lower principal representation is the one-node Gauss rule, $\xi^-=\delta_{m_1}$, i.e. every location has the same (non-zero) prevalence. The upper principal representation is the two-endpoint Gauss--Lobatto rule, i.e. each location either has prevalence of one or zero.  Its weights follow from $w_0^-+w_1^-=1$ and $w_1^-=m_1$, giving
 $$
 \xi^-=\delta_{m_1},
 \qquad
@@ -884,57 +883,45 @@ $$
 $$
 Since $f_s(0)=0$ and $f_s(1)=1$, evaluating the two rules gives the sharp bounds
 $$
-\boxed{
+
 p_{\min}=f_s(m_1)=1-(1-m_1)^{1/s},
 \qquad
-p_{\max}=m_1.
-}
-\qquad (v=1)
+p_{\max}=m_1.
 $$
 The lower endpoint is also the probability limit $p_{\mathrm{ind}}^*$ of the naive estimator. For $s=1$, both endpoints coincide at $m_1$.
 
-**Two pools per location ($v=2$).** The observed moments are $m_1=\mathbb E(Q_j)$ and $m_2=\mathbb E(Q_j^2)$. The lower representation is a left Gauss--Radau rule on $\{0,b_Q\}$; matching its first two moments gives
+**Two pools per location ($v=2$).** The observed moments are $m_1=\mathbb E(Q_j)$ and $m_2=\mathbb E(Q_j^2)$. The lower representation is a left Gauss–Radau rule on $\{0,x_2^-\}$; matching its first two moments gives
 $$
-m_1=w_Qb_Q,\qquad m_2=w_Qb_Q^2
+m_1=w_2^- x_2^-,\qquad m_2=w_2^- (x_2^-)^2
 \quad\Longrightarrow\quad
-b_Q=\frac{m_2}{m_1},\qquad
-w_Q=\frac{m_1}{b_Q}.
+x_2^-=\frac{m_2}{m_1},\qquad
+w_2^-=\frac{(m_1)^2}{m_2}.
 $$
 Thus
 $$
-\xi^-=\left(1-\frac{m_1}{b_Q}\right)\delta_0
-+\frac{m_1}{b_Q}\delta_{b_Q}.
+\xi^-=\left(1-\frac{(m_1)^2}{m_2}\right)\delta_0
++\frac{(m_1)^2}{m_2}\delta_{\frac{m_2}{m_1}}.
 $$
-The upper representation is a right Gauss--Radau rule supported on $\{a_Q,1\}$. Writing $Y_j=1-Q_j$, its reflected support is $\{0,b_Y\}$, where $b_Y=1-a_Q$. Applying the same moment-matching equations to $Y_j$ gives
+The upper representation is a right Gauss–Radau rule supported on $\{x_1^+,1\}$; matching its first two moments gives
 $$
-\mathbb E(Y_j)=1-m_1,\qquad
-\mathbb E(Y_j^2)=1-2m_1+m_2,
+m_1 = w_1^+ x_1^+ + 1 - w_1^+, \quad m_2 = w_1^+ (x_1^+)^2 + 1 - w_1^+ \quad\Longrightarrow\quad
 $$
-and hence
-$$
-b_Y=\frac{1-2m_1+m_2}{1-m_1},\qquad
-w_Y=\frac{1-m_1}{b_Y},\qquad a_Q=1-b_Y.
-$$
+
+
 Therefore
 $$
-\xi^+=w_Y\delta_{1-b_Y}+(1-w_Y)\delta_1.
+\xi^+=.
 $$
 Evaluating $f_s$ under the two representations gives
 $$
-\boxed{
 \begin{aligned}
 p_{\min}
-&=\frac{m_1}{b_Q}f_s(b_Q)
-=\frac{m_1}{b_Q}\left\{1-(1-b_Q)^{1/s}\right\},\\
+&=\frac{(m_1)^2}{m_2}f_s\left(\frac{m_2}{m_1}\right)
+=\frac{(m_1)^2}{m_2}\left\{1-\left(1-\frac{m_2}{m_1} \right)^{1/s}\right\},\\
 p_{\max}
-&=w_Yf_s(1-b_Y)+(1-w_Y)f_s(1)
-=1-(1-m_1)b_Y^{1/s-1}.
+&=
 \end{aligned}
-\qquad (v=2)
-}
 $$
-These are sharp because both quadrature rules reproduce $m_0=1,m_1,m_2$ and are the principal representations specified by the preceding theorem. The formulas assume $0<m_1<1$ and an interior moment vector; at boundary moment vectors the unique compatible distribution gives coinciding bounds, with the expressions above interpreted by continuity where appropriate.
-
 **Three pools per location ($v=3$).** Now the lower rule has two interior nodes and the upper rule has one interior node plus the endpoints $0$ and $1$. For an interior moment sequence, set
 $$
 A=\frac{m_3-m_1m_2}{m_2-m_1^2},
