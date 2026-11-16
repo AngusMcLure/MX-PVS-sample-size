@@ -861,6 +861,137 @@ Together with the preceding width bound, this proves the stated rate. It is a **
 
 Increasing $w$ alone improves estimation of the same fixed-$v$ moments but cannot eliminate the identification interval. Finite-sample confidence intervals would additionally need to account for uncertainty in the observed location-count frequencies.
 
+
+## Identification with multiple pool sizes
+
+The preceding identification results assume that all $v$ pools at a location have the same size $s$. We now allow different pool sizes, retaining the sampling assumptions and notation from **Arbitrary mixtures of pool sizes: asymptotic bias and bounds**. The earlier mixed-size result concerns the asymptotic bias of an estimator that *ignores* clustering; here we instead ask what is identifiable from the *joint location-level count distribution* when the mixing distribution is unrestricted.
+
+Suppose each location contributes $v_a\geq1$ pools of size $s_a$, for $a=1,\ldots,k$, with fixed allocations across locations. Conditional on location prevalence $P_j$, the class-specific positive counts $K_{ja}$ are independent, with
+$
+K_{ja}\mid P_j\sim\operatorname{Binomial}\left(v_a,1-(1-P_j)^{s_a}\right).
+$
+Set $X_j=1-P_j$ and let $N_{ja}=v_a-K_{ja}$ be the number of *negative* pools in class $a$. Then
+$
+N_{ja}\mid X_j\sim\operatorname{Binomial}(v_a,X_j^{s_a}),
+\qquad p=1-\mathbb E(X_j).
+$
+As before, we consider $w\to\infty$ with all $v_a$ and $s_a$ fixed, so that the full joint distribution of $(N_{j1},\ldots,N_{jk})$ is known. In particular, the marginal count distributions alone are not sufficient to recover all the information available from mixed pool sizes.
+
+**Proposition (Identifiable moments for mixed pool sizes).** Define the set of distinct exponents
+$
+\mathcal A=
+\left\{\sum_{a=1}^k r_as_a:
+r_a\in\{0,\ldots,v_a\},\ a=1,\ldots,k\right\}
+=\{0=\lambda_0<\lambda_1<\cdots<\lambda_d\}.
+$
+The limiting joint count distribution identifies exactly the moments
+$
+m_{\lambda_i}=\mathbb E(X_j^{\lambda_i}),
+\qquad i=0,\ldots,d.
+$
+Specifically, for each admissible vector $\boldsymbol r=(r_1,\ldots,r_k)$,
+$
+\boxed{
+m_{\sum_a r_as_a}
+=
+\frac{\displaystyle\mathbb E\left\{\prod_{a=1}^k
+\binom{N_{ja}}{r_a}\right\}}
+{\displaystyle\prod_{a=1}^k\binom{v_a}{r_a}}.
+}
+$
+Repeated exponents give the same moment and hence do not supply additional independent moment constraints.
+
+**Proof.** Conditional independence and the binomial factorial-moment identity give
+$
+\mathbb E\left\{\prod_a\binom{N_{ja}}{r_a}\,\middle|\,X_j\right\}
+=\prod_a\binom{v_a}{r_a}X_j^{\sum_a r_as_a}.
+$
+Averaging over $X_j$ proves the displayed formula. Conversely, for any possible count vector $\boldsymbol n$, its probability is
+$
+\Pr(\boldsymbol N_j=\boldsymbol n)
+=\left\{\prod_a\binom{v_a}{n_a}\right\}
+\mathbb E\left\{\prod_a X_j^{s_an_a}
+(1-X_j^{s_a})^{v_a-n_a}\right\}.
+$
+Expanding the product shows that every such probability is a linear combination of the moments indexed by $\mathcal A$. Thus the moment vector and the joint count distribution determine one another. $\square$
+
+If any $s_a=1$, then $1\in\mathcal A$ and the mean prevalence is point-identified: $p=1-m_1$. We therefore focus below on $s_a>1$ for every class, in which case $\lambda_1>1$ and $m_1$ is not among the directly identified moments.
+
+### Sharp bounds from a generalised moment problem
+
+Let $\boldsymbol m_{\mathcal A}=(m_{\lambda_0},\ldots,m_{\lambda_d})$ denote a feasible moment vector, and define
+$
+\mathcal M_{\mathcal A}(\boldsymbol m_{\mathcal A})
+=\left\{\xi\text{ a probability measure on }[0,1]:
+\int_0^1x^{\lambda_i}\,d\xi(x)=m_{\lambda_i},
+\ i=0,\ldots,d\right\}.
+$
+The monomials $1,x^{\lambda_1},\ldots,x^{\lambda_d}$ form a *Müntz (generalised polynomial) Chebyshev system* on $[0,1]$ for strictly increasing nonnegative exponents. This brings the mixed-size problem within the classical theory of moment spaces and principal representations (Karlin and Studden, 1966; Krein and Nudelman, 1977).
+
+**Theorem (Sharp prevalence bounds for mixed pool sizes).** Suppose all $s_a>1$ and $\boldsymbol m_{\mathcal A}$ is feasible. Let $\xi^-$ and $\xi^+$ denote the lower and upper principal representations of $\boldsymbol m_{\mathcal A}$ relative to the ordered system
+$
+1,x^{\lambda_1},\ldots,x^{\lambda_d}.
+$
+For an interior moment vector these representations are unique and are determined entirely by $\boldsymbol m_{\mathcal A}$. Write
+$
+\mu^-=\int_0^1x\,d\xi^-(x),
+\qquad
+\mu^+=\int_0^1x\,d\xi^+(x).
+$
+Then the sharp prevalence bounds are
+$
+\boxed{
+\begin{array}{ll}
+d\text{ odd}:&
+1-\mu^-\ \leq\ p\ \leq\ 1-\mu^+,\\[3pt]
+d\text{ even}:&
+1-\mu^+\ \leq\ p\ \leq\ 1-\mu^-.
+\end{array}
+}
+$
+For a boundary moment vector the representing measure is unique and both bounds coincide. The principal representations are discrete, and the bounds are attained. In particular, the usual principal-representation support patterns hold: if $d=2n-1$, $\xi^-$ has $n$ interior support points while $\xi^+$ has $n-1$ interior points and both endpoints; if $d=2n$, $\xi^-$ has $n$ interior points and the endpoint $0$, while $\xi^+$ has $n$ interior points and the endpoint $1$.
+
+**Proof.** The proposition shows that $\mathcal M_{\mathcal A}$ is exactly the class of mixing distributions compatible with the joint count law. Hence sharp prevalence bounds are equivalent to extremising the functional $\int x\,d\xi(x)$ over this moment class.
+
+For the stated exponents, both $1,x^{\lambda_1},\ldots,x^{\lambda_d}$ and its augmentation by $x$ form Chebyshev systems. Indeed, ordering the augmented monomials by increasing exponent gives
+$
+1,x,x^{\lambda_1},\ldots,x^{\lambda_d},
+$
+which has the positive orientation of a generalised Vandermonde system. Moving $x$ from the second position to the last requires $d$ transpositions. Thus the augmentation
+$
+1,x^{\lambda_1},\ldots,x^{\lambda_d},x
+$
+has orientation $(-1)^d$. By the Markov--Krein principal-representation theorem, $\xi^-$ minimises and $\xi^+$ maximises $\int x\,d\xi$ when $d$ is even, and the directions reverse when $d$ is odd. Finally $p=1-\int x\,d\xi$ reverses these inequalities, giving the stated bounds. Both principal representations reproduce the observed moments and therefore attain their respective bounds. The existence, uniqueness, and support structure invoked here are classical consequences of Chebyshev-system moment theory (Karlin and Studden, 1966). $\square$
+
+The theorem is constructive in the same sense as the common-size result: its endpoints are finite weighted sums of the support points of $\xi^\pm$. However, the nodes and weights now solve a *generalised Gaussian quadrature* problem for the selected monomials $x^{\lambda_i}$, rather than the ordinary Gauss, Gauss--Radau, or Gauss--Lobatto problem for consecutive powers. For example, if the prescribed support pattern has nodes $x_1,\ldots,x_N$ and weights $w_1,\ldots,w_N$, they satisfy
+$
+\sum_{j=1}^Nw_jx_j^{\lambda_i}=m_{\lambda_i},
+\qquad i=0,\ldots,d,
+$
+with the endpoint restrictions and support counts in the theorem. This finite nonlinear system determines the principal representation for interior moment vectors; unlike the consecutive-moment case, the earlier Hankel linear-system algorithm does not apply unchanged. Established generalised quadrature theory supplies existence and uniqueness, but stable numerical computation is a separate question.
+
+### Example and sampling-design implications
+
+Consider one pool of size $2$ and one of size $3$ per location ($v_1=v_2=1$). The four joint count outcomes identify
+$
+\mathcal A=\{0,2,3,5\},
+\qquad
+m_2=\Pr(N_{j1}=1),\quad
+m_3=\Pr(N_{j2}=1),\quad
+m_5=\Pr(N_{j1}=N_{j2}=1).
+$
+Thus $d=3$ is odd. The lower principal representation has two interior nodes, while the upper has nodes $0$, $1$, and one interior point. By the theorem, the sharp prevalence interval is
+$
+\boxed{
+1-\int x\,d\xi^-(x)\ \leq\ p\ \leq\
+1-\int x\,d\xi^+(x).
+}
+$
+This example illustrates why the *joint* counts matter: their dependence supplies the additional moment $m_5$ beyond the two marginal negative-pool probabilities.
+
+More generally, heterogeneous pool sizes can identify more distinct moments than the total number of pools per location. For example, two pools of size $5$ identify $\{m_5,m_{10}\}$, whereas one pool of size $5$ and one of size $6$ identify $\{m_5,m_6,m_{11}\}$. Nevertheless, more distinct moments do not by themselves guarantee a narrower identification interval when the exponent sets differ: unlike the nested common-size designs above, neither feasible moment class need contain the other. For two designs with *nested* exponent sets, by contrast, the identification interval cannot widen when additional moments are supplied. These observations suggest comparing mixed-size allocations using the resulting sharp prevalence-interval widths, subject to constraints on the numbers of pools and mosquitoes.
+
+
 ## References for the identification argument
 
 - George, E. O., and Bowman, D. (1995). A full likelihood procedure for analysing exchangeable binary data. *Biometrics*, **51**, 512–523. https://doi.org/10.2307/2532939
