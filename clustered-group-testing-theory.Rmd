@@ -25,9 +25,9 @@ knitr::opts_chunk$set(
 
 # Introduction
 
-This note develops likelihood theory for group testing when pools are collected in clusters, such as multiple mosquito pools collected at each trapping location. We first consider iid location-specific prevalences drawn from an arbitrary non-degenerate distribution on $[0,1]$. This general formulation establishes the asymptotic behaviour of the naive independent-pool estimator, including results for unequal pool sizes, without assuming a particular mixing distribution. It also develops sharp distribution-free partial-identification bounds for marginal prevalence from the limiting distribution of positive-pool counts at each location.
+This note develops likelihood theory for group testing when pools are collected in clusters, such as multiple mosquito pools collected at each trapping location. We first consider iid location-specific prevalences drawn from an arbitrary non-degenerate distribution on $[0,1]$. This general formulation establishes the asymptotic behaviour of the naive independent-pool estimator, including results for unequal pool sizes, without assuming a particular mixing distribution. We then specialise the asymptotic-bias results to beta mixing, for which exact moment expressions and rare-prevalence approximations are available.
 
-We then specialise to beta mixing, for which exact moment expressions and rare-prevalence approximations are available. Finally, we introduce logit-normal mixing as an alternative for the subsequent location-level likelihood, sufficiency, monotone-likelihood-ratio and fixed-ICC analyses.
+Next, we develop sharp distribution-free partial-identification bounds for marginal prevalence from the limiting distribution of positive-pool counts at each location. Finally, we introduce logit-normal mixing as an alternative for the subsequent location-level likelihood, sufficiency, monotone-likelihood-ratio and fixed-ICC analyses.
 
 The basic sampling model uses the same number of pools at each independent location. The general mixed-pool-size theorem additionally allows several pool sizes per location, provided the design is identical across locations and independent of location prevalence.
 
@@ -578,6 +578,181 @@ Finally, Jensen's inequality gives $\mathbb E\{(1-P_j)^s\}\geq(1-p)^s$, and ther
 **Remark.** These bounds concern the *asymptotic* downward bias $p-p_{\mathrm{ind}}^*$, not the bias of the estimator at a finite number of locations. Both bounds are exact for every $s$. For $s=1$, the probability limit equals $p$ for every prevalence distribution. For $s=2$, it depends only on the first two moments, so every distribution with the specified mean and ICC attains both bounds. For $s\geq3$, the strict convexity of $h_s$ and $g_s$ makes the respective two-point distributions the unique extremisers (apart from equivalent descriptions). At $\rho=0$ the bounds both equal $p$, and at $\rho=1$ the two extremal distributions coincide.
 
 
+## Beta mixing: exact asymptotic bias and rare-prevalence results
+
+The preceding asymptotic-bias results apply to arbitrary location-level prevalence distributions on $[0,1]$. Beta mixing is a tractable specialisation because its moments have closed forms, but the underlying clustered group-testing model is well established. In particular, Montesinos-López et al. (2014) modelled cluster-specific individual positivity probabilities using a beta distribution, derived exact pool-positivity and location-count probabilities, and demonstrated why conventional binomial group-testing analyses can be misleading when within-cluster dependence is ignored. The following calculations build on that work by making explicit the naive estimator's probability limit and rare-prevalence expansions, including for mixtures of pool sizes.
+
+Suppose that
+$$
+P_j\overset{\mathrm{iid}}{\sim}\operatorname{Beta}(\alpha,\beta),
+\qquad \alpha,\beta>0,
+$$
+with the same conditional independent-infection and perfect-testing assumptions as above. The marginal prevalence is
+$$
+p=\mathbb E(P_j)=\frac{\alpha}{\alpha+\beta}.
+$$
+Two distinct individuals sampled from the same location have infection indicators with intraclass correlation
+$$
+\rho
+=\frac{\operatorname{Var}(P_j)}{p(1-p)}
+=\frac{1}{\alpha+\beta+1}.
+$$
+Thus a beta mixing distribution is uniquely parameterised by $p\in(0,1)$ and $\rho\in(0,1)$, through
+$$
+\alpha=p\frac{1-\rho}{\rho},
+\qquad
+\beta=(1-p)\frac{1-\rho}{\rho}.
+$$
+
+**Proposition (Exact naive-estimator limit under beta mixing).**
+
+For fixed pool size $s\geq1$ and number of pools per location $v\geq1$, as the number of independently sampled locations $w\to\infty$, the naive estimator converges almost surely to
+$$
+p_{\mathrm{ind},\Beta}^*
+=
+1-
+\left\{
+\frac{(\beta)_s}{(\alpha+\beta)_s}
+\right\}^{1/s}
+=
+1-\left[
+\prod_{k=0}^{s-1} \left(
+1 - p\frac{1-\rho}
+     {1-\rho+k\rho} \right)
+\right]^{1/s},
+$$
+where $(a)_s=a(a+1)\cdots(a+s-1)$ denotes the rising factorial. Moreover,
+$$
+p_{\mathrm{ind},\Beta}^*\leq p,
+$$
+with equality for $s=1$ and strict inequality for $s>1$ when $0<\rho<1$.
+
+**Proof.**
+
+The general probability-limit formula proved above gives
+$$
+p_{\mathrm{ind}}^*
+=1-\left[\mathbb E\{(1-P_j)^s\}\right]^{1/s}.
+$$
+Under the beta distribution, evaluating the integral against its density yields
+$$
+\begin{aligned}
+\mathbb E\{(1-P_j)^s\}
+&=\frac{1}{B(\alpha,\beta)}
+\int_0^1 x^{\alpha-1}(1-x)^{\beta+s-1}\,dx\\
+&=\frac{B(\alpha,\beta+s)}{B(\alpha,\beta)}\\
+&=\frac{(\beta)_s}{(\alpha+\beta)_s}.
+\end{aligned}
+$$
+Substituting the expressions for $\alpha$ and $\beta$, and multiplying numerator and denominator of each product factor by $\rho$, gives the displayed expression in terms of $p,\rho,s$. Finally, for $s>1$, strict Jensen inequality for the non-degenerate variable $1-P_j$ gives
+$$
+\mathbb E\{(1-P_j)^s\}>(1-p)^s,
+$$
+and hence $p_{\mathrm{ind},\Beta}^*<p$. If $s=1$, the expectation is $1-p$, so equality holds. $\square$
+
+**Corollary (Rare-prevalence approximation).**
+
+For fixed $s$ and $0<\rho<1$, as $p\downarrow0$,
+$$
+\frac{p_{\mathrm{ind},\Beta}^*}{p}
+\longrightarrow
+\frac{1}{s}\sum_{k=0}^{s-1}
+\frac{1-\rho}{1-\rho+k\rho}.
+$$
+In particular, the leading-order *relative* asymptotic bias depends only on $s$ and $\rho$.
+
+**Proof.**
+
+Writing $c=(1-\rho)/\rho$, the product in the proposition expands to
+$$
+\begin{align}
+M_s(p)
+
+&= \prod_{k=0}^{s-1}\left(1 - p\frac{c}{c+k} \right)\\
+&= 1-p\sum_{k=0}^{s-1}\frac{c}{c+k}+O(p^2).
+\end{align}
+$$
+The first-order binomial expansion of $1-M_s(p)^{1/s}$ yields
+$$
+p_{\mathrm{ind},\beta}^*
+=\frac{p}{s}\sum_{k=0}^{s-1}\frac{c}{c+k}+O(p^2).
+$$
+Dividing by $p$ and substituting for $c$ proves the result. $\square$
+
+**Corollary (Rare-prevalence limit for an arbitrary beta-mixed pool-size design).**
+
+Under the arbitrary-$k$ design described in **Arbitrary mixtures of pool sizes: asymptotic bias and bounds**, suppose that $P_j\sim\operatorname{Beta}(\alpha,\beta)$, parameterised by marginal prevalence $p$ and fixed individual-level ICC $\rho\in(0,1)$ as above. Then, as $p\downarrow0$ with $\rho$, $s_a$, and $v_a$ fixed,
+$$
+
+\frac{p_{\mathrm{mix},\beta}^*}{p}
+\longrightarrow
+\frac{\displaystyle\sum_{a=1}^k v_a
+\sum_{m=0}^{s_a-1}
+\frac{1-\rho}{1-\rho+m\rho}}
+{\displaystyle\sum_{a=1}^k v_a s_a}.
+$$
+Equivalently, the limiting relative prevalence estimate is a weighted average of the single-pool-size rare-prevalence ratios, with weights proportional to $v_as_a$, the number of individuals sampled in each pool-size class per location.
+
+**Proof.**
+
+Set $c=(1-\rho)/\rho$, and write
+$$
+A_s=\sum_{m=0}^{s-1}\frac{c}{c+m}.
+$$
+The beta moment calculation above gives
+$$
+\bar q_s
+=1-\prod_{m=0}^{s-1}\frac{(1-p)c+m}{c+m}
+=pA_s+O(p^2).
+$$
+By the bounds in the arbitrary-mixture theorem and the preceding rare-prevalence corollary, each single-size limit $p_s^*/p$ tends to a strictly positive finite constant. Consequently $p_{\mathrm{mix},\beta}^*$ is of order $p$, and
+$$
+q_{s_a}(p_{\mathrm{mix},\beta}^*)
+=s_a p_{\mathrm{mix},\beta}^*+O(p^2).
+$$
+The limiting naive score equation, written entirely on the prevalence scale, is
+$$
+\sum_{a=1}^k v_as_a
+\frac{\bar q_{s_a}}
+     {q_{s_a}(p_{\mathrm{mix},\beta}^*)}
+=\sum_{a=1}^k v_as_a.
+$$
+Substituting the expansions gives
+$$
+\frac{p}{p_{\mathrm{mix},\beta}^*}
+\sum_{a=1}^k v_aA_{s_a}
++O(p)
+=\sum_{a=1}^k v_as_a.
+$$
+It follows that
+$$
+p_{\mathrm{mix},\beta}^*
+=p\,\frac{\sum_a v_aA_{s_a}}{\sum_a v_as_a}
++O(p^2).
+$$
+Dividing by $p$ and substituting for $c$ proves the result. $\square$
+
+**Numerical illustration (two pool sizes).**
+
+Take true marginal prevalence $p=0.01$, ICC $\rho=0.1$, and one pool of size $10$ and one of size $40$ per location ($v_1=v_2=1$, $s_1=10$, $s_2=40$). Thus each location contributes two pools containing a total of $50$ individuals. The location prevalence distribution is $P_j\sim\operatorname{Beta}(0.09,8.91)$, and the exact negative-pool probabilities are
+$$
+\mathbb E\{(1-P_j)^{10}\}\approx0.9321971323,\qquad
+\mathbb E\{(1-P_j)^{40}\}\approx0.8546368326.
+$$
+Using the corresponding beta moments in the single-size formula and in the limiting-score equation gives
+$$
+\begin{aligned}
+p_{10}^*&\approx0.006996507,\\
+p_{\mathrm{mix},\beta}^*&\approx0.004557818,\\
+p_{40}^*&\approx0.003919266.
+\end{aligned}
+$$
+Thus, when the clustering is ignored, the mixed-size design gives an asymptotic prevalence estimate of **$0.45578\%$**, compared with the true prevalence of $1\%$. The rare-prevalence approximation from the preceding corollary gives $p_{\mathrm{mix},\beta}^*\approx0.004532744$ ($0.45327\%$).
+
+For comparison, two pools of size $25$ also sample $50$ individuals per location and have the independence-based limit $p_{25}^*\approx0.004937423$ ($0.49374\%$). Therefore, in this example, the $10+40$ design has slightly *more* asymptotic downward bias in the naive estimator than the $25+25$ design, even though the preceding partial-identification analysis finds a much *narrower* sharp prevalence interval for $10+40$. The naive-estimator bias and the width of the distribution-free identification interval are distinct properties of the designs.
+
+**Related literature.** Montesinos-López, O. A., Montesinos-López, A., Eskridge, K., and Crossa, J. (2014). *Estimating a Proportion Based on Group Testing for Correlated Binary Response*. *Journal of Biometrics & Biostatistics*, **5**, 185. https://doi.org/10.4172/2155-6180.1000185
+
 # Distribution-free partial identification of prevalence from clustered pool counts
 
 The preceding section bounds the asymptotic bias of the *independence-based* estimator when true marginal prevalence $p$ and ICC $\rho$ are specified. We now reverse the question: if we account for clustering, but do not prescribe a distributional family for location-specific prevalence $P_j$, what is the most we can learn about $p=\mathbb E(P_j)$ by observing the distribution of the number of positive pools at each location? As in **Marginal location-count distribution**, assume $v$ non-overlapping pools of fixed size $s$ per independent location and perfect testing. We work in the limiting regime $w\to\infty$ with $v$ and $s$ fixed, so the probabilities $\pi_r=\Pr(K_j=r)$, $r=0,\ldots,v$, are treated as known exactly. We show that in general, even with perfect knowledge of $\boldsymbol\pi$ (attainable only with infinite sampling), $p$ remains only partially constrained if we do not know the true distributional family of $P_j$. 
@@ -1020,179 +1195,6 @@ Both intervals contain the true prevalence of $1\%$. For this beta-generated mom
 - Karlin, S., and Studden, W. J. (1966). *Tchebycheff Systems: With Applications in Analysis and Statistics*. Interscience Publishers, New York (especially pp. 55--56 on principal representations).
 - Gautschi, W. (2004). *Orthogonal Polynomials: Computation and Approximation*. Oxford University Press (especially Section 1.4.2 on Gauss, Gauss--Radau, and Gauss--Lobatto quadrature). https://doi.org/10.1093/oso/9780198506720.001.0001
 - Krein, M. G., and Nudelman, A. A. (1977). *The Markov Moment Problem and Extremal Problems*. American Mathematical Society, Translations of Mathematical Monographs, Vol. 50. https://doi.org/10.1090/mmono/050
-
-# Beta mixing: exact asymptotic bias and rare-prevalence results
-
-The preceding inconsistency result applies to any distribution of location-level prevalence supported on $[0,1]$. A beta distribution is a tractable first specialisation because its moments have closed forms.
-
-Suppose that
-$$
-P_j\overset{\mathrm{iid}}{\sim}\operatorname{Beta}(\alpha,\beta),
-\qquad \alpha,\beta>0,
-$$
-with the same conditional independent-infection and perfect-testing assumptions as above. The marginal prevalence is
-$$
-p=\mathbb E(P_j)=\frac{\alpha}{\alpha+\beta}.
-$$
-Two distinct individuals sampled from the same location have infection indicators with intraclass correlation
-$$
-\rho
-=\frac{\operatorname{Var}(P_j)}{p(1-p)}
-=\frac{1}{\alpha+\beta+1}.
-$$
-Thus a beta mixing distribution is uniquely parameterised by $p\in(0,1)$ and $\rho\in(0,1)$, through
-$$
-\alpha=p\frac{1-\rho}{\rho},
-\qquad
-\beta=(1-p)\frac{1-\rho}{\rho}.
-$$
-
-**Proposition (Exact naive-estimator limit under beta mixing).**
-
-For fixed pool size $s\geq1$ and number of pools per location $v\geq1$, as the number of independently sampled locations $w\to\infty$, the naive estimator converges almost surely to
-$$
-p_{\mathrm{ind},\Beta}^*
-=
-1-
-\left\{
-\frac{(\beta)_s}{(\alpha+\beta)_s}
-\right\}^{1/s}
-=
-1-\left[
-\prod_{k=0}^{s-1} \left(
-1 - p\frac{1-\rho}
-     {1-\rho+k\rho} \right)
-\right]^{1/s},
-$$
-where $(a)_s=a(a+1)\cdots(a+s-1)$ denotes the rising factorial. Moreover,
-$$
-p_{\mathrm{ind},\Beta}^*\leq p,
-$$
-with equality for $s=1$ and strict inequality for $s>1$ when $0<\rho<1$.
-
-**Proof.**
-
-The general probability-limit formula proved above gives
-$$
-p_{\mathrm{ind}}^*
-=1-\left[\mathbb E\{(1-P_j)^s\}\right]^{1/s}.
-$$
-Under the beta distribution, evaluating the integral against its density yields
-$$
-\begin{aligned}
-\mathbb E\{(1-P_j)^s\}
-&=\frac{1}{B(\alpha,\beta)}
-\int_0^1 x^{\alpha-1}(1-x)^{\beta+s-1}\,dx\\
-&=\frac{B(\alpha,\beta+s)}{B(\alpha,\beta)}\\
-&=\frac{(\beta)_s}{(\alpha+\beta)_s}.
-\end{aligned}
-$$
-Substituting the expressions for $\alpha$ and $\beta$, and multiplying numerator and denominator of each product factor by $\rho$, gives the displayed expression in terms of $p,\rho,s$. Finally, for $s>1$, strict Jensen inequality for the non-degenerate variable $1-P_j$ gives
-$$
-\mathbb E\{(1-P_j)^s\}>(1-p)^s,
-$$
-and hence $p_{\mathrm{ind},\Beta}^*<p$. If $s=1$, the expectation is $1-p$, so equality holds. $\square$
-
-**Corollary (Rare-prevalence approximation).**
-
-For fixed $s$ and $0<\rho<1$, as $p\downarrow0$,
-$$
-\frac{p_{\mathrm{ind},\Beta}^*}{p}
-\longrightarrow
-\frac{1}{s}\sum_{k=0}^{s-1}
-\frac{1-\rho}{1-\rho+k\rho}.
-$$
-In particular, the leading-order *relative* asymptotic bias depends only on $s$ and $\rho$.
-
-**Proof.**
-
-Writing $c=(1-\rho)/\rho$, the product in the proposition expands to
-$$
-\begin{align}
-M_s(p)
-
-&= \prod_{k=0}^{s-1}\left(1 - p\frac{c}{c+k} \right)\\
-&= 1-p\sum_{k=0}^{s-1}\frac{c}{c+k}+O(p^2).
-\end{align}
-$$
-The first-order binomial expansion of $1-M_s(p)^{1/s}$ yields
-$$
-p_{\mathrm{ind},\beta}^*
-=\frac{p}{s}\sum_{k=0}^{s-1}\frac{c}{c+k}+O(p^2).
-$$
-Dividing by $p$ and substituting for $c$ proves the result. $\square$
-
-**Corollary (Rare-prevalence limit for an arbitrary beta-mixed pool-size design).**
-
-Under the arbitrary-$k$ design of the preceding theorem, suppose that $P_j\sim\operatorname{Beta}(\alpha,\beta)$, parameterised by marginal prevalence $p$ and fixed individual-level ICC $\rho\in(0,1)$ as above. Then, as $p\downarrow0$ with $\rho$, $s_a$, and $v_a$ fixed,
-$$
-
-\frac{p_{\mathrm{mix},\beta}^*}{p}
-\longrightarrow
-\frac{\displaystyle\sum_{a=1}^k v_a
-\sum_{m=0}^{s_a-1}
-\frac{1-\rho}{1-\rho+m\rho}}
-{\displaystyle\sum_{a=1}^k v_a s_a}.
-$$
-Equivalently, the limiting relative prevalence estimate is a weighted average of the single-pool-size rare-prevalence ratios, with weights proportional to $v_as_a$, the number of individuals sampled in each pool-size class per location.
-
-**Proof.**
-
-Set $c=(1-\rho)/\rho$, and write
-$$
-A_s=\sum_{m=0}^{s-1}\frac{c}{c+m}.
-$$
-The beta moment calculation above gives
-$$
-\bar q_s
-=1-\prod_{m=0}^{s-1}\frac{(1-p)c+m}{c+m}
-=pA_s+O(p^2).
-$$
-By the bounds in the arbitrary-mixture theorem and the preceding rare-prevalence corollary, each single-size limit $p_s^*/p$ tends to a strictly positive finite constant. Consequently $p_{\mathrm{mix},\beta}^*$ is of order $p$, and
-$$
-q_{s_a}(p_{\mathrm{mix},\beta}^*)
-=s_a p_{\mathrm{mix},\beta}^*+O(p^2).
-$$
-The limiting naive score equation, written entirely on the prevalence scale, is
-$$
-\sum_{a=1}^k v_as_a
-\frac{\bar q_{s_a}}
-     {q_{s_a}(p_{\mathrm{mix},\beta}^*)}
-=\sum_{a=1}^k v_as_a.
-$$
-Substituting the expansions gives
-$$
-\frac{p}{p_{\mathrm{mix},\beta}^*}
-\sum_{a=1}^k v_aA_{s_a}
-+O(p)
-=\sum_{a=1}^k v_as_a.
-$$
-It follows that
-$$
-p_{\mathrm{mix},\beta}^*
-=p\,\frac{\sum_a v_aA_{s_a}}{\sum_a v_as_a}
-+O(p^2).
-$$
-Dividing by $p$ and substituting for $c$ proves the result. $\square$
-
-**Numerical illustration (two pool sizes).**
-
-Take true marginal prevalence $p=0.01$, ICC $\rho=0.1$, and one pool of size $10$ and one of size $40$ per location ($v_1=v_2=1$, $s_1=10$, $s_2=40$). Thus each location contributes two pools containing a total of $50$ individuals. The location prevalence distribution is $P_j\sim\operatorname{Beta}(0.09,8.91)$, and the exact negative-pool probabilities are
-$$
-\mathbb E\{(1-P_j)^{10}\}\approx0.9321971323,\qquad
-\mathbb E\{(1-P_j)^{40}\}\approx0.8546368326.
-$$
-Using the corresponding beta moments in the single-size formula and in the limiting-score equation gives
-$$
-\begin{aligned}
-p_{10}^*&\approx0.006996507,\\
-p_{\mathrm{mix},\beta}^*&\approx0.004557818,\\
-p_{40}^*&\approx0.003919266.
-\end{aligned}
-$$
-Thus, when the clustering is ignored, the mixed-size design gives an asymptotic prevalence estimate of **$0.45578\%$**, compared with the true prevalence of $1\%$. The rare-prevalence approximation from the preceding corollary gives $p_{\mathrm{mix},\beta}^*\approx0.004532744$ ($0.45327\%$).
-
-For comparison, two pools of size $25$ also sample $50$ individuals per location and have the independence-based limit $p_{25}^*\approx0.004937423$ ($0.49374\%$). Therefore, in this example, the $10+40$ design has slightly *more* asymptotic downward bias in the naive estimator than the $25+25$ design, even though the preceding partial-identification analysis finds a much *narrower* sharp prevalence interval for $10+40$. The naive-estimator bias and the width of the distribution-free identification interval are distinct properties of the designs.
 
 # Logit-normal mixing model
 
