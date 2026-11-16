@@ -906,7 +906,7 @@ As an illustration, suppose that the *true* mixing distribution is beta, such th
 
 ## How identification improves with more pools per location
 
-Fix a true distribution of $Q_j$ and let $\boldsymbol\pi^{(v)}$ be its count distribution for $v$ pools per location. Observing the law for $v+1$ pools identifies every moment identified by $v$ pools, plus one more. The moment-feasible sets are therefore nested:
+**Theorem (Nested identification intervals and their width).** Fix the pool size $s$ and a distribution of $Q_j$ with marginal prevalence $p=\mathbb E\{f_s(Q_j)\}$. Let $\boldsymbol\pi^{(v)}$ denote the corresponding count distribution for $v$ pools per location. For every $v\geq1$,
 $$
 p_{\min}(\boldsymbol\pi^{(v)})
 \leq p_{\min}(\boldsymbol\pi^{(v+1)})
@@ -914,19 +914,13 @@ p_{\min}(\boldsymbol\pi^{(v)})
 \leq p_{\max}(\boldsymbol\pi^{(v+1)})
 \leq p_{\max}(\boldsymbol\pi^{(v)}).
 $$
-For $s=1$, prevalence is already identified at $v=1$. For fixed $s>1$, the interval shrinks to $p$ as $v\to\infty$, by the classical Weierstrass polynomial approximation theorem.
+Both endpoints converge to $p$ as $v\to\infty$. For $s=1$, both equal $p$ already at $v=1$.
 
-We can also quantify the width. Let
+More precisely, let $E_v(f_s)$ denote the best uniform approximation error on $[0,1]$ by polynomials of degree at most $v$,
 $$
 E_v(f_s)=\inf_{\deg h\leq v}\sup_{q\in[0,1]}|f_s(q)-h(q)|.
 $$
-Any two feasible distributions agree on the integral of every degree-$v$ polynomial; hence, for such a polynomial $h$,
-$$
-\left|\int f_s\,d\xi_1-\int f_s\,d\xi_2\right|
-=\left|\int(f_s-h)\,d\xi_1-\int(f_s-h)\,d\xi_2\right|
-\leq2\|f_s-h\|_\infty.
-$$
-Taking the infimum over $h$ yields
+Then
 $$
 \boxed{
 0\leq p_{\max}(\boldsymbol\pi^{(v)})
@@ -934,9 +928,7 @@ $$
 \leq2E_v(f_s).
 }
 $$
-The constant is sharp *uniformly over moment vectors*: standard Hahn--Banach duality for uniform approximation produces a signed measure of total-variation norm one, annihilating degree-$v$ polynomials, whose integral of $f_s$ has absolute value $E_v(f_s)$. Because it annihilates constants, its positive and negative parts each have mass $1/2$; normalising them gives two probability distributions with identical first $v$ moments and prevalences differing by $2E_v(f_s)$. We use this classical duality result rather than reproduce its functional-analytic proof.
-
-For $s\geq2$, let $\alpha=1/s$. A useful upper rate is
+Equality is attained for some feasible count distribution at each $v$. For each fixed $s\geq2$, the worst-case width satisfies
 $$
 \boxed{
 \sup_{\boldsymbol\pi\text{ feasible}}
@@ -944,19 +936,31 @@ $$
 =O(v^{-2/s}),\qquad v\to\infty.
 }
 $$
-Substitute $q=(1+\cos\theta)/2$, so $(1-q)^\alpha=\sin^{2\alpha}(\theta/2)$. Its cosine-series coefficients for $k\geq1$ are
+
+**Proof.** The count law for $v+1$ pools identifies the same first $v$ moments as the count law for $v$ pools, together with $m_{v+1}$. Its feasible set of mixing distributions is therefore contained in the feasible set for $v$ pools. Taking the minimum and maximum prevalence over these sets gives the nesting inequalities, since the true distribution belongs to both.
+
+Any two feasible distributions $\xi_1$ and $\xi_2$ for the same count law agree on the integral of every polynomial $h$ of degree at most $v$. Thus
+$$
+\left|\int f_s\,d\xi_1-\int f_s\,d\xi_2\right|
+=\left|\int(f_s-h)\,d\xi_1-\int(f_s-h)\,d\xi_2\right|
+\leq2\|f_s-h\|_\infty.
+$$
+Taking $\xi_1$ and $\xi_2$ to be the two extremisers and then taking the infimum over $h$ gives the width bound. Since $f_s$ is continuous on $[0,1]$, the Weierstrass approximation theorem gives $E_v(f_s)\to0$. The nested intervals all contain $p$, so both endpoints converge to $p$. When $s=1$, $f_1(q)=q$ and the first moment alone identifies $p$.
+
+To see that the width bound is sharp, consider $s>1$ (for $s=1$ the width and approximation error are both zero). By Hahn–Banach duality for uniform approximation, there is a signed measure of total variation norm one that annihilates every polynomial of degree at most $v$ and whose integral of $f_s$ equals $E_v(f_s)$. Since it annihilates constants, its positive and negative parts each have mass $1/2$. Doubling each part gives two probability distributions with the same first $v$ moments and hence the same count law. Their prevalences differ by $2E_v(f_s)$, so this count law attains the bound.
+
+Finally, fix $s\geq2$ and set $\alpha=1/s$. Substitute $q=(1+\cos\theta)/2$, so $(1-q)^\alpha=\sin^{2\alpha}(\theta/2)$ for $0\leq\theta\leq\pi$. Its cosine-series coefficients for $k\geq1$ are
 $$
 a_k=-\frac{2^{1-2\alpha}\Gamma(2\alpha+1)\sin(\pi\alpha)}{\pi}
 \frac{\Gamma(k-\alpha)}{\Gamma(k+\alpha+1)},
 $$
-and therefore $|a_k|=O(k^{-1-2\alpha})$. Truncating the cosine series after $v$ terms gives a polynomial in $q$ of degree $v$ (using the Chebyshev-polynomial identity), with uniform error
+and therefore $|a_k|=O(k^{-1-2\alpha})$. Since $\cos(k\theta)=T_k(2q-1)$, where $T_k$ is the $k$th Chebyshev polynomial, truncating the series at $k=v$ gives a polynomial of degree at most $v$ in $q$. Subtracting this polynomial from one approximates $f_s$ with uniform error
 $$
 O\left(\sum_{k>v}k^{-1-2\alpha}\right)=O(v^{-2\alpha}).
 $$
-Together with the preceding width bound, this proves the stated rate. It is a **worst-case upper bound**, not necessarily the rate for any particular mixing distribution. For large pools, the exponent $2/s$ is small, so distribution-free identification may remain slow even with many pools per location.
+The width bound now gives the asserted rate. $\square$
 
-Increasing $w$ alone improves estimation of the same fixed-$v$ moments but cannot eliminate the identification interval. Finite-sample confidence intervals would additionally need to account for uncertainty in the observed location-count frequencies.
-
+**Interpretation.** The rate bounds the widest interval across feasible count distributions. For large pools the exponent $2/s$ is small, so the bound allows identification to improve slowly as $v$ increases. Increasing the number of locations $w$ at fixed $v$ improves estimation of the same moments. A positive identification width therefore persists even with infinitely many locations. Finite-sample confidence intervals must also account for uncertainty in the observed location-count frequencies.
 
 ## Identification with multiple pool sizes
 
