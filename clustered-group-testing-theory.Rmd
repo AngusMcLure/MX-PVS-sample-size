@@ -1043,16 +1043,29 @@ p_{\min}=1-m_1^-=1-\frac{m_2+B}{A}.
 $$
 Thus both endpoints are calculated from $m_2,m_3,m_5$ using one square root for the upper bound and one univariate quartic root (followed by elementary operations) for the lower bound. If the moment vector lies on the boundary, the appropriate reduced-support representation gives the coinciding bounds; the interior formulas can also be interpreted by limits where applicable.
 
-**Numerical illustration.** If $X_j$ is uniformly distributed on $[0,1]$, then
+**Numerical illustration.** To match the preceding common-pool-size example, suppose that the true location prevalence has a beta distribution with $p=1\%$ and $\rho=0.1$. Its parameters are
 $$
-(m_2,m_3,m_5)=\left(\frac13,\frac14,\frac16\right),
-\qquad p=1-\mathbb E(X_j)=\frac12.
+P_j\sim\operatorname{Beta}(0.09,8.91),
+\qquad X_j=1-P_j\sim\operatorname{Beta}(8.91,0.09).
 $$
-For the upper principal representation, $c=(\sqrt5-1)/2$, yielding $p_{\max}\approx0.53183$. The admissible quartic root for the lower representation is $A\approx1.15014$, with $x\approx0.30727$ and $y\approx0.84287$, giving $p_{\min}\approx0.48500$. Hence the exact limiting joint count distribution constrains prevalence to approximately
+Consequently, with $(a)_r=a(a+1)\cdots(a+r-1)$ denoting the rising factorial,
 $$
-\boxed{0.48500\leq p\leq0.53183,}
+m_r=\mathbb E(X_j^r)=\frac{(8.91)_r}{(9)_r},
+\qquad
+(m_2,m_3,m_5)
+\approx(0.9810900,\ 0.9730629,\ 0.9590789).
 $$
-and includes the true value $p=0.5$. The extra identified moment $m_5$ arises from the *joint* outcomes: it cannot be obtained from the two marginal negative-pool probabilities alone.
+For the upper principal representation, the formulas above give
+$$
+c\approx0.91141886,\qquad
+w_c\approx0.10908911,\qquad
+w_1\approx0.89047139,
+$$
+and hence $p_{\max}\approx0.01010274$. For the lower representation, the admissible quartic root is $A\approx1.81702299$, yielding $B\approx0.81777321$, interior nodes $x\approx0.82121932$ and $y\approx0.99580367$, and $p_{\min}\approx0.00999425$. Thus the limiting joint count distribution constrains prevalence to
+$$
+\boxed{0.99942\%\ \leq\ p\ \leq\ 1.01027\%,}
+$$
+which contains the true value $p=1\%$. In this particular illustration the bounds are much tighter than those in the preceding common-size example, but the designs use different pool sizes and sample different numbers of individuals; the comparison does not isolate the benefit of varying pool size. The additional identified moment $m_5$ arises from the *joint* outcomes and cannot be recovered from the two marginal negative-pool probabilities alone.
 
 
 More generally, heterogeneous pool sizes can identify more distinct moments than the total number of pools per location. For example, two pools of size $5$ identify $\{m_5,m_{10}\}$, whereas one pool of size $5$ and one of size $6$ identify $\{m_5,m_6,m_{11}\}$. Nevertheless, more distinct moments do not by themselves guarantee a narrower identification interval when the exponent sets differ: unlike the nested common-size designs above, neither feasible moment class need contain the other. For two designs with *nested* exponent sets, by contrast, the identification interval cannot widen when additional moments are supplied.
