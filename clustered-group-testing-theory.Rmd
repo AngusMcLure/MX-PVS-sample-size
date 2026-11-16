@@ -836,15 +836,15 @@ The set $\mathcal M_v(\boldsymbol\pi)$ is compact and convex in the weak topolog
 
 ## Constructive sharp bounds for arbitrary $v$
 
-The sharp bounds above can be evaluated without optimisation over probability measures. The classical Markov--Krein theorem identifies two discrete measures, the *lower and upper principal representations*, that reproduce the given moments and attain the extremal expectations of $f_s(q)=1-(1-q)^{1/s}$ (Karlin and Studden, 1966, pp. 55--56; Krein and Nudelman, 1977). Their construction coincides with Gauss-type quadrature for the moment sequence $m_0,\ldots,m_v$ (Gautschi, 2004, Section 1.4.2).
+The bounds in the preceding theorem can be evaluated without optimisation over probability measures. By the Markov--Krein theorem, the extremisers for $f_s(q)=1-(1-q)^{1/s}$ are the *lower and upper principal representations* of the identified moment vector $m_0,\ldots,m_v$ (Karlin and Studden, 1966, pp. 55--56; Krein and Nudelman, 1977). Their computation is a standard moment-based Gauss, Gauss--Radau, or Gauss--Lobatto quadrature problem; see Gautschi (2004, Section 1.4.2) and D'Haultfœuille and Rathelot (2017, Section 2.3), the latter of which applies this construction to sharp identification bounds in a binomial-mixture model.
 
-**Corollary (Constructive sharp prevalence bounds for any $v$).** Assume $s>1$ and that $(m_0,\ldots,m_v)$ lies in the interior of the feasible moment space on $[0,1]$. Let the lower and upper principal representations be
+**Corollary (Constructive sharp prevalence bounds for any $v$).** Assume $s>1$ and that $(m_0,\ldots,m_v)$ is an interior point of the feasible moment space on $[0,1]$. Let the lower and upper principal representations be
 $$
 \xi^-=\sum_{i=1}^{N_-}w_i^-\delta_{x_i^-},
 \qquad
 \xi^+=\sum_{i=1}^{N_+}w_i^+\delta_{x_i^+},
 $$
-where $\delta_x$ denotes unit mass at $x$, the weights are positive, and each representation matches all moments $m_0,\ldots,m_v$. Then the sharp prevalence bounds are
+where $\delta_x$ denotes unit mass at $x$ and the positive weights and nodes reproduce the moments $m_0,\ldots,m_v$. Then the sharp bounds are
 $$
 \boxed{
 p_{\min}(\boldsymbol\pi)=\sum_{i=1}^{N_-}w_i^-f_s(x_i^-),
@@ -852,58 +852,26 @@ p_{\min}(\boldsymbol\pi)=\sum_{i=1}^{N_-}w_i^-f_s(x_i^-),
 p_{\max}(\boldsymbol\pi)=\sum_{i=1}^{N_+}w_i^+f_s(x_i^+).
 }
 $$
-The nodes and weights of these representations are determined by the moment sequence, independently of the function subsequently integrated. Their support patterns are the standard Gaussian quadrature rules with the highest polynomial degree of exactness compatible with their nodes and prescribed endpoints:
+The principal representations depend on the observed moments, not on the function $f_s$ being evaluated. Their nodes follow the standard support patterns:
 
 | Available moments | Lower principal representation $\xi^-$ | Upper principal representation $\xi^+$ |
 |:--|:--|:--|
 | $v=2n-1$ (odd) | $n$ interior nodes (Gauss) | Endpoints $0,1$ and $n-1$ interior nodes (Gauss--Lobatto) |
 | $v=2n$ (even) | Endpoint $0$ and $n$ interior nodes (left Gauss--Radau) | Endpoint $1$ and $n$ interior nodes (right Gauss--Radau) |
 
-An interior node lies strictly in $(0,1)$. For $v=1$, the upper representation consists only of the endpoints.
+Here interior nodes lie strictly in $(0,1)$; for $v=1$, the upper representation comprises only the two endpoints.
 
-**Computation from observed moments.** For either representation, let $r$ be its number of interior nodes. Let $h(q)$ be the polynomial vanishing at its prescribed endpoint nodes, and define *modified moments* $t_k=\int_0^1q^kh(q)\,d\xi(q)$. Although the underlying measure $\xi$ is unknown, the $t_k$ can be calculated directly from $m_0,\ldots,m_v$:
+**Computation.** Given the moments $m_k$ obtained from the observed location-count probabilities, construct the two quadrature rules specified in the table for the moment functional $L(q^k)=m_k$, $k=0,\ldots,v$. Established moment-to-quadrature algorithms recover the requisite nodes and weights, with the endpoint constraints enforced for Radau and Lobatto rules (Gautschi, 2004; D'Haultfœuille and Rathelot, 2017, Section 2.3). Substitution into the finite sums above then yields the sharp bounds. This construction uses only the identified moments: a density for the mixing distribution is neither assumed nor needed. The following subsection gives closed-form expressions for $v\leq3$.
 
-| Representation | $r$ | $h(q)$ | $t_k$ |
-|:--|:--|:--|:--|
-| Odd $v=2n-1$, lower | $n$ | $1$ | $m_k$ |
-| Odd $v=2n-1$, upper | $n-1$ | $q(1-q)$ | $m_{k+1}-m_{k+2}$ |
-| Even $v=2n$, lower | $n$ | $q$ | $m_{k+1}$ |
-| Even $v=2n$, upper | $n$ | $1-q$ | $m_k-m_{k+1}$ |
-
-All modified moments required below, up to $t_{2r-1}$, are identified. For $r\geq1$, define the monic polynomial
-$$
-R_r(q)=q^r+\sum_{i=0}^{r-1}c_iq^i
-$$
-by the orthogonality conditions
-$$
-\int_0^1 q^k h(q)R_r(q)\,d\xi(q)=0,
-\qquad k=0,\ldots,r-1.
-$$
-These conditions follow from polynomial exactness: at each quadrature node, either $h$ vanishes (a fixed endpoint) or $R_r$ vanishes (an interior node). In terms of the observed modified moments they give the $r\times r$ Hankel system
-$$
-\boxed{
-\sum_{i=0}^{r-1}t_{k+i}c_i=-t_{k+r},
-\qquad k=0,\ldots,r-1.
-}
-$$
-The $r$ roots of $R_r$ are the interior quadrature nodes. After adjoining the required endpoints, let $x_1,\ldots,x_N$ be the full set of nodes. The weights are obtained by matching the first $N$ moments, using the Vandermonde system
-$$
-\boxed{
-\sum_{i=1}^{N}w_ix_i^k=m_k,
-\qquad k=0,\ldots,N-1.
-}
-$$
-For $r=0$, only the endpoint nodes and the weight system are needed. Evaluating $f_s$ at these nodes and taking the weighted sums in the corollary gives the bounds. Thus the construction requires only linear systems and polynomial roots, rather than numerical optimisation over distributions. For example, when $v=2$ the left-Radau system has $r=1$, $t_0=m_1$, and $t_1=m_2$, giving the interior node $m_2/m_1$ used in the explicit bound below.
-
-**Justification of extremality.** The Markov--Krein theorem states that principal representations minimise and maximise $\int f\,d\xi$ when $1,q,\ldots,q^v,f(q)$ form a positively oriented Chebyshev system. Here, with $\alpha=1/s\in(0,1)$,
+**Justification.** The Markov--Krein extremality result applies because $1,q,\ldots,q^v,f_s(q)$ is a positively oriented Chebyshev system: with $\alpha=1/s\in(0,1)$,
 $$
 f_s^{(v+1)}(q)
 =\alpha\prod_{j=1}^{v}(j-\alpha)(1-q)^{\alpha-v-1}>0,
-\qquad 0<q<1,
+\qquad 0<q<1.
 $$
-which gives the required orientation and hence the lower and upper bounds as stated. The node-and-weight construction is the standard Gauss/Gauss--Radau/Gauss--Lobatto moment algorithm (Gautschi, 2004).
+The lower and upper principal representations therefore attain, respectively, the minimum and maximum expectation of $f_s$ among all mixing distributions matching the observed moments.
 
-**Boundary cases and numerical stability.** The displayed construction assumes an interior moment vector. On the boundary of the Hausdorff moment space the representing measure is unique, so the identification interval collapses and a reduced-support rule is required. For larger $v$, solving raw-moment Hankel and Vandermonde systems can be ill-conditioned. Stable implementations should use orthogonal-polynomial recurrences and established Gauss-type quadrature algorithms, and check moment reproduction, nodes in $[0,1]$, and nonnegative weights.
+**Boundary cases and numerical stability.** For a boundary moment vector, the compatible mixing distribution is unique and the bounds coincide; quadrature should then use its reduced support. At larger $v$, direct inversion of raw-moment matrices can be ill-conditioned. Established algorithms based on orthogonal-polynomial recurrences are preferable, with checks that the reconstructed moments agree with $m_0,\ldots,m_v$, all nodes lie in $[0,1]$, and weights are nonnegative (Gautschi, 2004).
 
 ## Explicit sharp bounds for one or two pools per location
 
@@ -1140,12 +1108,7 @@ $$
 $$
 has orientation $(-1)^d$. By the Markov--Krein principal-representation theorem, $\xi^-$ minimises and $\xi^+$ maximises $\int x\,d\xi$ when $d$ is even, and the directions reverse when $d$ is odd. Finally $p=1-\int x\,d\xi$ reverses these inequalities, giving the stated bounds. Both principal representations reproduce the observed moments and therefore attain their respective bounds. The existence, uniqueness, and support structure invoked here are classical consequences of Chebyshev-system moment theory (Karlin and Studden, 1966). $\square$
 
-The theorem is constructive in the same sense as the common-size result: its endpoints are finite weighted sums of the support points of $\xi^\pm$. However, the nodes and weights now solve a *generalised Gaussian quadrature* problem for the selected monomials $x^{\lambda_i}$, rather than the ordinary Gauss, Gauss--Radau, or Gauss--Lobatto problem for consecutive powers. For example, if the prescribed support pattern has nodes $x_1,\ldots,x_N$ and weights $w_1,\ldots,w_N$, they satisfy
-$$
-\sum_{j=1}^Nw_jx_j^{\lambda_i}=m_{\lambda_i},
-\qquad i=0,\ldots,d,
-$$
-with the endpoint restrictions and support counts in the theorem. This finite nonlinear system determines the principal representation for interior moment vectors; unlike the consecutive-moment case, the earlier Hankel linear-system algorithm does not apply unchanged. Established generalised quadrature theory supplies existence and uniqueness, but stable numerical computation is a separate question.
+The bounds can likewise be computed from the identified moments by constructing the corresponding *generalised Gaussian quadrature* rules for the Chebyshev system $1,x^{\lambda_1},\ldots,x^{\lambda_d}$. Unlike ordinary quadrature for consecutive polynomial moments, the interior nodes need not be roots of orthogonal polynomials, so the preceding standard Gauss--Radau--Lobatto algorithms do not apply directly. Huybrechs (2022, Sections 2--3) gives a constructive continuation algorithm for generalised Gaussian quadrature for complete Chebyshev systems, based on successive principal and canonical representations. The required inputs here are precisely the basis functions $x^{\lambda_i}$ and their identified moments $m_{\lambda_i}$; the computed nodes and weights must reproduce these moments and obey the support patterns of the theorem. Thus no new quadrature algorithm is needed for the mixed-pool-size identification problem, although numerical stability and boundary moment vectors still require attention.
 
 ### Example with two different pool sizes
 
@@ -1202,6 +1165,7 @@ Both intervals contain the true prevalence of $1\%$. For this beta-generated mom
 - Karlin, S., and Studden, W. J. (1966). *Tchebycheff Systems: With Applications in Analysis and Statistics*. Interscience Publishers, New York (especially pp. 55--56 on principal representations).
 - Gautschi, W. (2004). *Orthogonal Polynomials: Computation and Approximation*. Oxford University Press (especially Section 1.4.2 on Gauss, Gauss--Radau, and Gauss--Lobatto quadrature). https://doi.org/10.1093/oso/9780198506720.001.0001
 - Krein, M. G., and Nudelman, A. A. (1977). *The Markov Moment Problem and Extremal Problems*. American Mathematical Society, Translations of Mathematical Monographs, Vol. 50. https://doi.org/10.1090/mmono/050
+- Huybrechs, D. (2022). On the computation of Gaussian quadrature rules for Chebyshev sets of linearly independent functions. *SIAM Journal on Numerical Analysis*, **60**(3), 1168–1192. https://doi.org/10.1137/21M1456935 (especially Sections 2--3).
 
 # Logit-normal mixing model
 
