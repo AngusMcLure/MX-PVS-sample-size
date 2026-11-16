@@ -859,8 +859,6 @@ p_{\min}=f_s(m_1)=1-(1-m_1)^{1/s},
 \qquad
 p_{\max}=m_1.
 $$
-For $s>1$ and $0<m_1<1$, convexity gives a geometric explanation. The tangent to $f_s$ at $m_1$ lies below the curve. Since $\mathbb E(Q_j)=m_1$, the expected height of this line is $f_s(m_1)$ under every compatible distribution, and $\xi^-$ attains equality by placing all its mass at the point of tangency. The chord joining the endpoints is the line $h(q)=q$. It lies above the curve and has expected height $m_1$. The distribution $\xi^+$ attains equality because its mass is concentrated at the two endpoints where the chord meets the curve.
-
 The lower endpoint is also the probability limit $p_{\mathrm{ind}}^*$ of the naive estimator. For $s=1$, both endpoints coincide at $m_1$.
 
 **Two pools per location ($v=2$).** The observed moments are $m_1=\mathbb E(Q_j)$ and $m_2=\mathbb E(Q_j^2)$. The lower principal representation is a left Gauss--Radau rule supported on $x_1^-=0$ and an interior node $x_2^-$. Matching the moments gives
