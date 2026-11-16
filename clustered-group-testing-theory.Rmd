@@ -749,7 +749,7 @@ p_{40}^*&\approx0.003919266.
 $$
 Thus, when the clustering is ignored, the mixed-size design gives an asymptotic prevalence estimate of **$0.45578\%$**, compared with the true prevalence of $1\%$. The rare-prevalence approximation from the preceding corollary gives $p_{\mathrm{mix},\beta}^*\approx0.004532744$ ($0.45327\%$).
 
-For comparison, two pools of size $25$ also sample $50$ individuals per location and have the independence-based limit $p_{25}^*\approx0.004937423$ ($0.49374\%$). Therefore, in this example, the $10+40$ design has slightly *more* asymptotic downward bias in the naive estimator than the $25+25$ design, even though the preceding partial-identification analysis finds a much *narrower* sharp prevalence interval for $10+40$. The naive-estimator bias and the width of the distribution-free identification interval are distinct properties of the designs.
+For comparison, two pools of size $25$ also sample $50$ individuals per location and have the independence-based limit $p_{25}^*\approx0.004937423$ ($0.49374\%$). Therefore, in this example, the $10+40$ design has slightly *more* asymptotic downward bias in the naive estimator than the $25+25$ design, even though the partial-identification analysis below finds a much *narrower* sharp prevalence interval for $10+40$. The naive-estimator bias and the width of the distribution-free identification interval are distinct properties of the designs.
 
 **Related literature.** Montesinos-López, O. A., Montesinos-López, A., Eskridge, K., and Crossa, J. (2014). *Estimating a Proportion Based on Group Testing for Correlated Binary Response*. *Journal of Biometrics & Biostatistics*, **5**, 185. https://doi.org/10.4172/2155-6180.1000185
 
