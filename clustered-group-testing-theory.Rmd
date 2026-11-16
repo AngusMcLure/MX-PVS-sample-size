@@ -578,7 +578,7 @@ Finally, Jensen's inequality gives $\mathbb E\{(1-P_j)^s\}\geq(1-p)^s$, and ther
 **Remark.** These bounds concern the *asymptotic* downward bias $p-p_{\mathrm{ind}}^*$, not the bias of the estimator at a finite number of locations. Both bounds are exact for every $s$. For $s=1$, the probability limit equals $p$ for every prevalence distribution. For $s=2$, it depends only on the first two moments, so every distribution with the specified mean and ICC attains both bounds. For $s\geq3$, the strict convexity of $h_s$ and $g_s$ makes the respective two-point distributions the unique extremisers (apart from equivalent descriptions). At $\rho=0$ the bounds both equal $p$, and at $\rho=1$ the two extremal distributions coincide.
 
 
-## Beta mixing: exact asymptotic bias and rare-prevalence results
+## Example: Beta mixing
 
 The preceding asymptotic-bias results apply to arbitrary location-level prevalence distributions on $[0,1]$. Beta mixing is a tractable specialisation because its moments have closed forms, but the underlying clustered group-testing model is well established. In particular, Montesinos-López et al. (2014) modelled cluster-specific individual positivity probabilities using a beta distribution, derived exact pool-positivity and location-count probabilities, and demonstrated why conventional binomial group-testing analyses can be misleading when within-cluster dependence is ignored. The following calculations build on that work by making explicit the naive estimator's probability limit and rare-prevalence expansions, including for mixtures of pool sizes.
 
@@ -683,13 +683,12 @@ Dividing by $p$ and substituting for $c$ proves the result. $\square$
 
 Under the arbitrary-$k$ design described in **Arbitrary mixtures of pool sizes: asymptotic bias and bounds**, suppose that $P_j\sim\operatorname{Beta}(\alpha,\beta)$, parameterised by marginal prevalence $p$ and fixed individual-level ICC $\rho\in(0,1)$ as above. Then, as $p\downarrow0$ with $\rho$, $s_a$, and $v_a$ fixed,
 $$
-
 \frac{p_{\mathrm{mix},\beta}^*}{p}
 \longrightarrow
 \frac{\displaystyle\sum_{a=1}^k v_a
 \sum_{m=0}^{s_a-1}
 \frac{1-\rho}{1-\rho+m\rho}}
-{\displaystyle\sum_{a=1}^k v_a s_a}.
+{\displaystyle\sum_{a=1}^k v_a s_a}.
 $$
 Equivalently, the limiting relative prevalence estimate is a weighted average of the single-pool-size rare-prevalence ratios, with weights proportional to $v_as_a$, the number of individuals sampled in each pool-size class per location.
 
@@ -830,7 +829,7 @@ $$
 
 The set $\mathcal M_v(\boldsymbol\pi)$ is compact and convex in the weak topology. Since $f_s$ is continuous, its integrals over this set attain their extrema, and convexity makes every intermediate value attainable. This proves that the interval is sharp. The classical **extreme-point theorem for moment sets** (Winkler, 1988) provides extremising measures with at most $v+1$ atoms, counting the normalisation constraint. The displayed polynomial-envelope equalities follow from **generalised moment-problem duality**, as developed by Krein and Nudelman (1977, chapter *The abstract $L$-problem, duality principle, and some applications*). $\square$
 
-**Remark.** The set of compatible mixing distributions, $\mathcal M_v(\boldsymbol\pi)$, may be a singleton for particular moment vectors, but need not be for general fixed finite $v$. In particular, if for each location either every pool is positive or every pool is negative — i.e. $\boldsymbol\pi = (1-p,0,\dots,0, p)$ — then the set consists only of the discrete distribution with mass $1-p$ at $0$ and $p$ at $1$, and in this case the bounds on  $p$ are equalities. In the general case the bounds capture ambiguity that remains even after infinitely many independent locations are sampled.
+**Remark.** The set of compatible mixing distributions, $\mathcal M_v(\boldsymbol\pi)$, may be a singleton for particular moment vectors, but need not be for general fixed finite $v$. In particular, if for each location either every pool is positive or every pool is negative — i.e. $\boldsymbol\pi = (1-p,0,\dots,0, p)$ — then the set consists only of the discrete distribution with mass $1-p$ at $0$ and $p$ at $1$, and in this case the bounds on $p$ are equalities. In the general case the bounds capture ambiguity that remains even after infinitely many independent locations are sampled.
 
 
 ## Constructive sharp bounds for arbitrary $v$
