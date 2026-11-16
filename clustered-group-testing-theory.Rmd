@@ -873,7 +873,7 @@ $$
 N_{ja}\mid X_j\sim\operatorname{Binomial}(v_a,X_j^{s_a}),
 \qquad p=1-\mathbb E(X_j).
 $$
-As before, we consider $w\to\infty$ with all $v_a$ and $s_a$ fixed, so that the full joint distribution of $(N_{j1},\ldots,N_{jk})$ is known. In particular, the marginal count distributions alone are not sufficient to recover all the information available from mixed pool sizes.
+As before, we consider $w\to\infty$ with all $v_a$ and $s_a$ fixed, so that the full joint distribution of $(N_{j1},\ldots,N_{jk})$ is known.
 
 **Proposition (Identifiable moments for mixed pool sizes).** Define the set of distinct exponents
 $$
@@ -889,21 +889,20 @@ m_{\lambda_i}=\mathbb E(X_j^{\lambda_i}),
 $$
 Specifically, for each admissible vector $\boldsymbol r=(r_1,\ldots,r_k)$,
 $$
-
 m_{\sum_a r_as_a}
 =
 \frac{\displaystyle\mathbb E\left\{\prod_{a=1}^k
 \binom{N_{ja}}{r_a}\right\}}
-{\displaystyle\prod_{a=1}^k\binom{v_a}{r_a}}.
+{\displaystyle\prod_{a=1}^k\binom{v_a}{r_a}}.
 $$
 Repeated exponents give the same moment and hence do not supply additional independent moment constraints.
 
 **Proof.** Conditional independence and the binomial factorial-moment identity give
 $$
 \mathbb E\left\{\prod_a\binom{N_{ja}}{r_a}\,\middle|\,X_j\right\}
-=\prod_a\binom{v_a}{r_a}X_j^{\sum_a r_as_a}.
+=X_j^{\sum_a r_as_a} \prod_a\binom{v_a}{r_a} .
 $$
-Averaging over $X_j$ proves the displayed formula. Conversely, for any possible count vector $\boldsymbol n$, its probability is
+Taking expectations with respect to $X_j$ proves the displayed formula. Conversely, for any possible count vector $\boldsymbol n$, its probability is
 $$
 \Pr(\boldsymbol N_j=\boldsymbol n)
 =\left\{\prod_a\binom{v_a}{n_a}\right\}
