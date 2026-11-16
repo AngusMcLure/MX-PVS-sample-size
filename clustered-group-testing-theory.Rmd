@@ -977,13 +977,83 @@ m_2=\Pr(N_{j1}=1),\quad
 m_3=\Pr(N_{j2}=1),\quad
 m_5=\Pr(N_{j1}=N_{j2}=1).
 $$
-Thus $d=3$ is odd. The lower principal representation has two interior nodes, while the upper has nodes $0$, $1$, and one interior point. By the theorem, the sharp prevalence interval is
-$$
+Here $m_r=\mathbb E(X_j^r)$, where $X_j=1-P_j$. We now calculate both sharp bounds **as functions of the three identified moments**. Assume first that $(m_2,m_3,m_5)$ is in the interior of the feasible moment space, so that the following support points are distinct and all weights are positive.
 
-1-\int x\,d\xi^-(x)\ \leq\ p\ \leq\
-1-\int x\,d\xi^+(x).
+**Upper prevalence bound (upper principal representation).** Because $d=3$ is odd, the upper principal representation $\xi^+$, supported on $\{0,c,1\}$ with weights $(w_0,w_c,w_1)$, *minimises* $\mathbb E(X_j)$ and hence *maximises* prevalence. The moment equations give
 $$
-This example illustrates why the *joint* counts matter: their dependence supplies the additional moment $m_5$ beyond the two marginal negative-pool probabilities.
+m_2-m_3=w_cc^2(1-c),\qquad
+m_3-m_5=w_cc^3(1-c^2).
+$$
+Consequently, defining $R=(m_3-m_5)/(m_2-m_3)$,
+$$
+\boxed{
+c=\frac{\sqrt{1+4R}-1}{2},\qquad
+w_c=\frac{m_2-m_3}{c^2(1-c)},\qquad
+w_1=m_2-w_cc^2,\qquad
+w_0=1-w_c-w_1.
+}
+$$
+The sharp *upper prevalence bound* is therefore the explicit expression
+$$
+\boxed{
+p_{\max}=1-w_cc-w_1.
+}
+$$
+The weight at $0$ makes no contribution to $\mathbb E(X_j)$.
+
+**Lower prevalence bound (lower principal representation).** The lower principal representation $\xi^-$ has two interior support points $0<x<y<1$, with weights $(w,1-w)$. Write
+$$
+A=x+y,\qquad B=xy.
+$$
+Any distribution supported on $\{x,y\}$ obeys the moment recurrence $m_{r+2}=Am_{r+1}-Bm_r$. In particular,
+$$
+m_2=Am_1-B,\qquad
+m_3=Am_2-Bm_1,\qquad
+m_5=(A^2-B)m_3-ABm_2.
+$$
+Eliminating $m_1$ and $B$ yields the quartic equation
+$$
+\boxed{
+\begin{aligned}
+0={}&(m_2^3-m_3^2)A^4
++2m_3(m_5-m_2m_3)A^2\\
+&+(m_2^2m_5-m_3^3)A
++m_2m_3m_5-m_5^2.
+\end{aligned}
+}
+$$
+Choose the root $A$ for which
+$$
+B=\frac{m_3A^2-m_5}{m_3+Am_2},
+\qquad
+x=\frac{A-\sqrt{A^2-4B}}2,\quad
+y=\frac{A+\sqrt{A^2-4B}}2
+$$
+satisfy $0<x<y<1$ and yield positive weights
+$$
+w=\frac{y-m_1^-}{y-x},\qquad 1-w=\frac{m_1^--x}{y-x},
+\qquad
+m_1^-=\frac{m_2+B}{A}.
+$$
+For an interior feasible moment vector, the lower principal representation is unique, so these admissibility conditions select the relevant root. The sharp *lower prevalence bound* is
+$$
+\boxed{
+p_{\min}=1-m_1^-=1-\frac{m_2+B}{A}.
+}
+$$
+Thus both endpoints are calculated from $m_2,m_3,m_5$ using one square root for the upper bound and one univariate quartic root (followed by elementary operations) for the lower bound. If the moment vector lies on the boundary, the appropriate reduced-support representation gives the coinciding bounds; the interior formulas can also be interpreted by limits where applicable.
+
+**Numerical illustration.** If $X_j$ is uniformly distributed on $[0,1]$, then
+$$
+(m_2,m_3,m_5)=\left(\frac13,\frac14,\frac16\right),
+\qquad p=1-\mathbb E(X_j)=\frac12.
+$$
+For the upper principal representation, $c=(\sqrt5-1)/2$, yielding $p_{\max}\approx0.53183$. The admissible quartic root for the lower representation is $A\approx1.15014$, with $x\approx0.30727$ and $y\approx0.84287$, giving $p_{\min}\approx0.48500$. Hence the exact limiting joint count distribution constrains prevalence to approximately
+$$
+\boxed{0.48500\leq p\leq0.53183,}
+$$
+and includes the true value $p=0.5$. The extra identified moment $m_5$ arises from the *joint* outcomes: it cannot be obtained from the two marginal negative-pool probabilities alone.
+
 
 More generally, heterogeneous pool sizes can identify more distinct moments than the total number of pools per location. For example, two pools of size $5$ identify $\{m_5,m_{10}\}$, whereas one pool of size $5$ and one of size $6$ identify $\{m_5,m_6,m_{11}\}$. Nevertheless, more distinct moments do not by themselves guarantee a narrower identification interval when the exponent sets differ: unlike the nested common-size designs above, neither feasible moment class need contain the other. For two designs with *nested* exponent sets, by contrast, the identification interval cannot widen when additional moments are supplied.
 
