@@ -1126,14 +1126,13 @@ Dividing by $p$ and substituting for $c$ proves the result. $\square$
 
 Under the arbitrary-$k$ design of the preceding theorem, suppose that $P_j\sim\operatorname{Beta}(\alpha,\beta)$, parameterised by marginal prevalence $p$ and fixed individual-level ICC $\rho\in(0,1)$ as above. Then, as $p\downarrow0$ with $\rho$, $s_a$, and $v_a$ fixed,
 $$
-\boxed{
+
 \frac{p_{\mathrm{mix},\beta}^*}{p}
 \longrightarrow
 \frac{\displaystyle\sum_{a=1}^k v_a
 \sum_{m=0}^{s_a-1}
 \frac{1-\rho}{1-\rho+m\rho}}
-{\displaystyle\sum_{a=1}^k v_a s_a}.
-}
+{\displaystyle\sum_{a=1}^k v_a s_a}.
 $$
 Equivalently, the limiting relative prevalence estimate is a weighted average of the single-pool-size rare-prevalence ratios, with weights proportional to $v_as_a$, the number of individuals sampled in each pool-size class per location.
 
@@ -1178,7 +1177,7 @@ Dividing by $p$ and substituting for $c$ proves the result. $\square$
 
 **Numerical illustration (two pool sizes).**
 
-To match the mixed-size identification example above, take true marginal prevalence $p=0.01$, ICC $\rho=0.1$, and **one pool of size $10$ and one of size $40$ per location** ($v_1=v_2=1$, $s_1=10$, $s_2=40$). Thus each location contributes two pools containing a total of $50$ individuals. The location prevalence distribution is $P_j\sim\operatorname{Beta}(0.09,8.91)$, and the exact negative-pool probabilities are
+Take true marginal prevalence $p=0.01$, ICC $\rho=0.1$, and one pool of size $10$ and one of size $40$ per location ($v_1=v_2=1$, $s_1=10$, $s_2=40$). Thus each location contributes two pools containing a total of $50$ individuals. The location prevalence distribution is $P_j\sim\operatorname{Beta}(0.09,8.91)$, and the exact negative-pool probabilities are
 $$
 \mathbb E\{(1-P_j)^{10}\}\approx0.9321971323,\qquad
 \mathbb E\{(1-P_j)^{40}\}\approx0.8546368326.
@@ -1193,7 +1192,7 @@ p_{40}^*&\approx0.003919266.
 $$
 Thus, when the clustering is ignored, the mixed-size design gives an asymptotic prevalence estimate of **$0.45578\%$**, compared with the true prevalence of $1\%$. The rare-prevalence approximation from the preceding corollary gives $p_{\mathrm{mix},\beta}^*\approx0.004532744$ ($0.45327\%$).
 
-For comparison, **two pools of size $25$** also sample $50$ individuals per location and have the independence-based limit $p_{25}^*\approx0.004937423$ ($0.49374\%$). Therefore, in this example, the $10+40$ design has slightly *more* asymptotic downward bias in the naive estimator than the $25+25$ design, even though the preceding partial-identification analysis finds a much *narrower* sharp prevalence interval for $10+40$. The naive-estimator bias and the width of the distribution-free identification interval are distinct properties of the designs.
+For comparison, two pools of size $25$ also sample $50$ individuals per location and have the independence-based limit $p_{25}^*\approx0.004937423$ ($0.49374\%$). Therefore, in this example, the $10+40$ design has slightly *more* asymptotic downward bias in the naive estimator than the $25+25$ design, even though the preceding partial-identification analysis finds a much *narrower* sharp prevalence interval for $10+40$. The naive-estimator bias and the width of the distribution-free identification interval are distinct properties of the designs.
 
 # Logit-normal mixing model
 
