@@ -874,54 +874,66 @@ The lower and upper principal representations therefore attain, respectively, th
 
 ## Explicit sharp bounds for up to three pools per location
 
-The general quadrature construction simplifies to closed-form expressions for $v\leq 3$, which we present to illustrate how the sharp bounds arise directly from the observable moments. The proofs use the same convexity and tangent-line method as **Sharp bounds on asymptotic underestimation for fixed mean and ICC** above, but now the moment constraints are supplied by the observable law rather than by known prevalence and ICC.
+For $v\leq3$, the support patterns in the preceding corollary yield closed-form expressions for the sharp bounds. We obtain the quadrature nodes and weights by matching the identified moments; extremality follows directly from the principal-representation theorem, without separate inequalities for each case.
 
-**One pool per location ($v=1$).** Only $m_1=\mathbb E(Q_j)=\pi_1$ is identified. Since $f_s$ is convex and $f_s(q)\leq q$ on $[0,1]$, Jensen's inequality and the chord bound imply
+**One pool per location ($v=1$).** The only nontrivial identified moment is $m_1=\mathbb E(Q_j)=\pi_1$. The lower principal representation is the one-node Gauss rule, $\xi^-=\delta_{m_1}$. The upper principal representation is the two-endpoint Gauss--Lobatto rule. Its weights follow from $w_0+w_1=1$ and $w_1=m_1$, giving
 $$
-1-(1-m_1)^{1/s}\leq p\leq m_1,\qquad v=1.
+\xi^-=\delta_{m_1},
+\qquad
+\xi^+=(1-m_1)\delta_0+m_1\delta_1.
 $$
-These are sharp: the lower endpoint is attained when $Q_j=m_1$ at every location, and the upper endpoint when $Q_j\in\{0,1\}$ with $\Pr(Q_j=1)=m_1$. The lower endpoint is precisely the naive estimator's probability limit, $p_{\mathrm{ind}}^*$. When $s=1$, both endpoints equal $m_1$.
+Since $f_s(0)=0$ and $f_s(1)=1$, evaluating the two rules gives the sharp bounds
+$$
+\boxed{
+p_{\min}=f_s(m_1)=1-(1-m_1)^{1/s},
+\qquad
+p_{\max}=m_1.
+}
+\qquad (v=1)
+$$
+The lower endpoint is also the probability limit $p_{\mathrm{ind}}^*$ of the naive estimator. For $s=1$, both endpoints coincide at $m_1$.
 
-**Two pools per location ($v=2$).** The first two moments $m_1=\mathbb E(Q_j)$ and $m_2=\mathbb E(Q_j^2)$ are identified. For $0<m_1<1$, define
+**Two pools per location ($v=2$).** The observed moments are $m_1=\mathbb E(Q_j)$ and $m_2=\mathbb E(Q_j^2)$. The lower representation is a left Gauss--Radau rule on $\{0,b_Q\}$; matching its first two moments gives
 $$
+m_1=w_Qb_Q,\qquad m_2=w_Qb_Q^2
+\quad\Longrightarrow\quad
 b_Q=\frac{m_2}{m_1},\qquad
-b_Y=\frac{1-2m_1+m_2}{1-m_1}.
+w_Q=\frac{m_1}{b_Q}.
 $$
-Then the sharp bounds are
+Thus
 $$
-\frac{m_1}{b_Q}\left\{1-(1-b_Q)^{\frac{1}{s}}\right\}
-\leq p\leq
-1- (1-m_1) \,b_Y^{\frac{1}{s}-1}.
+\xi^-=\left(1-\frac{m_1}{b_Q}\right)\delta_0
++\frac{m_1}{b_Q}\delta_{b_Q}.
 $$
-The lower endpoint is attained by $Q_j\in\{0,b_Q\}$, with $\Pr(Q_j=b_Q)=m_1/b_Q$. The upper endpoint is attained by $Y_j=1-Q_j\in\{0,b_Y\}$, with $\Pr(Y_j=b_Y)=(1-m_1)/b_Y$.
-
-**Proof** Put $g(q)=f_s(q)/q$ for $q>0$, with its continuous value at $q=0$. This function is convex. Indeed, for $0<\frac 1s \leq1$,
+The upper representation is a right Gauss--Radau rule supported on $\{a_Q,1\}$. Writing $Y_j=1-Q_j$, its reflected support is $\{0,b_Y\}$, where $b_Y=1-a_Q$. Applying the same moment-matching equations to $Y_j$ gives
 $$
-g(q)=\frac 1s \int_0^1(1-tq)^{\frac 1s -1}\,dt,
+\mathbb E(Y_j)=1-m_1,\qquad
+\mathbb E(Y_j^2)=1-2m_1+m_2,
 $$
-and each integrand is convex in $q$ (constant if $s=1$). The tangent inequality at $b_Q$, multiplied by $Q_j\geq0$ and averaged, therefore gives
+and hence
 $$
+b_Y=\frac{1-2m_1+m_2}{1-m_1},\qquad
+w_Y=\frac{1-m_1}{b_Y},\qquad a_Q=1-b_Y.
+$$
+Therefore
+$$
+\xi^+=w_Y\delta_{1-b_Y}+(1-w_Y)\delta_1.
+$$
+Evaluating $f_s$ under the two representations gives
+$$
+\boxed{
 \begin{aligned}
-\mathbb E\{f_s(Q_j)\}
-&\geq m_1g(b_Q)
-+g'(b_Q)\{\mathbb E(Q_j^2)-b_Q\mathbb E(Q_j)\}\\
-&=m_1g(b_Q).
+p_{\min}
+&=\frac{m_1}{b_Q}f_s(b_Q)
+=\frac{m_1}{b_Q}\left\{1-(1-b_Q)^{1/s}\right\},\\
+p_{\max}
+&=w_Yf_s(1-b_Y)+(1-w_Y)f_s(1)
+=1-(1-m_1)b_Y^{1/s-1}.
 \end{aligned}
+\qquad (v=2)
+}
 $$
-This is the claimed lower bound; equality holds for the proposed distribution on $\{0,b_Q\}$ because its first two moments are $m_1$ and $m_2=m_1b_Q$.
-
-For the other endpoint, let $Y_j=1-Q_j$, so $\mathbb E(Y_j)=1-m_1$ and $\mathbb E(Y_j^2) = (1-m_1)b_Y$. Since $h(y)=y^{\frac 1s -1}$ is convex for $y>0$, the tangent inequality at $b_Y$, multiplied by $Y_j$ (and extended to $Y_j=0$ by continuity), yields
-$$
-\begin{aligned}
-\mathbb E(Y_j^{\frac 1s })
-&\geq (1-m_1)\,h(b_Y)
-+h'(b_Y)\{\mathbb E(Y_j^2)-b_Y(1-m_1)\}\\
-&=(1-m_1)\,b_Y^{\frac 1s -1}.
-\end{aligned}
-$$
-Thus $p=1-\mathbb E(Y_j^{\frac 1s })\leq1-(1-m_1)\,b_Y^{\frac 1s -1}$. Equality is attained by the stated $\{0,b_Y\}$ distribution.
-
-The cases $m_1=0$ or $m_1=1$ identify prevalence directly; other degenerate cases follow by continuity.
+These are sharp because both quadrature rules reproduce $m_0=1,m_1,m_2$ and are the principal representations specified by the preceding theorem. The formulas assume $0<m_1<1$ and an interior moment vector; at boundary moment vectors the unique compatible distribution gives coinciding bounds, with the expressions above interpreted by continuity where appropriate.
 
 **Three pools per location ($v=3$).** Now the lower rule has two interior nodes and the upper rule has one interior node plus the endpoints $0$ and $1$. For an interior moment sequence, set
 $$
