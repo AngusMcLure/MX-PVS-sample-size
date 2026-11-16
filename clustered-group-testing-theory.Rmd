@@ -843,19 +843,6 @@ For example, when $v\geq2$ and the only possible counts are $0$ and $v$, the cou
 
 **Computation.** For an interior moment vector, construct the two quadrature rules in the table for the moment functional $L(q^k)=m_k$. The nodes and weights are determined entirely by those moments. Evaluating $f_s$ at the nodes and summing with the corresponding weights gives the sharp bounds. For moment-to-quadrature algorithms see Gautschi (2004, Section 1.4.2) and, for a binomial-mixture application, D'Haultfœuille and Rathelot (2017, Section 2.3). At larger $v$, direct inversion of raw-moment matrices can be ill-conditioned. Algorithms based on orthogonal-polynomial recurrences are preferable, with checks that the reconstructed moments agree with $m_0,\ldots,m_v$, all nodes lie in $[0,1]$, and weights are nonnegative (Gautschi, 2004).
 
-**Polynomial envelopes.** A polynomial $h(q)=\sum_{k=0}^v h_kq^k$ has the same expectation $\sum_{k=0}^v h_km_k$ under every compatible distribution. A polynomial below $f_s$ therefore gives a lower bound on prevalence, and one above $f_s$ gives an upper bound. Generalised moment-problem duality (Krein and Nudelman, 1977, chapter *The abstract $L$-problem, duality principle, and some applications*) gives equality after optimisation over these polynomials:
-$$
-\begin{aligned}
-p_{\min}(\boldsymbol\pi)
-&=\sup_{\substack{\deg h\leq v\\h(q)\leq f_s(q)\;\forall q\in[0,1]}}
-  \sum_{k=0}^v h_km_k,\\
-p_{\max}(\boldsymbol\pi)
-&=\inf_{\substack{\deg h\leq v\\h(q)\geq f_s(q)\;\forall q\in[0,1]}}
-  \sum_{k=0}^v h_km_k,
-\end{aligned}
-\qquad h(q)=\sum_{k=0}^v h_kq^k.
-$$
-
 ## Explicit sharp bounds for one or two pools per location
 
 For $v\leq 2$, the support patterns in the preceding theorem yield closed-form expressions for the sharp bounds. We obtain the quadrature nodes and weights by matching the identified moments; extremality follows directly from the principal-representation theorem.
@@ -872,6 +859,8 @@ p_{\min}=f_s(m_1)=1-(1-m_1)^{1/s},
 \qquad
 p_{\max}=m_1.
 $$
+For $s>1$ and $0<m_1<1$, convexity gives a geometric explanation. The tangent to $f_s$ at $m_1$ lies below the curve. Since $\mathbb E(Q_j)=m_1$, the expected height of this line is $f_s(m_1)$ under every compatible distribution, and $\xi^-$ attains equality by placing all its mass at the point of tangency. The chord joining the endpoints is the line $h(q)=q$. It lies above the curve and has expected height $m_1$. The distribution $\xi^+$ attains equality because its mass is concentrated at the two endpoints where the chord meets the curve.
+
 The lower endpoint is also the probability limit $p_{\mathrm{ind}}^*$ of the naive estimator. For $s=1$, both endpoints coincide at $m_1$.
 
 **Two pools per location ($v=2$).** The observed moments are $m_1=\mathbb E(Q_j)$ and $m_2=\mathbb E(Q_j^2)$. The lower principal representation is a left Gauss--Radau rule supported on $x_1^-=0$ and an interior node $x_2^-$. Matching the moments gives
