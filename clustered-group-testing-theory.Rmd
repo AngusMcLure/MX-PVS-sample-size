@@ -846,11 +846,10 @@ $$
 $$
 where $\delta_x$ denotes unit mass at $x$ and the positive weights and nodes reproduce the moments $m_0,\ldots,m_v$. Then the sharp bounds are
 $$
-\boxed{
+
 p_{\min}(\boldsymbol\pi)=\sum_{i=1}^{N_-}w_i^-f_s(x_i^-),
 \qquad
-p_{\max}(\boldsymbol\pi)=\sum_{i=1}^{N_+}w_i^+f_s(x_i^+).
-}
+p_{\max}(\boldsymbol\pi)=\sum_{i=1}^{N_+}w_i^+f_s(x_i^+).
 $$
 The principal representations depend on the observed moments, not on the function $f_s$ being evaluated. Their nodes follow the standard support patterns:
 
@@ -873,9 +872,9 @@ The lower and upper principal representations therefore attain, respectively, th
 
 **Boundary cases and numerical stability.** For a boundary moment vector, the compatible mixing distribution is unique and the bounds coincide; quadrature should then use its reduced support. At larger $v$, direct inversion of raw-moment matrices can be ill-conditioned. Established algorithms based on orthogonal-polynomial recurrences are preferable, with checks that the reconstructed moments agree with $m_0,\ldots,m_v$, all nodes lie in $[0,1]$, and weights are nonnegative (Gautschi, 2004).
 
-## Explicit sharp bounds for one or two pools per location
+## Explicit sharp bounds for up to three pools per location
 
-The general quadrature construction simplifies to closed-form expressions for $v=1$ and $v=2$, which we present to illustrate how the sharp bounds arise directly from the observable moments. The proofs use the same convexity and tangent-line method as **Sharp bounds on asymptotic underestimation for fixed mean and ICC** above, but now the moment constraints are supplied by the observable law rather than by known prevalence and ICC.
+The general quadrature construction simplifies to closed-form expressions for $v\leq 3$, which we present to illustrate how the sharp bounds arise directly from the observable moments. The proofs use the same convexity and tangent-line method as **Sharp bounds on asymptotic underestimation for fixed mean and ICC** above, but now the moment constraints are supplied by the observable law rather than by known prevalence and ICC.
 
 **One pool per location ($v=1$).** Only $m_1=\mathbb E(Q_j)=\pi_1$ is identified. Since $f_s$ is convex and $f_s(q)\leq q$ on $[0,1]$, Jensen's inequality and the chord bound imply
 $$
