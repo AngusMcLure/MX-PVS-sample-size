@@ -968,7 +968,7 @@ The width bound now gives the asserted rate. $\square$
 
 The beta-generated interval narrows from 11.15 to 1.49 percentage points as $v$ increases from 1 to 8. Over the same range the worst-case width falls only from 83.95 to 71.23 percentage points. Even at $v=8$, however, the sharp interval spans prevalences from about 0.92% to 2.41% around the true value of 1%.
 
-For the calculation, $(1-Q_j)^k=(1-P_j)^{25k}$ has expectation $B(0.09,8.91+25k)/B(0.09,8.91)$, where $B$ is the beta function. These moments for $k=0,\ldots,v$ determine the two principal representations. The worst-case column uses a numerical minimax polynomial approximation (Remez algorithm) to evaluate $2E_v(f_{25})$.
+For the calculation, $(1-Q_j)^k=(1-P_j)^{25k}$ has expectation $B(0.09,8.91+25k)/B(0.09,8.91)$, where $B$ is the beta function. These moments for $k=0,\ldots,v$ determine the two principal representations. The worst-case column uses the Remez algorithm for minimax polynomial approximation (Pachón and Trefethen, 2009, Section 2) to evaluate $2E_v(f_{25})$.
 
 Increasing the number of locations $w$ at fixed $v$ improves estimation of the same count law. Even with infinitely many locations, the identification widths in the table persist. With finitely many locations, confidence intervals must also account for uncertainty in the observed count frequencies.
 
@@ -1126,6 +1126,7 @@ Both intervals contain the true prevalence of $1\%$. For this beta-generated mom
 - D'Haultfœuille, X., and Rathelot, R. (2017). Measuring segregation on small units: A partial identification analysis. *Quantitative Economics*, **8**(1), 39–73. https://doi.org/10.3982/QE501 (especially Section 2.3 on principal representations and their computation).
 - Karlin, S., and Studden, W. J. (1966). *Tchebycheff Systems: With Applications in Analysis and Statistics*. Interscience Publishers, New York (especially pp. 55--56 on principal representations).
 - Gautschi, W. (2004). *Orthogonal Polynomials: Computation and Approximation*. Oxford University Press (especially Section 1.4.2 on Gauss, Gauss--Radau, and Gauss--Lobatto quadrature). https://doi.org/10.1093/oso/9780198506720.001.0001
+- Pachón, R., and Trefethen, L. N. (2009). Barycentric-Remez algorithms for best polynomial approximation in the chebfun system. *BIT Numerical Mathematics*, **49**, 721–741. https://doi.org/10.1007/s10543-009-0240-1
 - Krein, M. G., and Nudelman, A. A. (1977). *The Markov Moment Problem and Extremal Problems*. American Mathematical Society, Translations of Mathematical Monographs, Vol. 50. https://doi.org/10.1090/mmono/050
 - Huybrechs, D. (2022). On the computation of Gaussian quadrature rules for Chebyshev sets of linearly independent functions. *SIAM Journal on Numerical Analysis*, **60**(3), 1168–1192. https://doi.org/10.1137/21M1456935 (especially Sections 2--3).
 
