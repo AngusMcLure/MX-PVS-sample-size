@@ -971,43 +971,6 @@ The width need not increase monotonically with prevalence. For $v=1$ the identif
 
 Increasing the number of locations $w$ at fixed $v$ improves estimation of the same count law. Even with infinitely many locations, the identification widths in the table persist. With finitely many locations, confidence intervals must also account for uncertainty in the observed count frequencies.
 
-## How identification improves with smaller pools
-
-Fix the distribution of location prevalence $P_j$ and the number $v$ of pools tested per location. Let $I_{s,v}=[L_{s,v},U_{s,v}]$ denote the sharp prevalence interval obtained from the population count law for pool size $s$. Each design therefore uses the count law it would generate in the same population.
-
-**Theorem (Nested identification intervals as pool size decreases).** For integers $1\leq t<s$ and $v\geq1$,
-$$
-L_{s,v}\leq L_{t,v}\leq p\leq U_{t,v}\leq U_{s,v}.
-$$
-At $t=1$ both endpoints equal $p$.
-
-For one pool per location there is a direct explanation. Write $X=1-P_j$. The one-pool formulas give
-$$
-L_{s,1}=1-\{\mathbb E(X^s)\}^{1/s},
-\qquad U_{s,1}=1-\mathbb E(X^s).
-$$
-Since $0\leq X\leq1$, decreasing $s$ increases $\mathbb E(X^s)$ and decreases the power mean $\{\mathbb E(X^s)\}^{1/s}$. Thus the upper bound falls and the lower bound rises, with weak inequalities in both cases.
-
-**Proof for arbitrary $v$.** The probability of a negative pool conditional on $X=x$ is $x^s$. The count law therefore identifies the expectations of $1,X^s,\ldots,X^{vs}$. Our target is $p=1-\mathbb E(X)$. The case $t=1$ follows immediately, so take $1<t<s$.
-
-First suppose the size-$s$ moment vector is interior. Take the nodes of either of its two principal representations, expressed on the $x$ scale. Interpolate the target function $x$ at these nodes in the span of $1,x^s,\ldots,x^{vs}$, also matching its derivative at each interior node. The support patterns in the sharp-bounds theorem give $v+1$ interpolation conditions. Denote the interpolant by $H_s$. We show that the same interpolation conditions in the span of $1,x^t,\ldots,x^{vt}$ give a function $H_t$ lying pointwise between $x$ and $H_s(x)$.
-
-To see this, lower the exponents $s,2s,\ldots,vs$ to $t,2t,\ldots,vt$ one at a time, from smallest to largest. At each step a single exponent $a$ moves to $b<a$ without passing a neighbouring exponent. Let $H$ and $\widetilde H$ be the interpolants before and after this step. The interpolation system is square. Its homogeneous system has only the zero solution because, by Descartes' rule of signs, a nonzero polynomial with at most $v+1$ terms has at most $v$ positive roots counted with multiplicity. If zero is a prescribed node, its value fixes the constant term, leaving at most $v$ terms in the homogeneous interpolation problem.
-
-Consider the three polynomials
-$$
-H(x)-x,\qquad \widetilde H(x)-x,\qquad H(x)-\widetilde H(x).
-$$
-Each vanishes at every prescribed node, with a zero of multiplicity at least two at each interior node. Each has at most $v+2$ possible terms. If zero is a node, discard the vanishing constant term from all three. In either case the prescribed positive roots number exactly one fewer than the number of possible terms, counting multiplicity. Hence Descartes' rule forces every possible coefficient of each nonzero polynomial to occur, with alternating signs in increasing exponent order. The first two polynomials are nonzero because their coefficient of $x$ is $-1$. In particular the coefficient of $x^a$ in $H$ is nonzero, so the third polynomial is nonzero as well.
-
-The first two coefficient lists agree in sign at $x$, which has the same rank in both. The first and third agree at $x^a$, which has the same rank because the third list replaces the exponent $1$ by $b$ below $a$. Alternation therefore gives the same sign near zero for all three polynomials. All their interior roots are the prescribed double roots, so their signs agree throughout $(0,1)$ away from those nodes. It follows that $\widetilde H(x)$ lies between $x$ and $H(x)$ on $[0,1]$. Iterating proves the claimed ordering of $H_t$ and $H_s$.
-
-To conclude, the size-$s$ rule containing zero gives $H_s(x)\leq x$ (the first nonzero term of $H_s-x$ is $-x$). The other rule gives $H_s(x)\geq x$ (its constant term is positive by alternation). Each bound on $\mathbb E(X)$ is sharp because the corresponding rule is supported at points of equality and reproduces the size-$s$ moments. For either rule, the expectation of $H_t$ is fixed by the size-$t$ count law and equals its expectation under the true population. The pointwise ordering therefore gives a lower bound at least as large as the old lower bound, or an upper bound at most as large as the old upper bound, respectively. Subtracting from one gives the stated nesting for prevalence.
-
-For a boundary moment vector, mix a fraction $\varepsilon>0$ of a uniform distribution on $[0,1]$ into the true law of $X$ and let $\varepsilon\downarrow0$. The perturbed moment vectors are interior. At either pool size the sharp endpoints converge to the original endpoints. Mixing the same uniform component into an original extremiser gives a feasible approximating sequence, and every weak limit of perturbed extremisers matches the original moments. This extends the inequalities to the boundary. $\square$
-
-**Interpretation.** With two pools per location in the preceding beta example ($p=1\%$, $\rho=0.1$), the sharp interval narrows from $[0.719\%,7.275\%]$ at $s=25$ to $[0.961\%,1.886\%]$ at $s=5$, and collapses to $[1\%,1\%]$ at $s=1$. This comparison holds the number of pool tests per location fixed. Smaller pools also sample fewer individuals per location, so finite-sample precision is a separate design consideration.
-
 ## Identification with multiple pool sizes
 
 The preceding identification results assume that all $v$ pools at a location have the same size $s$. We now allow different pool sizes, retaining the sampling assumptions and notation from **Arbitrary mixtures of pool sizes: asymptotic bias and bounds**. The earlier mixed-size result concerns the asymptotic bias of an estimator that *ignores* clustering; here we instead ask what is identifiable from the *joint location-level count distribution* when the mixing distribution is unrestricted.
@@ -1109,6 +1072,46 @@ has orientation $(-1)^d$. By the Markov--Krein principal-representation theorem,
 
 The bounds can likewise be computed from the identified moments by constructing the corresponding *generalised Gaussian quadrature* rules for the Chebyshev system $1,x^{\lambda_1},\ldots,x^{\lambda_d}$. Unlike ordinary quadrature for consecutive polynomial moments, the interior nodes need not be roots of orthogonal polynomials, so the preceding standard Gauss--Radau--Lobatto algorithms do not apply directly. Huybrechs (2022, Sections 2--3) gives a constructive continuation algorithm for generalised Gaussian quadrature for complete Chebyshev systems, based on successive principal and canonical representations. The required inputs here are precisely the basis functions $x^{\lambda_i}$ and their identified moments $m_{\lambda_i}$; the computed nodes and weights must reproduce these moments and obey the support patterns of the theorem. Thus no new quadrature algorithm is needed for the mixed-pool-size identification problem, although numerical stability and boundary moment vectors still require attention.
 
+### How identification improves with smaller pools
+
+Fix the population distribution of $X_j=1-P_j$. For a design with exponent set $\mathcal A$, write $I_{\mathcal A}$ for the sharp prevalence interval obtained from the joint count law that this population generates. The mixed-size formulation gives a comparison in terms of the *distinct* exponents identified by each design.
+
+**Theorem (Comparison of designs by their identified exponents).** Let the original and proposed designs identify the positive exponents
+$$
+\lambda_1<\cdots<\lambda_d
+\qquad\text{and}\qquad
+\gamma_1<\cdots<\gamma_e,
+$$
+respectively, with exponent sets $\mathcal A$ and $\mathcal B$ including zero. If $e\geq d$ and $\gamma_i\leq\lambda_i$ for $i=1,\ldots,d$, then $I_{\mathcal B}\subseteq I_{\mathcal A}$. Thus each endpoint moves weakly towards the true prevalence. If $\gamma_1=1$, the proposed design identifies $p$ exactly.
+
+**Proof.** The case $\gamma_1=1$ follows from $p=1-m_1$. Otherwise it suffices to use the first $d$ positive exponents of $\mathcal B$, since imposing further observed moments can only narrow its interval. Suppose first that the original moment vector is interior. Fix the nodes of either of its principal representations. At each node interpolate the function $x$, also matching its derivative at each interior node. The support patterns above give $d+1$ conditions. Let $H_{\mathcal A}$ be the interpolant in the span of $1,x^{\lambda_1},\ldots,x^{\lambda_d}$.
+
+Replace $\lambda_i$ by $\gamma_i$ in increasing order of $i$, skipping equal exponents. At each step the exponent $a=\lambda_i$ decreases to $b=\gamma_i$ without crossing a neighbouring exponent. Write $H$ and $\widetilde H$ for the interpolants at the same nodes before and after that step. Each interpolation system is square and nonsingular. Indeed, by Descartes' rule of signs a nonzero polynomial with at most $d+1$ terms has at most $d$ positive roots counted with multiplicity. If zero is a node, its value fixes the constant term, leaving at most $d$ terms to satisfy the other $d$ homogeneous conditions.
+
+Consider the three polynomials
+$$
+H(x)-x,\qquad \widetilde H(x)-x,\qquad H(x)-\widetilde H(x).
+$$
+Each vanishes at every prescribed node, with a zero of multiplicity at least two at each interior node. Each has at most $d+2$ possible terms. If zero is a node, discard the vanishing constant term from all three. In either case the prescribed positive roots number exactly one fewer than the number of possible terms, counting multiplicity. Hence Descartes' rule forces every possible coefficient of each nonzero polynomial to occur, with alternating signs in increasing exponent order. The first two polynomials are nonzero because their coefficient of $x$ is $-1$. In particular the coefficient of $x^a$ in $H$ is nonzero, so the third polynomial is nonzero as well.
+
+The first two coefficient lists agree in sign at $x$, which has the same rank in both. The first and third agree at $x^a$, which has the same rank because the third list replaces the exponent $1$ by $b$ below $a$. Alternation therefore gives the same sign near zero for all three polynomials. All their interior roots are the prescribed double roots, so their signs agree throughout $(0,1)$ away from those nodes. It follows that $\widetilde H(x)$ lies between $x$ and $H(x)$ on $[0,1]$. Iterating shows that the interpolant in the new powers lies between $x$ and $H_{\mathcal A}$.
+
+Exactly one original principal representation contains zero. For its interpolant, $H_{\mathcal A}-x$ has leading term $-x$ at zero and is nonpositive throughout $[0,1]$. For the other representation the constant term is positive by alternation, giving an upper bound throughout. These bounds on $\mathbb E(X_j)$ are sharp because each original rule matches the observed moments and puts all its mass at points of equality. After the exponent replacements, the new interpolant lies pointwise between $x$ and the original interpolant. Its expectation is fixed by the proposed design and can be evaluated under the same true population. Consequently the new lower bound is at least the original lower bound, and the new upper bound is at most the original upper bound. Subtracting from one gives nesting for prevalence.
+
+For a boundary moment vector, mix a fraction $\varepsilon>0$ of the uniform law on $[0,1]$ into the true law of $X_j$ and let $\varepsilon\downarrow0$. The perturbed moment vectors are interior. For each design, mixing the same uniform component into any original extremiser gives a feasible approximating sequence. Conversely, by compactness, limits of subsequences of perturbed extremisers are feasible for the original moments. Together these facts give convergence of both sharp endpoints and extend nesting to the boundary. $\square$
+
+**Corollary (Reducing pool sizes in an equal-size design).** Suppose the original design has $v$ pools of size $s$. Replace any of them by smaller pools, keeping $v$ fixed. List the new pool sizes as $t_1,\ldots,t_v$, with each $t_i\leq s$. The partial sums $t_1+\cdots+t_i$ are $v$ distinct identified exponents, and the $i$th sum is at most $is=\lambda_i$. Hence the $i$th smallest positive exponent of the new design is also at most $is$, and the theorem applies. In particular, for $v$ equal pools of size $t<s$, the endpoints satisfy
+$$
+L_{s,v}\leq L_{t,v}\leq p\leq U_{t,v}\leq U_{s,v}.
+$$
+For $v=1$ this is also immediate from $L_{s,1}=1-\{\mathbb E(X_j^s)\}^{1/s}$ and $U_{s,1}=1-\mathbb E(X_j^s)$, since decreasing $s$ decreases the power mean and increases the raw moment. With two pools in the beta example ($p=1\%$, $\rho=0.1$), reducing both sizes from 25 to 5 narrows the interval from $[0.719\%,7.275\%]$ to $[0.961\%,1.886\%]$. Individual testing gives $[1\%,1\%]$.
+
+**Why a mixed-size replacement can widen the bounds.** For a mixed design, reducing a pool size can cause previously distinct exponents to coincide. For example, replacing the size-three pool in $(2,3)$ by a size-two pool changes the positive exponents from $\{2,3,5\}$ to $\{2,4\}$. To see the consequence exactly, give $X_j$ equal mass at $0$ and $1/2$. Under the original design the nonnegative polynomial
+$$
+x^2(x-\tfrac12)^2(x+1)=x^5-\tfrac34 x^3+\tfrac14 x^2
+$$
+has known expectation zero. Every compatible distribution is therefore supported on $\{0,1/2\}$, and $m_2=1/8$ fixes the weights, identifying $p=3/4$. Under the new design only the first two moments of $Z=X_j^2$ are known. They are $\mathbb E(Z)=1/8$ and $\mathbb E(Z^2)=1/32$. The law giving $Z$ mass $49/50$ at $3/28$ and $1/50$ at $1$ has these same moments and a different $\mathbb E(\sqrt Z)$. The new prevalence interval thus has positive width.
+
 ### Example with two different pool sizes
 
 Consider two pools per location, one of size $10$ and one of size $40$ ($v_1=v_2=1$, $s_1=10$, $s_2=40$). As in the comparison design with two pools of size $25$, a total of 50 individuals is sampled and tested at each location. Here the limiting joint count distribution identifies the exponent set
@@ -1145,14 +1148,15 @@ $$
        +0.7964974\,\delta_1.
 \end{aligned}
 $$
-Because $d=3$ is odd, the lower prevalence bound is $1-\int x\,d\xi^-(x)$ and the upper bound is $1-\int x\,d\xi^+(x)$. The resulting intervals are:
+Because $d=3$ is odd, the lower prevalence bound is $1-\int x\,d\xi^-(x)$ and the upper bound is $1-\int x\,d\xi^+(x)$. The table also shows the effect of replacing the size-$40$ pool by a second size-$10$ pool.
 
 | Pools per location | Individuals per location | Lower bound | Upper bound | Interval width |
 |:--|--:|--:|--:|--:|
 | Two pools of size $25$ | 50 | $0.7189\%$ | $7.2746\%$ | $6.5557$ percentage points |
 | One pool of size $10$ and one of size $40$ | 50 | $0.9002\%$ | $2.8513\%$ | $1.9511$ percentage points |
+| Two pools of size $10$ | 20 | $0.8905\%$ | $3.4534\%$ | $2.5629$ percentage points |
 
-Both intervals contain the true prevalence of $1\%$. For this beta-generated moment sequence, the mixed-size design gives an identification interval approximately $70.2\%$ narrower, despite using the same number of pools and sampled individuals per location. This illustrates a possible benefit of varying pool sizes; it is not a general dominance result, since the identified exponent sets are not nested. Moreover, these are *infinite-location identification intervals*: the comparison does not account for the finite-sample precision with which the different moments can be estimated.
+The comparison theorem guarantees that $(10,40)$ gives an interval contained in that for $(25,25)$ for every population because its two smallest positive exponents, $10$ and $40$, are at most $25$ and $50$, respectively. For this population the width decreases by about 70.2%. Reducing the size-$40$ pool to size $10$ then widens the interval from 1.95 to 2.56 percentage points. The two equal pools identify only exponents $10$ and $20$. These are population identification intervals. With finitely many locations, precision also depends on how accurately the survey estimates the joint count probabilities.
 
 
 ## References for the identification argument
