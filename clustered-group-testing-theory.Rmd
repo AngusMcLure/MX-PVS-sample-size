@@ -928,10 +928,9 @@ $$
 $$
 Equality is attained for some feasible count distribution at each $v$. For each fixed $s\geq2$, the worst-case width satisfies
 $$
-
 \sup_{\boldsymbol\pi\text{ feasible}}
 \{p_{\max}(\boldsymbol\pi)-p_{\min}(\boldsymbol\pi)\}
-=O(v^{-2/s}),\qquad v\to\infty.
+=O(v^{-2/s}),\qquad v\to\infty.
 $$
 
 **Proof.** The count law for $v+1$ pools identifies the same first $v$ moments as the count law for $v$ pools, together with $m_{v+1}$. Its feasible set of mixing distributions is therefore contained in the feasible set for $v$ pools. Taking the minimum and maximum prevalence over these sets gives the nesting inequalities, since the true distribution belongs to both.
@@ -957,7 +956,7 @@ O\left(\sum_{k>v}k^{-1-2\alpha}\right)=O(v^{-2\alpha}).
 $$
 The width bound now gives the asserted rate. $\square$
 
-**Interpretation.** The worst-case width $2E_v(f_s)$ ranges over all feasible count laws. To see how much the count law matters, compare two beta mixing distributions with the same $\rho=0.1$ and pool size $s=25$. At mean prevalence $p=1\%$, $P_j\sim\operatorname{Beta}(0.09,8.91)$, while at $p=50\%$, $P_j\sim\operatorname{Beta}(4.5,4.5)$. Each beta distribution generates the count law for its columns. The sharp intervals then allow every mixing distribution compatible with that law. Widths are in percentage points.
+**Interpretation.** The worst-case width $2E_v(f_s)$ ranges over all feasible count laws. To see how much the count law matters, compare two beta mixing distributions with the same $\rho=0.1$ and pool size $s=25$. At mean prevalence $p=1\%$, $P_j\sim\operatorname{Beta}(0.09,8.91)$, while at $p=50\%$, $P_j\sim\operatorname{Beta}(4.5,4.5)$. For the calculation, if $P_j\sim\operatorname{Beta}(a,b)$, then $\mathbb E[(1-Q_j)^k]=B(a,b+25k)/B(a,b)$, where $B$ is the beta function. These moments for $k=0,\ldots,v$ determine the two principal representations and thus the sharp intervals for prevalence compatible with that law. The worst-case column uses the Remez algorithm for minimax polynomial approximation (Pachón and Trefethen, 2009, Section 2) to evaluate $2E_v(f_{25})$.
 
 | Pools per location $v$ | Sharp interval ($p=1\%$) | Width (pp) | Sharp interval ($p=50\%$) | Width (pp) | Worst-case width $2E_v(f_{25})$ (pp) |
 |--:|--:|--:|--:|--:|--:|
@@ -969,8 +968,6 @@ The width bound now gives the asserted rate. $\square$
 The marginal probability that a pool tests positive is 11.64% in the low-prevalence example and 99.935% in the high-prevalence example. As location prevalence increases, $Q_j=1-(1-P_j)^{25}$ approaches one so quickly that locations with substantially different prevalences can have nearly identical pool positivity. Even with the count law known exactly for $v=8$, the high-prevalence example admits marginal prevalences from 28.42% to 97.77%. Its width of 69.35 percentage points is close to the worst-case width of 71.23, whereas the low-prevalence example has width 1.49.
 
 The width need not increase monotonically with prevalence. For $v=1$ the identified width is $m_1-f_{25}(m_1)$, where $m_1$ is the probability of a positive pool. This width peaks at $m_1=1-25^{-25/24}\approx0.965$ and falls to zero at $m_1=1$, since certainty of a positive pool requires $P_j=1$ almost surely under the model.
-
-For the calculation, if $P_j\sim\operatorname{Beta}(a,b)$, then $\mathbb E[(1-Q_j)^k]=B(a,b+25k)/B(a,b)$, where $B$ is the beta function. These moments for $k=0,\ldots,v$ determine the two principal representations. The worst-case column uses the Remez algorithm for minimax polynomial approximation (Pachón and Trefethen, 2009, Section 2) to evaluate $2E_v(f_{25})$.
 
 Increasing the number of locations $w$ at fixed $v$ improves estimation of the same count law. Even with infinitely many locations, the identification widths in the table persist. With finitely many locations, confidence intervals must also account for uncertainty in the observed count frequencies.
 
