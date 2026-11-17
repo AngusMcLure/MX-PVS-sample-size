@@ -1100,10 +1100,13 @@ Exactly one original principal representation contains zero. For its interpolant
 
 For a boundary moment vector, mix a fraction $\varepsilon>0$ of the uniform law on $[0,1]$ into the true law of $X_j$ and let $\varepsilon\downarrow0$. The perturbed moment vectors are interior. For each design, mixing the same uniform component into any original extremiser gives a feasible approximating sequence. Conversely, by compactness, limits of subsequences of perturbed extremisers are feasible for the original moments. Together these facts give convergence of both sharp endpoints and extend nesting to the boundary. $\square$
 
-**Corollary (Reducing pool sizes in an equal-size design).** Suppose the original design has $v$ pools of size $s$. Replace any of them by smaller pools, keeping $v$ fixed. List the new pool sizes as $t_1,\ldots,t_v$, with each $t_i\leq s$. The partial sums $t_1+\cdots+t_i$ are $v$ distinct identified exponents, and the $i$th sum is at most $is=\lambda_i$. Hence the $i$th smallest positive exponent of the new design is also at most $is$, and the theorem applies. In particular, for $v$ equal pools of size $t<s$, the endpoints satisfy
+**Corollary (Smaller equal-sized pools).** Fix the distribution of location prevalence and the number $v$ of pools per location. Write $[L_{s,v},U_{s,v}]$ for the sharp prevalence interval when every pool has size $s$. If every pool instead has size $t$, with $1\leq t<s$, then
 $$
 L_{s,v}\leq L_{t,v}\leq p\leq U_{t,v}\leq U_{s,v}.
 $$
+
+**Proof.** The two designs each identify $v$ distinct positive exponents. In increasing order these are $is$ and $it$, respectively, for $i=1,\ldots,v$. Since $it<is$ for every $i$, the comparison theorem gives the stated inclusion. $\square$
+
 For $v=1$ this is also immediate from $L_{s,1}=1-\{\mathbb E(X_j^s)\}^{1/s}$ and $U_{s,1}=1-\mathbb E(X_j^s)$, since decreasing $s$ decreases the power mean and increases the raw moment. With two pools in the beta example ($p=1\%$, $\rho=0.1$), reducing both sizes from 25 to 5 narrows the interval from $[0.719\%,7.275\%]$ to $[0.961\%,1.886\%]$. Individual testing gives $[1\%,1\%]$.
 
 **Why a mixed-size replacement can widen the bounds.** For a mixed design, reducing a pool size can cause previously distinct exponents to coincide. For example, replacing the size-three pool in $(2,3)$ by a size-two pool changes the positive exponents from $\{2,3,5\}$ to $\{2,4\}$. To see the consequence exactly, give $X_j$ equal mass at $0$ and $1/2$. Under the original design the nonnegative polynomial
