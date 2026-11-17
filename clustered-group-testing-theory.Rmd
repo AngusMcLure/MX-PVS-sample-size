@@ -922,19 +922,16 @@ E_v(f_s)=\inf_{\deg h\leq v}\sup_{q\in[0,1]}|f_s(q)-h(q)|.
 $$
 Then
 $$
-\boxed{
 0\leq p_{\max}(\boldsymbol\pi^{(v)})
 -p_{\min}(\boldsymbol\pi^{(v)})
 \leq2E_v(f_s).
-}
 $$
 Equality is attained for some feasible count distribution at each $v$. For each fixed $s\geq2$, the worst-case width satisfies
 $$
-\boxed{
+
 \sup_{\boldsymbol\pi\text{ feasible}}
 \{p_{\max}(\boldsymbol\pi)-p_{\min}(\boldsymbol\pi)\}
-=O(v^{-2/s}),\qquad v\to\infty.
-}
+=O(v^{-2/s}),\qquad v\to\infty.
 $$
 
 **Proof.** The count law for $v+1$ pools identifies the same first $v$ moments as the count law for $v$ pools, together with $m_{v+1}$. Its feasible set of mixing distributions is therefore contained in the feasible set for $v$ pools. Taking the minimum and maximum prevalence over these sets gives the nesting inequalities, since the true distribution belongs to both.
@@ -960,7 +957,7 @@ O\left(\sum_{k>v}k^{-1-2\alpha}\right)=O(v^{-2\alpha}).
 $$
 The width bound now gives the asserted rate. $\square$
 
-**Interpretation.** The rate bounds the widest interval across feasible count distributions. For large pools the exponent $2/s$ is small, so the bound allows identification to improve slowly as $v$ increases. Increasing the number of locations $w$ at fixed $v$ improves estimation of the same moments. A positive identification width therefore persists even with infinitely many locations. Finite-sample confidence intervals must also account for uncertainty in the observed location-count frequencies.
+**Interpretation.** The rate bounds the widest interval across feasible count distributions. The width may be considerably narrower for specific count distributions. However, in general the count distribution is not not known and is estimated with samples from a number of locations, $w$. However the above bound shows that a positive identification width therefore persists even with infinitely many locations. Moreover, for large pools the exponent $2/s$ is small, so the bound improve only slowly as $v$ increases. Finite-sample confidence intervals must also account for uncertainty in the observed location-count frequencies.
 
 ## Identification with multiple pool sizes
 
