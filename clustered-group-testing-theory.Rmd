@@ -971,6 +971,43 @@ The width need not increase monotonically with prevalence. For $v=1$ the identif
 
 Increasing the number of locations $w$ at fixed $v$ improves estimation of the same count law. Even with infinitely many locations, the identification widths in the table persist. With finitely many locations, confidence intervals must also account for uncertainty in the observed count frequencies.
 
+## How identification improves with smaller pools
+
+Fix the distribution of location prevalence $P_j$ and the number $v$ of pools tested per location. Let $I_{s,v}=[L_{s,v},U_{s,v}]$ denote the sharp prevalence interval obtained from the population count law for pool size $s$. Each design therefore uses the count law it would generate in the same population.
+
+**Theorem (Nested identification intervals as pool size decreases).** For integers $1\leq t<s$ and $v\geq1$,
+$$
+L_{s,v}\leq L_{t,v}\leq p\leq U_{t,v}\leq U_{s,v}.
+$$
+At $t=1$ both endpoints equal $p$.
+
+For one pool per location there is a direct explanation. Write $X=1-P_j$. The one-pool formulas give
+$$
+L_{s,1}=1-\{\mathbb E(X^s)\}^{1/s},
+\qquad U_{s,1}=1-\mathbb E(X^s).
+$$
+Since $0\leq X\leq1$, decreasing $s$ increases $\mathbb E(X^s)$ and decreases the power mean $\{\mathbb E(X^s)\}^{1/s}$. Thus the upper bound falls and the lower bound rises, with weak inequalities in both cases.
+
+**Proof for arbitrary $v$.** The probability of a negative pool conditional on $X=x$ is $x^s$. The count law therefore identifies the expectations of $1,X^s,\ldots,X^{vs}$. Our target is $p=1-\mathbb E(X)$. The case $t=1$ follows immediately, so take $1<t<s$.
+
+First suppose the size-$s$ moment vector is interior. Take the nodes of either of its two principal representations, expressed on the $x$ scale. Interpolate the target function $x$ at these nodes in the span of $1,x^s,\ldots,x^{vs}$, also matching its derivative at each interior node. The support patterns in the sharp-bounds theorem give $v+1$ interpolation conditions. Denote the interpolant by $H_s$. We show that the same interpolation conditions in the span of $1,x^t,\ldots,x^{vt}$ give a function $H_t$ lying pointwise between $x$ and $H_s(x)$.
+
+To see this, lower the exponents $s,2s,\ldots,vs$ to $t,2t,\ldots,vt$ one at a time, from smallest to largest. At each step a single exponent $a$ moves to $b<a$ without passing a neighbouring exponent. Let $H$ and $\widetilde H$ be the interpolants before and after this step. The interpolation system is square. Its homogeneous system has only the zero solution because, by Descartes' rule of signs, a nonzero polynomial with at most $v+1$ terms has at most $v$ positive roots counted with multiplicity. If zero is a prescribed node, its value fixes the constant term, leaving at most $v$ terms in the homogeneous interpolation problem.
+
+Consider the three polynomials
+$$
+H(x)-x,\qquad \widetilde H(x)-x,\qquad H(x)-\widetilde H(x).
+$$
+Each vanishes at every prescribed node, with a zero of multiplicity at least two at each interior node. Each has at most $v+2$ possible terms. If zero is a node, discard the vanishing constant term from all three. In either case the prescribed positive roots number exactly one fewer than the number of possible terms, counting multiplicity. Hence Descartes' rule forces every possible coefficient of each nonzero polynomial to occur, with alternating signs in increasing exponent order. The first two polynomials are nonzero because their coefficient of $x$ is $-1$. In particular the coefficient of $x^a$ in $H$ is nonzero, so the third polynomial is nonzero as well.
+
+The first two coefficient lists agree in sign at $x$, which has the same rank in both. The first and third agree at $x^a$, which has the same rank because the third list replaces the exponent $1$ by $b$ below $a$. Alternation therefore gives the same sign near zero for all three polynomials. All their interior roots are the prescribed double roots, so their signs agree throughout $(0,1)$ away from those nodes. It follows that $\widetilde H(x)$ lies between $x$ and $H(x)$ on $[0,1]$. Iterating proves the claimed ordering of $H_t$ and $H_s$.
+
+To conclude, the size-$s$ rule containing zero gives $H_s(x)\leq x$ (the first nonzero term of $H_s-x$ is $-x$). The other rule gives $H_s(x)\geq x$ (its constant term is positive by alternation). Each bound on $\mathbb E(X)$ is sharp because the corresponding rule is supported at points of equality and reproduces the size-$s$ moments. For either rule, the expectation of $H_t$ is fixed by the size-$t$ count law and equals its expectation under the true population. The pointwise ordering therefore gives a lower bound at least as large as the old lower bound, or an upper bound at most as large as the old upper bound, respectively. Subtracting from one gives the stated nesting for prevalence.
+
+For a boundary moment vector, mix a fraction $\varepsilon>0$ of a uniform distribution on $[0,1]$ into the true law of $X$ and let $\varepsilon\downarrow0$. The perturbed moment vectors are interior. At either pool size the sharp endpoints converge to the original endpoints. Mixing the same uniform component into an original extremiser gives a feasible approximating sequence, and every weak limit of perturbed extremisers matches the original moments. This extends the inequalities to the boundary. $\square$
+
+**Interpretation.** With two pools per location in the preceding beta example ($p=1\%$, $\rho=0.1$), the sharp interval narrows from $[0.719\%,7.275\%]$ at $s=25$ to $[0.961\%,1.886\%]$ at $s=5$, and collapses to $[1\%,1\%]$ at $s=1$. This comparison holds the number of pool tests per location fixed. Smaller pools also sample fewer individuals per location, so finite-sample precision is a separate design consideration.
+
 ## Identification with multiple pool sizes
 
 The preceding identification results assume that all $v$ pools at a location have the same size $s$. We now allow different pool sizes, retaining the sampling assumptions and notation from **Arbitrary mixtures of pool sizes: asymptotic bias and bounds**. The earlier mixed-size result concerns the asymptotic bias of an estimator that *ignores* clustering; here we instead ask what is identifiable from the *joint location-level count distribution* when the mixing distribution is unrestricted.
