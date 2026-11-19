@@ -7,43 +7,91 @@ location_cdf_grid <- function(prevalence, pools, pool_size) {
                        lower.tail = FALSE), nrow = pools)
 }
 
-# A dual certificate remains a lower bound after repairing its multipliers.
-# kernel_lo and kernel_hi bound each column throughout an entire prevalence cell.
-kernel_envelope_min <- function(cost, kernel_lo, kernel_hi, lower, upper) {
-  v <- length(lower)
-  # For y,z >= 0 and arbitrary t, t + y'lower - z'upper is a
-  # lower bound whenever t + y'kernel_hi - z'kernel_lo <= cost.
-  constraints <- rbind(kernel_hi, kernel_lo, 1)
-  directions <- c(rep(">=", v), rep("<=", v), "=")
-  result <- lpSolve::lp("min", cost, constraints, directions, c(lower, upper, 1),
-                        compute.sens = TRUE)
-  if (result$status != 0L) {
-    result <- lpSolve::lp("min", cost, constraints, directions, c(lower, upper, 1),
-                          compute.sens = TRUE, scale = 0)
+confidence_grid <- function(n, pool_size, grid_size) {
+  if (is.null(grid_size)) grid_size <- max(128, ceiling(4 * n^(1/4)))
+  if (!is.numeric(grid_size) || length(grid_size) != 1L ||
+      !is.finite(grid_size) || grid_size < 2 || grid_size != floor(grid_size)) {
+    stop("grid_size must be an integer number of subdivisions of at least two.")
   }
-  if (result$status != 0L) stop("Could not solve the prevalence envelope LP.")
-  y <- pmax(0, result$duals[seq_len(v)])
-  z <- pmax(0, -result$duals[v + seq_len(v)])
-  intercept <- min(cost - drop(crossprod(y, kernel_hi)) +
-                     drop(crossprod(z, kernel_lo)))
-  safety <- 64 * .Machine$double.eps * (v + 1) * (1 + sum(y) + sum(z))
-  intercept + sum(y * lower) - sum(z * upper) - safety
+  u <- seq(0, 1, length.out = grid_size + 1L)
+  sort(unique(c(u, -expm1(log1p(-u) / pool_size))))
 }
 
-grid_mixture_weights <- function(design, target) {
+# Freeze the design matrices so that many future histograms can share them.
+make_grid_projection <- function(design) {
   nodes <- ncol(design)
-  v <- length(target)
+  v <- nrow(design)
   objective <- c(rep(0, nodes), 1)
-  design_lp <- rbind(cbind(design, -1), cbind(-design, -1), c(rep(1, nodes), 0))
+  constraints <- t(rbind(cbind(design, -1), cbind(-design, -1), c(rep(1, nodes), 0)))
   directions <- c(rep("<=", 2L * v), "=")
-  rhs <- c(target, -target, 1)
-  projection <- lpSolve::lp("min", objective, design_lp, directions, rhs)
-  if (projection$status != 0L) {
-    projection <- lpSolve::lp("min", objective, design_lp, directions, rhs, scale = 0)
+  function(target) {
+    rhs <- c(target, -target, 1)
+    fit <- lpSolve::lp("min", objective, constraints, directions, rhs, transpose.constraints = FALSE)
+    if (fit$status != 0L) {
+      fit <- lpSolve::lp("min", objective, constraints, directions, rhs,
+                         transpose.constraints = FALSE, scale = 0)
+    }
+    if (fit$status != 0L) stop("Could not project location counts onto feasible mixtures.")
+    weights <- pmax(0, fit$solution[seq_len(nodes)])
+    weights / sum(weights)
   }
-  if (projection$status != 0L) stop("Could not project location counts onto feasible mixtures.")
-  weights <- pmax(0, projection$solution[seq_len(nodes)])
-  weights / sum(weights)
+}
+
+make_outer_interval <- function(grid, kernel_lo, kernel_hi) {
+  v <- nrow(kernel_lo)
+  constraints <- t(rbind(kernel_hi, kernel_lo, 1))
+  directions <- c(rep(">=", v), rep("<=", v), "=")
+  left <- grid[-length(grid)]
+  right <- grid[-1L]
+  bound <- function(cost, lo, hi) {
+    rhs <- c(lo, hi, 1)
+    fit <- lpSolve::lp("min", cost, constraints, directions, rhs,
+                       compute.sens = TRUE, transpose.constraints = FALSE)
+    if (fit$status != 0L) {
+      fit <- lpSolve::lp("min", cost, constraints, directions, rhs,
+                         compute.sens = TRUE, transpose.constraints = FALSE, scale = 0)
+    }
+    if (fit$status != 0L) stop("Could not solve the prevalence envelope LP.")
+    # Repair dual multipliers to certify the bound even for off-grid atoms.
+    y <- pmax(0, fit$duals[seq_len(v)])
+    z <- pmax(0, -fit$duals[v + seq_len(v)])
+    intercept <- min(cost - drop(crossprod(y, kernel_hi)) + drop(crossprod(z, kernel_lo)))
+    safety <- 64 * .Machine$double.eps * (v + 1) * (1 + sum(y) + sum(z))
+    intercept + sum(y * lo) - sum(z * hi) - safety
+  }
+  function(lo, hi) {
+    c(lower = max(0, bound(left, lo, hi)), upper = min(1, -bound(-right, lo, hi)))
+  }
+}
+
+binomial_limits <- function(h, n, tail) {
+  # Beta quantiles extend continuously to fractional planning histograms.
+  lo <- numeric(length(h))
+  hi <- rep(1, length(h))
+  nonzero <- h > 0
+  nonfull <- h < n
+  lo[nonzero] <- stats::qbeta(tail, h[nonzero], n - h[nonzero] + 1)
+  hi[nonfull] <- stats::qbeta(tail, h[nonfull] + 1, n - h[nonfull], lower.tail = FALSE)
+  list(lo = lo, hi = hi)
+}
+
+equal_count_solver <- function(v, s, n, level, grid) {
+  design <- location_cdf_grid(grid, v, s)
+  project <- make_grid_projection(design)
+  outer_interval <- make_outer_interval(grid, design[, -1L, drop = FALSE],
+                                        design[, -ncol(design), drop = FALSE])
+  dkw <- sqrt(log(2 / (1 - level)) / (2 * n))
+  fit <- function(histogram) {
+    cdf <- cumsum(histogram / n)[seq_len(v)]
+    weights <- project(cdf)
+    fitted_cdf <- drop(design %*% weights)
+    distance <- max(abs(fitted_cdf - cdf))
+    radius <- max(distance, dkw)
+    confidence <- outer_interval(pmax(0, cdf - radius), pmin(1, cdf + radius))
+    list(confidence = confidence, weights = weights, fitted_cdf = fitted_cdf,
+         distance = distance, radius = radius)
+  }
+  list(fit = fit, outer_interval = outer_interval)
 }
 
 #' See man/fit_prevalence.Rd for definitions of the three interval summaries.
@@ -64,29 +112,21 @@ fit_prevalence <- function(histogram, pool_size, level = 0.95, grid_size = NULL)
   }
   n <- sum(histogram)
   v <- length(histogram) - 1L
-  if (is.null(grid_size)) grid_size <- max(128, ceiling(4 * n^(1/4)))
-  if (!is.numeric(grid_size) || length(grid_size) != 1L ||
-      !is.finite(grid_size) || grid_size < 2 || grid_size != floor(grid_size)) {
-    stop("grid_size must be an integer number of subdivisions of at least two.")
-  }
+  grid <- confidence_grid(n, pool_size, grid_size)
   observed <- histogram / n
   if (v == 1L) {
     # Exact projection of a Clopper-Pearson interval through monotone endpoints.
     inverse <- function(q) -expm1(log1p(-q) / pool_size)
     endpoints <- c(lower = unname(inverse(observed[2])), upper = unname(observed[2]))
-    ci <- as.numeric(stats::binom.test(histogram[2], n, conf.level = level)$conf.int)
+    ci <- binomial_limits(histogram[2], n, (1 - level) / 2)
     return(list(identified = endpoints, midpoint = unname(mean(endpoints)),
-                confidence = c(lower = inverse(ci[1]), upper = ci[2]),
+                confidence = c(lower = inverse(ci$lo), upper = ci$hi),
                 fitted_pmf = observed, distance = 0, radius = NA_real_,
                 grid_mesh = 0, identified_method = "sharp", level = level))
   }
-  u <- seq(0, 1, length.out = grid_size + 1L)
-  grid <- sort(unique(c(u, -expm1(log1p(-u) / pool_size))))
-  design <- location_cdf_grid(grid, v, pool_size)
-  cdf <- cumsum(observed)[seq_len(v)]
-  nodes <- length(grid)
-  weights <- grid_mixture_weights(design, cdf)
-  fitted_cdf <- drop(design %*% weights)
+  solver <- equal_count_solver(v, pool_size, n, level, grid)
+  fit <- solver$fit(histogram)
+  weights <- fit$weights
   active <- weights > 0
   negative <- exp(pool_size * log1p(-grid[active]))
   k <- 0:v
@@ -108,29 +148,17 @@ fit_prevalence <- function(histogram, pool_size, level = 0.95, grid_size = NULL)
 
   }
 
-  distance <- max(abs(fitted_cdf - cdf))
-  radius <- max(distance, sqrt(log(2 / (1 - level)) / (2 * n)))
-  lower <- pmax(0, cdf - radius)
-  upper <- pmin(1, cdf + radius)
-  kernel_lo <- design[, -1L, drop = FALSE]
-  kernel_hi <- design[, -nodes, drop = FALSE]
-  left <- grid[-nodes]
-  right <- grid[-1L]
-  outer_interval <- function(lo, hi) {
-    c(lower = max(0, kernel_envelope_min(left, kernel_lo, kernel_hi, lo, hi)),
-      upper = min(1, -kernel_envelope_min(-right, kernel_lo, kernel_hi, lo, hi)))
-  }
-  ci <- outer_interval(lower, upper)
+  ci <- fit$confidence
   if (is.null(identified)) {
     # Near numerical saturation, a sharp quadrature can be unresolved. The
     # fitted CDF still defines a valid target for the off-grid envelope.
     rounding <- 64 * .Machine$double.eps * (v + 1)
-    identified <- outer_interval(pmax(0, fitted_cdf - rounding),
-                                 pmin(1, fitted_cdf + rounding))
+    identified <- solver$outer_interval(pmax(0, fit$fitted_cdf - rounding),
+                                        pmin(1, fit$fitted_cdf + rounding))
     identified[1L] <- max(identified[1L], ci[1L])
     identified[2L] <- min(identified[2L], ci[2L])
   }
   list(identified = identified, midpoint = unname(mean(identified)), confidence = ci,
-       fitted_pmf = fitted, distance = distance, radius = radius,
+       fitted_pmf = fitted, distance = fit$distance, radius = fit$radius,
        grid_mesh = max(diff(grid)), identified_method = identified_method, level = level)
 }

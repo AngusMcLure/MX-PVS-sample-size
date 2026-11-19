@@ -14,7 +14,7 @@ candidate_pool_designs(pool_sizes, max_pools, equal_only = FALSE,
 \description{
 Enumerates allocations of one through \code{max_pools} pools per location.
 Each multiset of sizes appears once. With \eqn{b} distinct allowed sizes and
-at most \eqn{v} pools, the unrestricted list has \eqn{{b+v \choose b}-1}
+at most \eqn{v} pools, the unrestricted list has \eqn{\binom{b+v}{b}-1}{choose(b+v,b)-1}
 entries. Use a small allowed set or the equal-size option for a faster search.
 }
 \value{A list of integer vectors in order of increasing pool count, then
