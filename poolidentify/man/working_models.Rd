@@ -3,6 +3,7 @@
 \alias{working_projection}
 \alias{working_performance}
 \title{Working mixing families, prevalence bias and interval coverage}
+\description{Compute the count distribution for specified mixing parameters, fit working models to a count law, and evaluate bias and coverage under independent sampling of locations.}
 \usage{
 mixing_counts(pool_size, pools, family = c("beta", "logitnormal"),
               par, quadrature = 80L)
@@ -27,7 +28,7 @@ Increase for an accuracy check.}
 \item{probabilities}{Population probabilities (or empirical proportions) for
 zero through v positive pools at one location.}
 \item{prevalence}{True mean prevalence under the data-generating law, in [0,1].
-For a misspecification study choose any value in the sharp identification interval.}
+The supplied count law must be feasible and its sharp identification interval must contain this value.}
 \item{locations}{Number of independent locations in each finite sample.}
 \item{level}{Nominal confidence level strictly between zero and one.}
 \item{replicates}{Number of Monte Carlo samples for beta and logit-normal coverage.

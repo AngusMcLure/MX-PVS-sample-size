@@ -19,13 +19,6 @@
   is.numeric(x) && length(x) == 1L && is.finite(x) && x > 0 && x == floor(x)
 }
 
-.pi_check_prob <- function(x) {
-  if (!is.numeric(x) || length(x) < 2L || any(!is.finite(x)) ||
-      any(x < 0) || abs(sum(x) - 1) > 1e-9)
-    stop("Supply probabilities for counts 0 through v, summing to one.")
-  unname(x / sum(x))
-}
-
 .pi_legendre <- function(n) {
   i <- seq_len(n - 1L)
   a <- matrix(0, n, n)
@@ -40,13 +33,14 @@
     stop("pool_size and pools must be positive integers.")
   if (family == "beta") {
     occupancy <- .pi_occupancy(s, v)
-    h <- 0:(s * v)
-    logchoose <- lchoose(s * v, h)
+    logchoose <- lchoose(s * v, 0:(s * v))
     return(function(par) {
       p <- par[1]
       rho <- par[2]
       if (p == 0 || p == 1 || rho == 0) {
-        prob <- stats::dbinom(0:v, v, -expm1(s * log1p(-p)))
+        log_negative <- s * log1p(-p)
+        prob <- if (log_negative > -log(2)) stats::dbinom(0:v, v, -expm1(log_negative)) else
+          stats::dbinom(v:0, v, exp(log_negative))
       } else if (rho == 1) {
         prob <- c(1 - p, rep(0, v - 1L), p)
       } else {
@@ -106,13 +100,14 @@ mixing_counts <- function(pool_size, pools, family = c("beta", "logitnormal"),
 .pi_working_fit <- function(prob, s, family, engine, start = NULL) {
   v <- length(prob) - 1L
   q <- sum((0:v) * prob) / v
-  p0 <- -expm1(log1p(-q) / s)
-  homogeneous <- stats::dbinom(0:v, v, q)
+  negative <- sum((v:0) * prob) / v
+  p0 <- .pi_unpool(q, negative, s)
+  homogeneous <- if (q < 0.5) stats::dbinom(0:v, v, q) else stats::dbinom(v:0, v, negative)
   if (family == "naive")
     return(list(prevalence = p0, probabilities = homogeneous, par = p0,
                 status = "independence"))
   if (v < 2) stop("Estimating a two-parameter family requires at least two pools per location.")
-  if (q == 0 || q == 1 || sum(prob[-c(1L, v + 1L)]) == 0)
+  if (q == 0 || negative == 0 || sum(prob[-c(1L, v + 1L)]) == 0)
     return(list(prevalence = q, probabilities = prob, par = c(NA_real_, NA_real_),
                 status = "endpoint mixture"))
   positive <- prob > 0
@@ -161,7 +156,7 @@ mixing_counts <- function(pool_size, pools, family = c("beta", "logitnormal"),
 working_projection <- function(probabilities, pool_size,
                                family = c("naive", "beta", "logitnormal"), quadrature = 80L) {
   family <- match.arg(family)
-  prob <- .pi_check_prob(probabilities)
+  prob <- .pi_count_law(probabilities)
   if (!.pi_positive_integer(pool_size)) stop("pool_size must be a positive integer.")
   engine <- if (family != "naive") .pi_count_engine(pool_size, length(prob) - 1L, family, quadrature)
   fit <- .pi_working_fit(prob, pool_size, family, engine)
@@ -206,7 +201,7 @@ working_projection <- function(probabilities, pool_size,
 working_performance <- function(probabilities, prevalence, pool_size, family = c("naive", "beta", "logitnormal"),
                                 locations, level = 0.95, replicates = 200L, quadrature = 80L) {
   family <- match.arg(family)
-  prob <- .pi_check_prob(probabilities)
+  prob <- .pi_count_law(probabilities)
   if (!is.numeric(prevalence) || length(prevalence) != 1L || !is.finite(prevalence) ||
       prevalence < 0 || prevalence > 1) stop("prevalence must be in [0, 1].")
   if (!.pi_positive_integer(locations) || !.pi_positive_integer(replicates) ||
@@ -216,16 +211,22 @@ working_performance <- function(probabilities, prevalence, pool_size, family = c
   n <- locations
   s <- pool_size
   v <- length(prob) - 1L
+  bounds <- identification_interval(probabilities = prob, pool_size = s)
+  if (prevalence < bounds[1] - 1e-9 || prevalence > bounds[2] + 1e-9)
+    stop("The proposed true prevalence lies outside the compatible identification interval.")
   target <- working_projection(prob, s, family, quadrature)
   z <- stats::qnorm(1 - (1 - level)/2)
   if (family == "naive") {
     mass <- .pi_total_count(prob, n)
     total <- n * v
     qhat <- (0:total) / total
-    point <- -expm1(log1p(-qhat)/s)
+    nhat <- (total:0) / total
+    point <- .pi_unpool(qhat, nhat, s)
     # Invert the independent-pool score test to evaluate Wilson coverage.
     qnull <- -expm1(s * log1p(-prevalence))
-    covered <- abs(qhat - qnull) <= z * sqrt(qnull * (1 - qnull) / total)
+    nnull <- exp(s * log1p(-prevalence))
+    deviation <- if (qnull < 0.5) abs(qhat - qnull) else abs(nhat - nnull)
+    covered <- deviation <= z * sqrt(qnull * nnull / total)
     coverage <- sum(mass[covered])
     return(list(target = target$prevalence, asymptotic_bias = target$prevalence - prevalence,
                 bias = sum(mass * point) - prevalence, coverage = coverage,
