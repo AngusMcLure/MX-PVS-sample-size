@@ -28,14 +28,15 @@ limits project an exact binomial interval through the analytic prevalence
 bounds. The midpoint minimises worst-case absolute error given a fitted set.
 When that set has positive population width, the data cannot yield an
 asymptotically unbiased estimate of prevalence across all compatible laws.
-Raw-moment computations for sharp fitted bounds can lose precision with many
-pools or laws close to the boundary.}
-\value{A list with \code{identified} (sharp lower and upper endpoints at the
-fitted count law), \code{midpoint}, \code{confidence} (outer confidence limits
+If numerical precision prevents computing a sharp fitted interval, the
+method instead calculates outer bounds on the fitted interval using the grid
+cell program and labels the result in \code{identified_method}.}
+\value{A list with \code{identified} (prevalence endpoints at the fitted count law,
+with the calculation indicated by \code{identified_method}), \code{midpoint}, \code{confidence} (outer confidence limits
 for the entire identified set), \code{fitted_pmf}, \code{distance} (maximum
 absolute fitted CDF residual), \code{radius} (final CDF band half-width,
 \code{NA} for the single-pool exact binomial calculation), \code{grid_mesh}
-(maximum cell width in prevalence), and \code{level}.}
+(maximum cell width in prevalence), \code{identified_method} (\code{"sharp"} or \code{"grid outer bounds"}), and \code{level}.}
 \examples{
 fit_prevalence(c(88, 10, 2), pool_size = 5)
 }
