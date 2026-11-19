@@ -17,3 +17,8 @@ stopifnot(
   all(naive_bias_bounds(p, rho, 1) == 0),
   all(naive_bias_bounds(p, 0, s) == 0),
   diff(naive_bias_bounds(p, rho, 2)) < 1e-14)
+
+# Almost homogeneous sites can still have negative-pool probabilities below
+# machine epsilon. Recover the prevalence bound through the negative tail.
+rare_negative <- naive_bias_bounds(0.5, 1e-40, 100)
+stopifnot(max(abs(rare_negative)) < 1e-11, rare_negative[1] <= rare_negative[2])

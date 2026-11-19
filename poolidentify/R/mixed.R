@@ -56,7 +56,7 @@ mixed_interval <- function(moments, exponents = as.numeric(names(moments)),
       any(diff(m^(1/k)) < -1e-12)))
     stop("Moments violate monotonicity or a power-mean inequality.")
   if (length(k) == 1L)
-    return(c(lower = 1 - m^(1/k), upper = 1 - m))
+    return(c(lower = -expm1(log(m)/k), upper = 1 - m))
 
   grid <- sin(seq(0, pi/2, length.out = cells + 1))^2
   basis <- outer(grid, k, "^")
