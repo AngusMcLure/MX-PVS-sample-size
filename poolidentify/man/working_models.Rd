@@ -42,11 +42,11 @@ normal density, resolving the transition of pool positivity on the logit scale.
 
 Independent-pool inference inverts average positivity. The family fit minimizes
 cross-entropy of the location-count probabilities by multistart bounded numerical
-optimization and checks the homogeneous limit. Both family parameters require
+optimization and checks the homogeneous limit. For two pools, each family spans the entire interior feasible count space, so the routine matches log cell probabilities and checks the relative discrepancies even for rare cells. For three or more pools, the objective uses cellwise KL divergence scaled to the homogeneous fit. Both family parameters require
 at least two pools per location. For beta fits each logit parameter is bounded
 (the mean to [-26,26] and correlation to [-18,16]); logit-normal location lies
 in [-120,120] and log standard deviation in [-8,log(60)]. A reported search
-limit or optimization failure is not evidence of an interior optimum. Small
+limit, unresolved moments, or optimization failure denotes an unreliable candidate. Small
 numerical KL divergence indicates agreement with the observable count law.
 
 Naive finite-sample bias and coverage use the convolution of the count
@@ -60,7 +60,7 @@ failure fractions are reported explicitly. A nonzero point failure fraction
 makes the corresponding unconditional finite-sample point bias unavailable.
 These model-based intervals can have low coverage under heterogeneity or a
 wrong mixing family. Sampling error of Monte Carlo coverage is reported;
-zero empirical error when all outcomes agree does not establish zero true error.
+the simulation interval uses exact central 95 percent binomial limits and remains informative when every simulated outcome agrees.
 }
 \value{
 \code{mixing_counts} returns \code{probabilities} and \code{prevalence}.
@@ -70,7 +70,7 @@ count-law Kullback--Leibler divergence \code{kl}. Regular two-parameter
 fits also return optimization coordinates in \code{internal}.
 \code{working_performance} returns the population \code{target},
 \code{asymptotic_bias}, finite-sample \code{bias}, unconditional
-\code{coverage}, its \code{coverage_mcse}, \code{failure_fraction} and
+\code{coverage}, its \code{coverage_mcse} and 95 percent Monte Carlo \code{coverage_mc_interval} (two identical values for an exact calculation), \code{failure_fraction} and
 interval \code{method}. Family fits also include \code{projection_status}
 and \code{point_failure_fraction}.
 }

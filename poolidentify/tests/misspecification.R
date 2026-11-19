@@ -60,3 +60,13 @@ for (family in c("beta", "logitnormal")) {
   boundary <- working_performance(c(1, 0, 0), 0, 25, family, 5, replicates = 2)
   stopifnot(boundary$bias == 0, boundary$coverage == 0, boundary$failure_fraction == 1)
 }
+
+# Rare informative cells can carry substantial information about prevalence
+# despite a tiny absolute KL divergence to a homogeneous count model.
+rare <- mixing_counts(25, 2, "beta", c(.75, .005))
+rare_fit <- working_projection(rare$probabilities, 25, "beta")
+stopifnot(rare_fit$status == "interior", max(abs(rare_fit$par - c(.75, .005))) < 1e-7)
+outside <- mixing_counts(25, 2, "beta", c(1e-15, .1))
+stopifnot(working_projection(outside$probabilities, 25, "beta")$status %in%
+            c("search limit", "unresolved moments", "optimization failure"))
+stopifnot(boundary$coverage_mc_interval[1] == 0, boundary$coverage_mc_interval[2] > 0)

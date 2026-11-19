@@ -97,6 +97,20 @@ mixing_counts <- function(pool_size, pools, family = c("beta", "logitnormal"),
   .pi_count_engine(pool_size, pools, family, quadrature)(unname(par))
 }
 
+# Cellwise divergences avoid cancellation against the entropy when two
+# count distributions nearly coincide.
+.pi_kl <- function(prob, fitted) {
+  keep <- prob > 0
+  if (any(fitted[keep] <= 0)) return(Inf)
+  p <- prob[keep]
+  f <- fitted[keep]
+  t <- log(f) - log(p)
+  term <- f - p - p * t
+  small <- abs(t) < 0.5
+  term[small] <- p[small] * (expm1(t[small]) - t[small])
+  sum(pmax(term, 0)) + sum(fitted[!keep])
+}
+
 .pi_working_fit <- function(prob, s, family, engine, start = NULL) {
   v <- length(prob) - 1L
   q <- sum((0:v) * prob) / v
@@ -110,10 +124,24 @@ mixing_counts <- function(pool_size, pools, family = c("beta", "logitnormal"),
   if (q == 0 || negative == 0 || sum(prob[-c(1L, v + 1L)]) == 0)
     return(list(prevalence = q, probabilities = prob, par = c(NA_real_, NA_real_),
                 status = "endpoint mixture"))
-  positive <- prob > 0
-  loss <- function(pmf) {
-    if (any(pmf[positive] <= 0)) return(1e12)
-    -sum(prob[positive] * log(pmf[positive]))
+  best <- list(prevalence = p0, probabilities = homogeneous,
+               par = if (family == "beta") c(p0, 0) else c(stats::qlogis(p0), 0),
+               status = "homogeneous")
+  if (v == 2) {
+    # Above the maximum one-positive probability attainable by a mixture,
+    # the constrained multinomial optimum lies on the binomial boundary.
+    if (prob[2] / 2 >= sqrt(prob[1]) * sqrt(prob[3])) return(best)
+    # Every interior feasible two-pool law can be matched exactly. Log-cell
+    # residuals give rare informative cells a voice in numerical matching.
+    loss <- function(pmf) {
+      if (any(pmf <= 0)) return(1e20)
+      sum((log(pmf) - log(prob))^2)
+    }
+  } else {
+    scale <- .pi_kl(prob, homogeneous)
+    if (scale == 0) return(best)
+    if (!is.finite(scale)) scale <- 1
+    loss <- function(pmf) min(1e20, .pi_kl(prob, pmf) / scale)
   }
   natural <- if (family == "beta") stats::plogis else function(x) c(x[1], exp(x[2]))
   objective <- function(x) loss(engine(natural(x))$probabilities)
@@ -127,12 +155,8 @@ mixing_counts <- function(pool_size, pools, family = c("beta", "logitnormal"),
     starts <- list(c(stats::qlogis(p0), -0.4), c(stats::qlogis(p0) - 2, 1))
   }
   starts <- c(if (!is.null(start)) list(start), starts)
-  best <- list(prevalence = p0, probabilities = homogeneous,
-               par = if (family == "beta") c(p0, 0) else c(stats::qlogis(p0), 0),
-               status = "homogeneous")
   best_loss <- loss(homogeneous)
   success <- FALSE
-  entropy <- -sum(prob[positive] * log(prob[positive]))
   for (x in starts) {
     fit <- tryCatch(stats::optim(pmin(hi, pmax(lo, x)), objective, method = "L-BFGS-B",
                                 lower = lo, upper = hi,
@@ -140,14 +164,21 @@ mixing_counts <- function(pool_size, pools, family = c("beta", "logitnormal"),
                     error = function(e) NULL)
     if (is.null(fit) || fit$convergence != 0L) next
     success <- TRUE
-    if (fit$value >= best_loss - 2e-12) next
+    if (fit$value >= best_loss) next
     best_loss <- fit$value
     par <- natural(fit$par)
     best <- engine(par)
     best$par <- par
     best$internal <- fit$par
     best$status <- if (any(pmin(fit$par - lo, hi - fit$par) < 1e-4)) "search limit" else "interior"
-    if (best_loss - entropy < 1e-13) break
+    if (best_loss < 1e-17) break
+  }
+  if (v == 2 && best_loss > 1e-10 && best$status != "search limit")
+    best$status <- "unresolved moments"
+  if (v > 2 && best$status == "homogeneous") {
+    cross <- .pi_product(prob, 1, 1)
+    spread <- sqrt(.pi_product(prob, 2, 0)) * sqrt(.pi_product(prob, 0, 2))
+    if (cross < spread * (1 - 1e-10)) best$status <- "unresolved moments"
   }
   if (!success) best$status <- "optimization failure"
   best
@@ -160,8 +191,7 @@ working_projection <- function(probabilities, pool_size,
   if (!.pi_positive_integer(pool_size)) stop("pool_size must be a positive integer.")
   engine <- if (family != "naive") .pi_count_engine(pool_size, length(prob) - 1L, family, quadrature)
   fit <- .pi_working_fit(prob, pool_size, family, engine)
-  keep <- prob > 0
-  fit$kl <- max(0, sum(prob[keep] * log(prob[keep] / fit$probabilities[keep])))
+  fit$kl <- .pi_kl(prob, fit$probabilities)
   fit
 }
 
@@ -230,7 +260,7 @@ working_performance <- function(probabilities, prevalence, pool_size, family = c
     coverage <- sum(mass[covered])
     return(list(target = target$prevalence, asymptotic_bias = target$prevalence - prevalence,
                 bias = sum(mass * point) - prevalence, coverage = coverage,
-                coverage_mcse = 0, failure_fraction = 0, method = "exact independent-pool Wilson"))
+                coverage_mcse = 0, coverage_mc_interval = rep(coverage, 2), failure_fraction = 0, method = "exact independent-pool Wilson"))
   }
   engine <- .pi_count_engine(s, v, family, quadrature)
   samples <- stats::rmultinom(replicates, n, prob)
@@ -239,15 +269,18 @@ working_performance <- function(probabilities, prevalence, pool_size, family = c
   available <- logical(replicates)
   for (b in seq_len(replicates)) {
     fit <- .pi_working_fit(samples[, b]/n, s, family, engine, target$internal)
-    if (!fit$status %in% c("search limit", "optimization failure")) fitted[b] <- fit$prevalence
+    if (fit$status %in% c("interior", "homogeneous", "endpoint mixture")) fitted[b] <- fit$prevalence
     ci <- .pi_model_interval(fit, engine, family, n, z, v)
     available[b] <- all(is.finite(ci))
     hit[b] <- available[b] && ci[1] <= prevalence && prevalence <= ci[2]
   }
   coverage <- mean(hit)
-  list(target = target$prevalence, asymptotic_bias = target$prevalence - prevalence,
+  resolved <- target$status %in% c("interior", "homogeneous", "endpoint mixture")
+  estimate <- if (resolved) target$prevalence else NA_real_
+  list(target = estimate, asymptotic_bias = estimate - prevalence,
        projection_status = target$status, bias = if (all(is.finite(fitted))) mean(fitted) - prevalence else NA_real_,
        point_failure_fraction = mean(!is.finite(fitted)), coverage = coverage,
        coverage_mcse = sqrt(coverage * (1 - coverage) / replicates),
+       coverage_mc_interval = unname(stats::binom.test(sum(hit), replicates)$conf.int[1:2]),
        failure_fraction = mean(!available), method = "Monte Carlo model-information Wald")
 }
