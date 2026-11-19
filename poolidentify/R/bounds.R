@@ -4,7 +4,7 @@
       any(!is.finite(prob)) || any(prob < 0) || abs(sum(prob) - 1) > 1e-10) {
     stop("Supply probabilities for counts 0 through v, summing to one.")
   }
-  prob / sum(prob)
+  unname(prob / sum(prob))
 }
 
 count_moments <- function(prob) {
@@ -14,16 +14,6 @@ count_moments <- function(prob) {
     r <- k:v
     sum(prob[r + 1L] * exp(lchoose(r, k) - lchoose(v, k)))
   }, numeric(1))
-}
-
-# E[q^a(1-q)^b] from the v-pool count law by sampling a+b
-# distinct pools without replacement. No alternating sums are needed.
-.pi_product <- function(prob, a, b) {
-  v <- length(prob) - 1L
-  r <- a:(v - b)
-  log_prob <- lchoose(r, a) + lchoose(v - r, b) -
-    lchoose(v, a + b) - lchoose(a + b, a)
-  sum(prob[r + 1L] * exp(log_prob))
 }
 
 .pi_moments_to_law <- function(moments) {
@@ -61,9 +51,9 @@ count_moments <- function(prob) {
   # det(E[(1-Q,Q)'(1-Q,Q)]) equals Var(Q). This expression avoids
   # subtracting two numbers close to one at very high positivity.
   variance <- second_negative * second - cross^2
-  tol <- 128 * .Machine$double.eps * max(second_negative * second, cross^2)
+  tol <- 1024 * .Machine$double.eps * max(second_negative * second, cross^2)
   if (variance < -tol) stop("Infeasible count law: negative mixing variance.")
-  if (variance <= 0) {
+  if (variance <= tol) {
     value <- .pi_unpool(q, negative, s)
     return(c(lower = value, upper = value))
   }
@@ -84,12 +74,12 @@ count_moments <- function(prob) {
     # Use the degree n-1 Bernstein basis (up to diagonal scaling).
     powers <- 0:(2L * n - 2L)
     a <- powers + fixed_zero
-    b <- rev(powers) + fixed_one
     hankel_indices <- outer(seq_len(n), seq_len(n), "+") - 1L
-    q_matrix <- matrix(mapply(function(i, j) .pi_product(prob, i + 1L, j),
-                               a, b)[hankel_indices], n)
-    negative_matrix <- matrix(mapply(function(i, j) .pi_product(prob, i, j + 1L),
-                                      a, b)[hankel_indices], n)
+    # Both products have total degree v. The expectation of
+    # q^a (1-q)^(v-a) is exactly the count probability divided by choose(v,a).
+    bernstein <- function(k) prob[k + 1L] * exp(-lchoose(v, k))
+    q_matrix <- matrix(bernstein(a + 1L)[hankel_indices], n)
+    negative_matrix <- matrix(bernstein(a)[hankel_indices], n)
     gram <- q_matrix + negative_matrix
     active <- diag(gram) > 0
     if (any(active)) {
@@ -125,26 +115,35 @@ count_moments <- function(prob) {
     if (q[i] <= 0.5) stats::dbinom(k, v, q[i])
     else stats::dbinom(v - k, v, negative[i])
   }, numeric(v + 1L))
-  design <- qr(basis, tol = 64 * .Machine$double.eps)
-  if (design$rank < ncol(basis)) {
-    cols <- sort(design$pivot[seq_len(design$rank)])
-    basis <- basis[, cols, drop = FALSE]
-    q <- q[cols]
-    negative <- negative[cols]
+  # Rare count cells can distinguish nearly saturated locations. Scale both
+  # equations and columns before solving or checking any residual.
+  relative <- basis / prob
+  scales <- apply(relative, 2L, max)
+  if (any(!is.finite(scales) | scales <= 0))
+    stop("Ill-conditioned count probabilities: relative scaling overflowed.")
+  design <- sweep(relative, 2L, scales, "/")
+  fit <- qr(design, tol = 128 * .Machine$double.eps)
+  if (fit$rank != ncol(design))
+    stop("Ill-conditioned quadrature: support nodes cannot be separated.")
+  scaled_weights <- qr.coef(fit, rep(1, length(prob)))
+  if (min(scaled_weights) < -1e-8 ||
+      max(abs(design %*% pmax(scaled_weights, 0) - 1)) > 1e-8)
+    stop("Infeasible or ill-conditioned moments: quadrature cannot reproduce count probabilities.")
+  weights <- pmax(0, scaled_weights) / scales
+  # A small roundoff error in a complementary eigenvalue may have a
+  # substantial impact under the fractional-power link. Resolve its effect
+  # on prevalence before interpreting any apparent endpoint or rank loss.
+  if (length(interior_negative) && s > 1) {
+    uncertainty <- 64 * .Machine$double.eps * max(interior_negative) *
+      max(factors$values[keep]) / min(factors$values[keep])
+    delta <- (interior_negative + uncertainty)^(1/s) -
+      pmax(0, interior_negative - uncertainty)^(1/s)
+    contribution <- c(if (fixed_zero) 0, delta, if (fixed_one) 0)[distinct]
+    if (sum(weights * contribution) > 1e-6)
+      stop("Prevalence endpoints are sensitive to rounding near unit pool positivity.")
   }
-  weights <- drop(qr.solve(basis, prob, tol = 64 * .Machine$double.eps))
-  if (min(weights) < -1e-9 || max(abs(basis %*% weights - prob)) > 1e-10) {
-    stop("Infeasible or ill-conditioned moments: quadrature cannot reproduce the count law.")
-  }
-  weights <- pmax(0, weights)
   list(value = sum(weights * .pi_unpool(q, negative, s)) / sum(weights),
-       # Losing a node gives a boundary measure. Zero weights at a
-       # prescribed endpoint alone only certify the boundary in exact arithmetic.
-       rank_loss = length(interior) < n,
-       boundary_at_one = fixed_one &&
-         ((fixed_zero && weights[1L] <= 64 * .Machine$double.eps) ||
-            (!fixed_zero && length(interior) > 0 &&
-               min(interior) <= 64 * .Machine$double.eps)))
+       reduced = length(interior) < n)
 }
 
 identification_interval <- function(moments = NULL, pool_size, probabilities = NULL) {
@@ -158,6 +157,9 @@ identification_interval <- function(moments = NULL, pool_size, probabilities = N
     return(c(lower = .pi_unpool(prob[2L], prob[1L], pool_size), upper = prob[2L]))
   }
   if (all(prob[2:v] == 0)) return(c(lower = prob[v + 1L], upper = prob[v + 1L]))
+  # Every non-endpoint component assigns positive probability to all counts.
+  if (any(prob == 0))
+    stop("Zero count cells in a non-endpoint law: infeasible or underflowed probabilities.")
   if (v == 2L) {
     bounds <- .pi_second_bounds(prob, pool_size)
   } else {
@@ -165,13 +167,16 @@ identification_interval <- function(moments = NULL, pool_size, probabilities = N
     lower <- .pi_rule(prob, !odd, FALSE, pool_size)
     upper <- .pi_rule(prob, odd, TRUE, pool_size)
     bounds <- c(lower = lower$value, upper = upper$value)
-    # At a rank-deficient boundary the compatible law is unique. The
-    # upper rule explicitly contains q=1, where the inverse link is singular.
-    if (upper$rank_loss || lower$rank_loss || upper$boundary_at_one) {
-      if (abs(diff(bounds)) > 1e-7)
-        warning("Numerical boundary at q=1: endpoints sensitive to rounding; ",
-                "returning the boundary-law value.")
-      bounds[] <- bounds["upper"]
+    if (lower$reduced || upper$reduced) {
+      # Rank loss can reflect severe ill-conditioning as well as an exact
+      # boundary. Deleting a random pool gives a valid enclosing interval.
+      # Use it only if this independent check resolves prevalence to 1e-7.
+      k <- 0:(v - 1L)
+      thinned <- ((v - k) * prob[k + 1L] + (k + 1L) * prob[k + 2L]) / v
+      enclosure <- identification_interval(pool_size = pool_size, probabilities = thinned)
+      if (diff(enclosure) > 1e-7)
+        stop("Numerical rank loss: the lower-order moments cannot certify these endpoints.")
+      bounds <- enclosure
     }
   }
   if (pool_size == 1) bounds[] <- sum((0:v) * prob) / v

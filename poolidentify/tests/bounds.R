@@ -50,3 +50,21 @@ for (args in list(list(moments=c(.75,.1), pool_size=2),
                   list(moments=.5, probabilities=c(.5,.5), pool_size=3))) {
   stopifnot(inherits(try(do.call(identification_interval, args), silent=TRUE), "try-error"))
 }
+
+# A near-saturated moment can match the boundary law to high absolute
+# precision but have a very different prevalence. Preserve rare count cells.
+saturated_law <- function(v, s, p, weights) {
+  drop(vapply((1-p)^s, function(z) dbinom(v-(0:v),v,z), numeric(v+1L)) %*% weights)
+}
+p <- c(.35, .65, .8)
+w <- c(1,2,3) / 6
+saturated <- identification_interval(probabilities = saturated_law(3,25,p,w), pool_size = 25)
+stopifnot(saturated[1] <= sum(p*w), saturated[2] >= sum(p*w))
+p <- c(.40, .78)
+w <- c(1,2) / 3
+unresolved <- try(identification_interval(probabilities = saturated_law(4,50,p,w),
+                                           pool_size=50), silent=TRUE)
+stopifnot(inherits(unresolved, "try-error") ||
+          (unresolved[1] <= sum(p*w) + 1e-7 && unresolved[2] >= sum(p*w) - 1e-7))
+stopifnot(near(identification_interval(probabilities = saturated_law(2,25,.93,1),
+                                       pool_size = 25), c(.93,.93)))

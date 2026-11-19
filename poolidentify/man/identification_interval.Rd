@@ -36,12 +36,13 @@ reconstructing the input count law. The binomial basis avoids alternate
 summation when count probabilities are supplied.
 Infeasible input or ill-conditioned numerical quadrature may raise an
 error. Empirical histograms need not have feasible population moments.
-Prefer probabilities over raw moments for higher orders. Numerical rank and
-endpoint collisions are determined to floating-point precision. For large
-pools, rounding at unit positivity can materially change recovered
-prevalence even when the count law is reproduced to machine precision.
-When the two numerical rules materially disagree at a detected boundary,
-a warning accompanies the value for the boundary law.
+Prefer probabilities over raw moments for higher orders. Quadrature checks each cell on a relative scale. Near unit positivity,
+the inverse link may amplify roundoff substantially. The routine stops
+if complementary quadrature nodes have poorly resolved prevalence values.
+After numerical rank loss, dropping one randomly selected pool gives
+a lower-order enclosing interval. The routine returns this enclosure
+only when its width is at most one ten-millionth on the prevalence scale,
+and stops otherwise.
 }
 \examples{
 # Q has mass 1/2 at 0.1 and at 0.7.
