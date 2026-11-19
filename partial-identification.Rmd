@@ -663,6 +663,8 @@ legend("topright", c("Independent pools", "Beta", "Logit-normal"),
        col = cols, lty = 1:3, lwd = 2, bty = "n")
 ```
 
+With four pools the observable counts can also reveal a poor fit. Consider four pools of size eight and prevalences of 1%, 19% and 65% with probabilities 0.6, 0.3 and 0.1. Mean prevalence is 12.8% and the sharp interval is 9.72% to 16.28%. The fitted beta mean is 13.03% and the logit-normal mean is 15.17%. Their count-law divergences are 0.0126 and 0.0146 nats per location, respectively. Even when a larger survey can detect these discrepancies, refining the parametric estimate alone leaves a systematic error in the mean.
+
 The table evaluates nominal 95% intervals when the beta distribution above generates the data. For the independent-pool analysis the package convolves the one-location count law across locations, sums over possible estimates and inverts the working binomial score test. For the family analyses it simulates independent location histograms, refits both parameters and constructs delta-method Wald intervals from the fitted expected information. The Wald procedure issues no interval at an irregular fit. These draws contribute zero to coverage and appear in the last column. Exact binomial intervals quantify Monte Carlo uncertainty in the two family coverage estimates. With 200 replicates even zero covered samples gives an upper 95% Monte Carlo limit of about 1.8%. The calculations compare two survey sizes to expose the consequences of sampling more locations under the same structural assumption.
 
 ```{r family-coverage-table}
