@@ -28,3 +28,9 @@ stopifnot(max(abs(poolidentify:::.pi_canonical_counts(z) - .25)) < 1e-13,
           max(abs(poolidentify:::.pi_canonical_ends(z, 8) -
                     c(mean(f(.5 + c(-1, 1) / sqrt(12))),
                       sum(c(1, 4, 1) * f(c(0, .5, 1))) / 6))) < 1e-12)
+
+# 150-digit Jacobi quadrature reference. With nearly saturated pools the
+# lower principal node of 1-Q is far below machine epsilon.
+z <- c(1 - 1e-14, 1 - 1e-12, 1 - 1e-14, 1e-13)
+stopifnot(max(abs(poolidentify:::.pi_canonical_ends(z, 50) -
+                    c(.84151581989855329, .99999999999999001))) < 1e-12)

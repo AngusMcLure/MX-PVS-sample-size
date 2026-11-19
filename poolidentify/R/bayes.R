@@ -6,19 +6,21 @@
   zeta <- c(1, 1 - utils::head(z, -1L)) * z
   n <- if (upper) (v + 3L) %/% 2L else (v + 2L) %/% 2L
   # For even v both Radau representations use v/2+1 nodes.
-  d <- seq_len(n)
-  zz <- c(0, zeta, 0)
-  J <- diag(zz[2L * d - 1L] + zz[2L * d], nrow = n)
+  # The Jacobi matrix is B' B for upper bidiagonal B. Its singular values
+  # resolve small positive eigenvalues without the cancellation of a
+  # symmetric eigendecomposition near saturation.
+  zz <- c(zeta, 0)
+  odd <- 2L * seq_len(n) - 1L
+  B <- diag(sqrt(zz[odd]), nrow = n)
   if (n > 1L) {
     i <- seq_len(n - 1L)
-    b <- sqrt(zeta[2L * i - 1L] * zeta[2L * i])
-    J[cbind(i, i + 1L)] <- J[cbind(i + 1L, i)] <- b
+    B[cbind(i, i + 1L)] <- sqrt(zz[2L * i])
   }
-  e <- eigen(J, symmetric = TRUE)
-  x <- pmin(1, pmax(0, e$values))
+  decomp <- svd(B, nu = 0L, nv = n)
+  x <- pmin(1, decomp$d^2)
   if (upper) x[1L] <- 1
   if ((v %% 2L == 0L && !upper) || (v %% 2L == 1L && upper)) x[n] <- 0
-  list(x = x, w = e$vectors[1L, ]^2)
+  list(x = x, w = decomp$v[1L, ]^2)
 }
 
 .pi_canonical_counts <- function(z) {
@@ -30,8 +32,13 @@
     return(c((1 - u) * (1 - u + u * z[2L]), 2 * cross,
              u * (u + (1 - u) * z[2L])))
   }
+  if (u > 0.5) {
+    odd <- seq.int(1L, v, 2L)
+    z[odd] <- 1 - z[odd]
+  }
   rule <- .pi_canonical_rule(z)
-  drop(vapply(rule$x, function(x) stats::dbinom(0:v, v, x),
+  counts <- if (u > 0.5) v:0 else 0:v
+  drop(vapply(rule$x, function(x) stats::dbinom(counts, v, x),
               numeric(v + 1L)) %*% rule$w)
 }
 
