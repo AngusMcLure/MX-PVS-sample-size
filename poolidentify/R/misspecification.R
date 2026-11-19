@@ -176,8 +176,12 @@ mixing_counts <- function(pool_size, pools, family = c("beta", "logitnormal"),
   if (v == 2 && best_loss > 1e-10 && best$status != "search limit")
     best$status <- "unresolved moments"
   if (v > 2 && best$status == "homogeneous") {
-    cross <- .pi_product(prob, 1, 1)
-    spread <- sqrt(.pi_product(prob, 2, 0)) * sqrt(.pi_product(prob, 0, 2))
+    # Ordered pairs of pools have a common denominator v*(v-1),
+    # which cancels in the comparison of the three factorial moments.
+    k <- as.double(0:v)
+    h <- v - k
+    cross <- sum(prob * k * h)
+    spread <- sqrt(sum(prob * k * (k - 1))) * sqrt(sum(prob * h * (h - 1)))
     if (cross < spread * (1 - 1e-10)) best$status <- "unresolved moments"
   }
   if (!success) best$status <- "optimization failure"

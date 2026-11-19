@@ -70,3 +70,25 @@ outside <- mixing_counts(25, 2, "beta", c(1e-15, .1))
 stopifnot(working_projection(outside$probabilities, 25, "beta")$status %in%
             c("search limit", "unresolved moments", "optimization failure"))
 stopifnot(boundary$coverage_mc_interval[1] == 0, boundary$coverage_mc_interval[2] > 0)
+
+# With four pools, a discrete three-point truth can violate restrictions
+# of both working families. Check the fitted KL against nearby parameters.
+sites <- c(.01, .19, .65)
+observed <- drop(vapply(sites, function(p) dbinom(0:4, 4, -expm1(8 * log1p(-p))),
+                       numeric(5)) %*% c(.6, .3, .1))
+for (family in c("beta", "logitnormal")) {
+  fit <- working_projection(observed, 8, family)
+  stopifnot(fit$status == "interior", fit$kl > .001)
+  for (scale in c(.9, 1.1)) {
+    neighbor <- mixing_counts(8, 4, family, fit$par * scale)$probabilities
+    stopifnot(fit$kl < sum(observed * log(observed / neighbor)))
+  }
+}
+
+# The location law with every site at two positives is underdispersed.
+# Both working families approach their homogeneous (zero ICC) boundary.
+for (family in c("beta", "logitnormal")) {
+  limit <- working_projection(c(0, 0, 1, 0, 0), 8, family)
+  stopifnot(limit$status == "homogeneous",
+            abs(limit$prevalence + expm1(log(.5)/8)) < 1e-12)
+}
