@@ -684,13 +684,64 @@ knitr::kable(do.call(rbind, coverage_rows), digits = 3, row.names = FALSE,
              caption = "Finite-sample bias in percentage points and coverage for the beta population. Simulation gives 95% Monte Carlo limits from 200 replicates for each family fit.")
 ```
 
+# Choosing a pooling design under a survey budget
+
+@NguyenBishBish2021 jointly optimised pool size and number of pools under assay and specimen costs by minimising the asymptotic variance of a common-prevalence estimator. In a clustered survey each location incurs an additional cost, and even an infinite survey can leave an interval of compatible prevalences.
+
+Let a design $d=(s_1,\ldots,s_v)$ specify the sizes of the $v$ pools sampled at **each** location. For a budget $B$, a cost $c_L$ per visited location, a cost $c_P$ per pool tested and a cost $c_U$ per individual collected, the cost per location and the number of affordable independent locations are
+$$
+ C_d=c_L+v c_P+c_U\sum_{i=1}^v s_i,
+ \qquad w_d=\left\lfloor B/C_d\right\rfloor .
+$$
+We compare designs that visit all $w_d$ locations and have at least one affordable location. Costs and permissible pool sizes should be fixed before examining the survey data.
+
+## Expected width under planning scenarios
+
+For a planning distribution $F$ of local prevalence, let $\boldsymbol\pi_d(F)$ be the joint count probabilities at one location. The histogram $H$ from the proposed survey is multinomial with $w_d$ trials and cell probabilities $\boldsymbol\pi_d(F)$. If $[L_d(H),U_d(H)]$ is the finite-sample confidence envelope for the whole identified set, our criterion is
+$$
+ R_F(d)=\mathbb E_{H\mid d,F}\!\left[U_d(H)-L_d(H)\right].
+$$
+This width includes the structural uncertainty left by the moments and the sampling uncertainty across locations. The planning distribution predicts how often each histogram will occur. The confidence procedure used on that histogram still admits every feasible mixing law. When several populations are plausible, minimise either $\sum_j \omega_j R_{F_j}(d)$ with prespecified scenario weights summing to one, or $\max_j R_{F_j}(d)$ to protect against the widest expected interval among the stated scenarios.
+
+For a single pool per location, averaging the projected binomial interval over the binomial count law gives the expected width by a one-dimensional sum. For multiple pools, the package can first screen designs by evaluating the interval at the expected histogram $w_d\boldsymbol\pi_d(F)$. Fractional counts give a deterministic score for screening. The score can differ from the expected width because interval endpoints are nonlinear in the counts. For the shortlisted designs, draw multinomial histograms and average their actual interval widths. Each design reuses its grid of conditional count probabilities across these evaluations. The equal-size and mixed-size intervals retain their respective confidence constructions, so a comparison also reflects their different degrees of conservatism. Evaluating all candidates avoids excluding the best design at screening. If the leading estimates are close, increase the replication count and check sensitivity to the grid resolution and planning populations.
+
+Consider an illustrative budget of 50,000, with a cost of 20 per location and 0.5 per individual. Compare assay costs of 5 and 200. In one planning population, half the locations have local prevalence 6% and half have zero prevalence. In the other, one fifth have prevalence 15% and the remainder have zero prevalence. Both have mean prevalence 3%, but the degree of clustering differs. The table gives the two populations equal weight and evaluates every candidate at the 95% confidence level.
+
+```{r design-cost-comparison}
+pool_options <- list("One pool of 5" = 5L, "One pool of 15" = 15L,
+                     "Two pools of 5" = c(5L, 5L),
+                     "Pools of 5 and 15" = c(5L, 15L))
+populations <- list(moderate = list(prevalence = c(0, .06), weights = c(.5, .5)),
+                    concentrated = list(prevalence = c(0, .15), weights = c(.8, .2)))
+set.seed(90317)
+assay_costs <- c(5, 200)
+comparisons <- lapply(assay_costs, function(assay) {
+  fit <- poolidentify::rank_pool_designs(pool_options, budget = 50000,
+            cost_location = 20, cost_pool = assay, cost_unit = .5,
+            scenarios = populations, criterion = "weighted", level = .95,
+            replicates = 128L, shortlist = Inf, grid_size = 64L)
+  fit$ranking[match(names(pool_options), fit$ranking$design), ]
+})
+design_table <- data.frame(Design = names(pool_options),
+                           Sites5 = comparisons[[1]]$locations,
+                           Width5 = 100 * comparisons[[1]]$width,
+                           Sites200 = comparisons[[2]]$locations,
+                           Width200 = 100 * comparisons[[2]]$width)
+knitr::kable(design_table, digits = 2, row.names = FALSE,
+             col.names = c("Pools per site", "Sites (5)", "Width (5)",
+                           "Sites (200)", "Width (200)"),
+             caption = "Affordable locations and expected total interval widths in percentage points. Parentheses give the cost per assay. Multi-pool widths average 128 simulated surveys per population.")
+```
+
+At assay cost 5, the smallest estimated expected width is `r sprintf("%.2f", min(design_table$Width5))` percentage points (`r tolower(design_table$Design[which.min(design_table$Width5)])`). At cost 200 it is `r sprintf("%.2f", min(design_table$Width200))` points (`r tolower(design_table$Design[which.min(design_table$Width200)])`). A second pool supplies information about within-location heterogeneity, but its assay and specimen costs also reduce the number of independent locations the budget can cover.
+
 # Discussion
 
 Survey design determines which part of the uncertainty can be reduced. Additional locations estimate the existing count probabilities more precisely. Additional pools within each location reveal further moments. Recording pool size and keeping the location identifiers preserves information that a single total of positives cannot recover. In the example with 50 individuals per site, changing two pools of 25 to pools of 10 and 40 reduces the sharp interval width from 6.56 to 1.95 percentage points even though the independence fit becomes more biased.
 
 For surveys with few pools per site, the width of the population interval is an immediate sensitivity measure for a parametric estimate. At two pools, beta and logit-normal distributions can agree exactly on every observable probability. The likelihood then has no means to select between their different prevalence estimates. A feasible fitted interval, a confidence envelope across locations, and an explicitly stated prior for prevalence within the interval describe different parts of this uncertainty.
 
-The model assumes perfect testing, independent locations and conditionally independent infections within each location. Pool dilution, sensitivity that varies with pool size, or sampling more pools at sites known to have elevated prevalence changes the observation law. The design comparisons here concern identification under that law. Comparing survey costs or finite-sample precision also requires the number of available locations and the sampling and assay costs.
+The model assumes perfect testing, independent locations and conditionally independent infections within each location. Pool dilution, sensitivity that varies with pool size, or sampling more pools at sites known to have elevated prevalence changes the observation law. The budget calculations assume that enough independent locations are available to use the proposed allocation. A survey with a fixed list of eligible sites, volume-dependent assay costs, or site-specific travel costs requires a corresponding change to the cost calculation.
 
 All figures and the finite-sample tables use the accompanying R package **poolidentify**. Its reference pages specify the scales of the input moments, the order of the count cells, and the meaning of each interval. Frequentist examples report coverage of individual prevalence or of the whole set as indicated. Bayesian examples report posterior summaries conditional on the stated prior. The source theory and the preparation of this manuscript received assistance from OpenAI ChatGPT.
 
