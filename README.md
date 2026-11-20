@@ -83,8 +83,9 @@ sizes, pass the joint negative-count array and its size classes to `mixed_confid
 If you planned without scenarios, use `affine_pool_interval()` with the chosen allocation, number
 of locations, level, grid, and observed negative-count histogram.
 
-See the [package](poolidentify) for function documentation and verification
-examples. To run the package checks from the repository root:
+See the [package](poolidentify) for function documentation and the
+[verification record](documentation/partial-identification-audit.md) for the scope and
+independent checks. To run the package checks from the repository root:
 
 ```sh
 R CMD build poolidentify

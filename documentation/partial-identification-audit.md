@@ -1,0 +1,19 @@
+# Verification of the partial-identification paper and package
+
+The comparison starts at commit `be85d626` on `clarify-principal-support-counts`.
+The paper and package are on `partial-identification-paper`.
+
+| Requested work | Material checked |
+| --- | --- |
+| Preserve and split the original theory | The [likelihood note](../clustered-group-testing-theory.Rmd) retains the likelihood, sufficiency, monotone likelihood ratio, fixed-ICC and threshold results. The [paper](../partial-identification.Rmd) carries the naive-estimator limits and bias bounds, beta expansions, principal representations, one- and two-pool formulas, replication bounds, and mixed-size results. |
+| Clarify the effect of design | The proof compares interpolation envelopes, illustrates their contact points, and preserves the counterexample for mixed designs that lose an identifiable moment. Figures vary prevalence, individual ICC and pool size. |
+| Infer prevalence with finite locations | Equal- and mixed-size methods fit feasible count laws and construct confidence envelopes. The paper identifies the estimable endpoints and gives the impossibility result for asymptotically unbiased scalar prevalence at fixed design and positive identification width. Bayesian procedures cover feasible moments, complexity preferences and sensitivity to the prior within the interval. |
+| Assess family assumptions | The paper derives sharp bias ranges for a given point limit, proves exact two-pool observational equivalence, and illustrates detectable lack of fit with four pools. The package evaluates finite bias and coverage for independent, beta and logit-normal analyses with equal pool sizes. |
+| Choose designs under three costs | The planner charges per location, pool and sampled unit. It supports equal or mixed allocations, expected total confidence width under prespecified scenarios, and a separate uniform guarantee when no population is supplied. A shortlist trades computation for the possibility of screening out a good candidate. |
+| Produce a reproducible article | The PDF and HTML rendered from the R Markdown source. The audited outputs contained four figures, eight tables and 31 bibliography entries, with all citation links resolved. The [README](../README.md) gives installation, rendering and survey-analysis examples. |
+
+The source package passed a clean `R CMD build` and `R CMD check` with R 4.5.0, including all 12 [test scripts](../poolidentify/tests), the examples and the PDF reference manual. The check finished with zero errors, warnings or notes. The reference manual used the installed Times font. These checks apply to the model in the paper, which assumes perfect assays, independent locations and a fixed, non-informative pooling design.
+
+Independent checks included high-precision reproduction of the original identification tables, numerical integration for the working-family count laws, analytic or numerically integrated Bayesian reference posteriors, and small-sample enumeration for confidence coverage. For design choice, the tests sum one-pool widths over all possible outcomes and compare the mixed-design simulation with enumeration of all 35 histograms for four locations with one pool of two and one of five. Other checks cover the budget floor, unaffordable designs, screening, scenario weights and count ordering.
+
+In the paper's four-candidate example, with a budget of 50,000, location cost 20 and unit cost 0.5, an assay cost of 5 favoured two pools of five at 1,428 locations (estimated mean width 8.07 percentage points). An assay cost of 200 favoured one pool of five at 224 locations (15.49 points). These rankings use the two planning populations in the paper. As a separate timing check on this machine, the nine-candidate README example took approximately four seconds with the default shortlist and 64 simulated surveys per finalist and scenario.
