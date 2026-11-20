@@ -52,6 +52,30 @@ For a mixed-size design, `joint_negative_moments()` takes a joint array of
 numerical outer bounds over unrestricted mixing distributions. For a finite joint
 histogram, use `mixed_confidence()` for simultaneous confidence limits or
 `mixed_bayes_prevalence()` for posterior inference.
+
+To choose the number and sizes of pools, give each candidate as the allocation
+at **one** location. The budget determines how many independent locations the
+survey can afford. This example compares the expected width of a 95% interval
+under two possible populations.
+
+```r
+designs <- candidate_pool_designs(c(2, 5, 10), max_pools = 2)
+populations <- list(
+  diffuse = list(prevalence = c(0, .06), weights = c(.5, .5)),
+  concentrated = list(prevalence = c(0, .15), weights = c(.8, .2))
+)
+set.seed(42)
+plan <- rank_pool_designs(designs, budget = 50000, cost_location = 20,
+                          cost_pool = 5, cost_unit = .5, scenarios = populations)
+head(plan$ranking[, c("design", "locations", "total_cost", "width", "mcse")])
+```
+
+Widths are on the prevalence scale. By default the planner screens multi-pool
+designs and simulates the best five. Use `shortlist = Inf` to simulate every
+multi-pool candidate. Single-pool expected widths are calculated directly.
+With no planning population, the same function compares conservative width
+guarantees for the package's affine interval procedure.
+
 See the [package](poolidentify) for function documentation and verification
 examples. To run the package checks from the repository root:
 
