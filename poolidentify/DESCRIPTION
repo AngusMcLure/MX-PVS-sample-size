@@ -1,0 +1,11 @@
+Package: poolidentify
+Title: Partial Identification of Prevalence from Clustered Pool Counts
+Version: 0.1.0
+Authors@R: person("MX-PVS", "Contributors", role = c("aut", "cre"),
+    email = "AngusMcLure@users.noreply.github.com")
+Description: Computes prevalence bounds from binomial mixture moments and
+    clustered pool counts, quantifies sampling uncertainty across independent
+    locations, and evaluates bias and coverage under working mixing models.
+License: file LICENSE
+Encoding: UTF-8
+Imports: lpSolve, stats

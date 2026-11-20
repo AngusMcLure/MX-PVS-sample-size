@@ -1,0 +1,434 @@
+---
+title: "Likelihood Theory for Clustered Group Testing"
+author: "Prepared with assistance from OpenAI ChatGPT"
+output:
+  html_document:
+    number_sections: true
+    toc: true
+    toc_depth: 3
+    df_print: kable
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE,
+  message = FALSE,
+  warning = FALSE,
+  fig.align = "center",
+  out.width = "85%"
+)
+```
+
+# Introduction
+
+When a survey collects several pools at each location, the number of positive pools at each location carries information about the variation in local prevalence. We derive the likelihood for these counts under logit-normal mixing, establish sufficiency of the count histogram, and study how a location's count contributes to a threshold decision. The ordering depends on whether the logit-scale variance or the individual intraclass correlation is held fixed.
+
+The companion paper [Partial identification of prevalence from clustered group tests](partial-identification.Rmd) develops the bias and identification theory for unrestricted mixing distributions.
+
+# Clustered sampling with a general prevalence distribution
+
+## Sampling structure and conditional model
+
+Suppose sampling is organised into $w$ independent trapping locations, with $v$ non-overlapping pools of size $s$ collected at each location. The total number of pools is $vw$, and the total number of sampled individuals is $svw$.
+
+Let the location-specific prevalences $P_1,\ldots,P_w$ be iid draws from an arbitrary non-degenerate distribution $F$ supported on $[0,1]$, with marginal prevalence
+$$
+p=\mathbb E(P_j),\qquad 0<p<1.
+$$
+Conditional on $P_j$, assume that individuals at location $j$ are infected independently with probability $P_j$ and that pool tests are perfectly sensitive and specific. Define
+$$
+Q_j=1-(1-P_j)^s.
+$$
+If $K_j$ denotes the number of positive pools at location $j$, then
+$$
+K_j\mid P_j\sim\operatorname{Binomial}(v,Q_j),
+\qquad
+X=\sum_{j=1}^w K_j.
+$$
+The distribution $F$ is not specified in the general results below. In particular, their conclusions do not require beta or logit-normal mixing.
+
+## Marginal location-count distribution
+
+For $r=0,\ldots,v$, the marginal probability of observing $r$ positive pools at a location is
+$$
+\pi_r(F)=\Pr(K_j=r)
+=\mathbb E_F\left[{v\choose r}Q_j^r(1-Q_j)^{v-r}\right].
+$$
+For a parametric family $F_\eta$, the correctly specified location-level likelihood is
+$$
+L(\eta;\boldsymbol K)=\prod_{j=1}^w\pi_{K_j}(F_\eta).
+$$
+The locations are independent, but pools from the same location are generally dependent after marginalising over $P_j$.
+
+# Logit-normal mixing model
+
+Suppose
+$$
+\operatorname{logit}(P_j)=Z_j,\qquad
+Z_j\overset{\mathrm{iid}}{\sim}N(\mu,\sigma^2).
+$$
+The marginal prevalence is
+$$
+p=\mathbb E(P_j)
+=\mathbb E\{\operatorname{logit}^{-1}(\mu+\sigma Z)\},
+\qquad Z\sim N(0,1).
+$$
+For fixed $\sigma$, this is strictly increasing in $\mu$, so inference about $p$ is equivalent to inference about $\mu$.
+
+For $r=0,\ldots,v$, the general location-count probabilities specialise to
+$$
+\pi_r(\mu,\sigma)
+=\Pr(K_j=r)
+=\int_{-\infty}^{\infty}
+{v\choose r}q(z)^r\{1-q(z)\}^{v-r}
+\phi(z;\mu,\sigma^2)\,dz,
+$$
+where
+$$
+q(z)=1-\{1-\operatorname{logit}^{-1}(z)\}^{s}
+$$
+and $\phi(\cdot;\mu,\sigma^2)$ denotes the normal density. Conditional on fixed $\sigma$, the likelihood for $\mu$ is
+$$
+L(\mu;\boldsymbol K)=\prod_{j=1}^w\pi_{K_j}(\mu,\sigma).
+$$
+
+# Sufficiency of the location-count histogram
+
+Define
+$$
+n_k=\sum_{j=1}^{w}\mathbb{I}(K_j=k),
+\qquad k=0,\ldots,v.
+$$
+The vector $\boldsymbol n=(n_0,\ldots,n_v)$ records how many locations had exactly $k$ positive pools. It satisfies
+$$
+\sum_{k=0}^{v}n_k=w.
+$$
+
+**Theorem (Sufficiency of the histogram)**
+
+
+For fixed $\sigma$, the histogram $\boldsymbol n=(n_0,\ldots,n_v)$ is a sufficient statistic for $\mu$, and hence for the marginal prevalence $p$.
+
+**Proof.**
+
+
+The likelihood based on the ordered location-level observations is
+$$
+L(\mu;\boldsymbol K)
+=\prod_{j=1}^{w}\pi_{K_j}(\mu,\sigma).
+$$
+Grouping together locations with the same value of $K_j$ gives
+$$
+L(\mu;\boldsymbol K)
+=\prod_{k=0}^{v}\pi_k(\mu,\sigma)^{n_k}.
+$$
+The data enter the likelihood only through $\boldsymbol n$. By the factorisation theorem, $\boldsymbol n$ is sufficient for $\mu$. Since, for fixed $\sigma$, $p=\mathbb{E}\{\operatorname{logit}^{-1}(\mu+\sigma Z)\}$ is a one-to-one function of $\mu$, the same statistic is sufficient for $p$.
+
+**Remark.**
+
+
+The theorem establishes sufficiency; it does not assert that the histogram is minimal sufficient. Nor does it imply that the total number of positive pools $X=\sum_k k n_k$ is sufficient. In general, the likelihood depends on the full histogram rather than only on $X$.
+
+# Monotone likelihood ratio in the number of positive pools
+
+We now establish that, for fixed $\sigma$, the family of location-level distributions $\{\pi_k(\mu,\sigma)\}$ has a monotone likelihood ratio in $k$.
+
+**Definition (Monotone likelihood ratio)**
+
+
+A family of probability mass functions $\pi_k(\mu)$, indexed by an ordered parameter $\mu$ and an ordered statistic $k$, has a monotone likelihood ratio in $k$ if, whenever $\mu_2>\mu_1$, the ratio
+$$
+\frac{\pi_k(\mu_2)}{\pi_k(\mu_1)}
+$$
+is non-decreasing in $k$. Equivalently, for $k_1<k_2$,
+$$
+\pi_{k_1}(\mu_1)\pi_{k_2}(\mu_2)
+\geq
+\pi_{k_1}(\mu_2)\pi_{k_2}(\mu_1).
+$$
+
+## A composition lemma
+
+**Lemma (Composition of TP2 kernels)**
+
+
+Let $a(x,\mu)$ and $b(k,x)$ be non-negative kernels that are totally positive of order two (TP2) in their respective pairs of arguments. Define
+$$
+c(k,\mu)=\int b(k,x)a(x,\mu)\,dx.
+$$
+Under conditions ensuring the integrals exist, $c(k,\mu)$ is TP2 in $(k,\mu)$.
+
+**Proof.**
+
+
+Take $k_1<k_2$ and $\mu_1<\mu_2$. Expanding the determinant and symmetrising the double integral gives
+$$
+\begin{aligned}
+&c(k_1,\mu_1)c(k_2,\mu_2)
+-c(k_1,\mu_2)c(k_2,\mu_1)\\
+&=\int_{x_1<x_2}
+\left[
+b(k_1,x_1)b(k_2,x_2)
+-b(k_1,x_2)b(k_2,x_1)
+\right]\\
+&\qquad\qquad\times
+\left[
+a(x_1,\mu_1)a(x_2,\mu_2)
+-a(x_1,\mu_2)a(x_2,\mu_1)
+\right]\,dx_1\,dx_2.
+\end{aligned}
+$$
+The TP2 property of $b$ makes the first bracket non-negative, and the TP2 property of $a$ makes the second bracket non-negative. The integral is therefore non-negative, proving that $c$ is TP2.
+
+## TP2 of the normal location family
+
+**Lemma.**
+
+
+For fixed $\sigma>0$, the normal density
+$$
+a(z,\mu)=\phi(z;\mu,\sigma^2)
+$$
+is TP2 in $(z,\mu)$.
+
+**Proof.**
+
+
+For $z_1<z_2$ and $\mu_1<\mu_2$, the log density ratio is
+$$
+\log\frac{\phi(z;\mu_2,\sigma^2)}
+{\phi(z;\mu_1,\sigma^2)}
+=
+\frac{(\mu_2-\mu_1)z}{\sigma^2}
++\frac{\mu_1^2-\mu_2^2}{2\sigma^2}.
+$$
+This is strictly increasing in $z$. Therefore
+$$
+\phi(z_1;\mu_1,\sigma^2)\phi(z_2;\mu_2,\sigma^2)
+>
+\phi(z_1;\mu_2,\sigma^2)\phi(z_2;\mu_1,\sigma^2),
+$$
+which establishes TP2.
+
+## TP2 of the conditional binomial kernel
+
+**Lemma.**
+
+
+For fixed $v$, the binomial probability kernel
+$$
+b(k,q)={v\choose k}q^k(1-q)^{v-k},
+\qquad k=0,\ldots,v,
+$$
+is TP2 in $(k,q)$ for $0<q<1$.
+
+**Proof.**
+
+
+Take $k_1<k_2$ and $0<q_1<q_2<1$. The ratio
+$$
+\frac{b(k,q_2)}{b(k,q_1)}
+=
+\left(\frac{1-q_2}{1-q_1}\right)^v
+\left\{
+\frac{q_2(1-q_1)}{q_1(1-q_2)}
+\right\}^{k}
+$$
+is strictly increasing in $k$, because the expression in braces is greater than one. This is equivalent to the TP2 inequality.
+
+## Main MLR result
+
+**Theorem (MLR for the clustered location-level count)**
+
+
+Suppose $s\geq1$, $v\geq1$, and $\sigma>0$ is fixed. Under the logit-normal random-effects model,
+$$
+\pi_k(\mu,\sigma)
+=\Pr(K_j=k)
+$$
+has a monotone likelihood ratio in $k$ as $\mu$ increases. That is, for $\mu_2>\mu_1$, the ratio
+$$
+\frac{\pi_k(\mu_2,\sigma)}{\pi_k(\mu_1,\sigma)}
+$$
+is strictly increasing in $k$.
+
+**Proof.**
+
+
+Write
+$$
+q(z)=1-\{1-\operatorname{logit}^{-1}(z)\}^{s}.
+$$
+For $s\geq1$, $q(z)$ is strictly increasing in $z$. The location-level probability can be written as
+$$
+\pi_k(\mu,\sigma)
+=\int_{-\infty}^{\infty}
+b\{k,q(z)\}\phi(z;\mu,\sigma^2)\,dz.
+$$
+
+By the binomial-kernel lemma and the monotonicity of $q(z)$, the kernel $b\{k,q(z)\}$ is TP2 in $(k,z)$. By the normal-family lemma, $\phi(z;\mu,\sigma^2)$ is TP2 in $(z,\mu)$. Applying the composition lemma, their integral $\pi_k(\mu,\sigma)$ is TP2 in $(k,\mu)$.
+
+Thus, for $k_1<k_2$ and $\mu_1<\mu_2$,
+$$
+\pi_{k_1}(\mu_1,\sigma)\pi_{k_2}(\mu_2,\sigma)
+\geq
+\pi_{k_1}(\mu_2,\sigma)\pi_{k_2}(\mu_1,\sigma),
+$$
+which is the MLR property. Strictness follows from the strict TP2 inequalities of the two component kernels and the fact that the mixing distribution has positive density over the real line.
+
+**Corollary (Ordering of threshold score contributions)**
+
+
+For fixed $\sigma>0$ and finite $\mu_t$, define
+$$
+u_k=
+\left.
+\frac{\partial}{\partial\mu}
+\log\pi_k(\mu,\sigma)
+\right|_{\mu=\mu_t}.
+$$
+Then
+$$
+u_0\leq u_1\leq\cdots\leq u_v.
+$$
+
+**Proof.**
+
+
+The MLR property implies that, for each $k<v$,
+$$
+\log\pi_{k+1}(\mu,\sigma)-\log\pi_k(\mu,\sigma)
+$$
+is increasing in $\mu$. Differentiating gives
+$$
+\frac{\partial}{\partial\mu}\log\pi_{k+1}(\mu,\sigma)
+-
+\frac{\partial}{\partial\mu}\log\pi_k(\mu,\sigma)
+\geq0.
+$$
+The MLR property implies the non-strict inequality. Strict MLR over finite parameter intervals does not, by itself, guarantee a strictly positive derivative at every individual parameter value.
+
+**Remark (Scope of the result)**
+
+
+The MLR theorem assumes that $\sigma$ is fixed as $\mu$ varies. It therefore applies directly to inference under a specified random-effects variance, including threshold decisions in which the assumed clustering variance is held fixed. It does not, by itself, establish MLR when $\sigma$ is jointly estimated with $\mu$, or when $\sigma$ is allowed to vary as a function of $\mu$.
+
+# Fixed-ICC parameterisation
+
+The fixed-$\sigma$ result above is useful when the random-effects variance is specified independently of the prevalence parameter. In some survey designs, however, the design is specified in terms of an intraclass correlation coefficient (ICC). An analyst might therefore wish to hold the ICC fixed at its design value while allowing both $\mu$ and $\sigma$ to vary.
+
+## Defining the fixed-ICC likelihood
+
+Let
+$$
+P=\operatorname{logit}^{-1}(\mu+\sigma Z),\qquad Z\sim N(0,1),
+$$
+and define the marginal individual prevalence and individual-level ICC by
+$$
+p(\mu,\sigma)=\mathbb E(P),
+\qquad
+\rho(\mu,\sigma)
+=\frac{\operatorname{Var}(P)}{p(\mu,\sigma)\{1-p(\mu,\sigma)\}}.
+$$
+For a specified design value $\rho_d$, the fixed-ICC parameterisation constrains
+$$
+\rho\{\mu,\sigma(\mu)\}=\rho_d.
+$$
+The likelihood is then a one-parameter likelihood along this constraint:
+$$
+L_{\rho_d}(\mu;\boldsymbol n)
+=\prod_{k=0}^{v}
+\pi_k\{\mu,\sigma(\mu)\}^{n_k}.
+$$
+This differs from fixing $\sigma$: as $\mu$ changes, $\sigma$ must generally change as well in order to maintain the chosen ICC.
+
+## Why the fixed-$\sigma$ MLR proof does not extend
+
+The composition proof above relies on the normal density being TP2 in $(z,\mu)$. That property holds when $\sigma$ is constant. Along a fixed-ICC curve, the mixing density instead has the form
+$$
+a(z,\mu)=\frac{1}{\sigma(\mu)}
+\phi\!\left(\frac{z-\mu}{\sigma(\mu)}\right).
+$$
+Its log-density has cross-partial derivative
+$$
+\frac{\partial^2\log a(z,\mu)}
+{\partial z\,\partial\mu}
+=
+\frac{1}{\sigma(\mu)^2}
++
+\frac{2\{z-\mu\}\sigma'(\mu)}{\sigma(\mu)^3}.
+$$
+When $\sigma'(\mu)\ne0$, this expression can be negative for some values of $z$. Thus the normal mixing kernel is not generally TP2 along a varying-$\sigma$ parameterisation, and the composition argument used for the fixed-$\sigma$ theorem is no longer available.
+
+This observation alone would show only that the previous proof does not apply. In fact, numerical evaluation also gives a counterexample to MLR itself.
+
+## Numerical counterexample
+
+Consider $s=5$ individuals per pool, $v=5$ pools per trapping location, and a fixed individual-level ICC of $\rho_d=0.10$. For each value of $\mu$, $\sigma$ was numerically chosen to satisfy the ICC constraint. The following two parameter values give:
+
+| Quantity | $\mu_1=-4.5$ | $\mu_2=-4.0$ |
+|:--|--:|--:|
+| $\sigma$ | 1.502473 | 1.380352 |
+| Marginal prevalence $p$ | 0.028737 | 0.039382 |
+| Individual-level ICC | 0.10 | 0.10 |
+
+The location-count probabilities, in order $k=0,\ldots,5$, are approximately
+$$
+\begin{aligned}
+\boldsymbol\pi(\mu_1,\sigma_1)
+&=(0.660091,\ 0.201468,\ 0.076190,\ 0.034629,\ 0.017670,\ 0.009952),\\
+\boldsymbol\pi(\mu_2,\sigma_2)
+&=(0.568229,\ 0.235592,\ 0.103595,\ 0.050782,\ 0.026821,\ 0.014982).
+\end{aligned}
+$$
+Consequently, the likelihood ratios are
+$$
+\left(
+\frac{\pi_k(\mu_2,\sigma_2)}
+     {\pi_k(\mu_1,\sigma_1)}
+\right)_{k=0}^{5}
+\approx
+(0.860835,\ 1.169372,\ 1.359692,\ 1.466460,\ 1.517843,\ 1.505456).
+$$
+The ratio decreases between $k=4$ and $k=5$. This violates the required non-decreasing ordering, so the location-count family does **not** have a general MLR property under the fixed-ICC parameterisation.
+
+The counterexample is in a relatively low-prevalence range (approximately 2.9% to 3.9%) and uses a moderate ICC of 0.10. It is therefore not confined to an obviously extreme parameter setting. The numerical values were evaluated using high-order Gauss--Hermite quadrature; they are numerical evidence for this counterexample, rather than a symbolic characterisation of all fixed-ICC parameter values.
+
+## Consequences for score ordering and computation
+
+The score contribution from a location with $k$ positive pools, when differentiating along the fixed-ICC curve, is
+$$
+u_k^{(\rho)}
+=
+\frac{d}{d\mu}
+\log\pi_k\{\mu,\sigma(\mu)\}.
+$$
+The fixed-$\sigma$ corollary does not establish an ordering of these contributions, because its MLR premise is not available here. For example, at $\mu=-4.25$, with $s=v=5$ and $\rho_d=0.10$, numerical differentiation along the fixed-ICC curve gives
+$$
+(u_0^{(\rho)},\ldots,u_5^{(\rho)})
+\approx
+(-0.298112,\ 0.314334,\ 0.615532,\ 0.766194,\ 0.834506,\ 0.817483).
+$$
+In this example, the contribution for $k=5$ is slightly smaller than that for $k=4$. This is a numerical example showing that the fixed-$\sigma$ score ordering cannot simply be carried over; it is not a proof that score contributions are unordered for every fixed-ICC design.
+
+A fixed-ICC model can nevertheless be fitted as a one-dimensional likelihood, provided the ICC constraint defines an appropriate $\sigma(\mu)$ over the parameter range of interest. What is lost is the general MLR guarantee, and hence the theoretical justification for algorithms that rely on monotone likelihood ratios or ordered threshold-score contributions. Such calculations should instead use direct enumeration or establish the relevant ordering separately over the design's parameter range. In practice, it is also important to examine sensitivity to the assumed design ICC: holding the design ICC fixed is a modelling constraint, not evidence that the realised population ICC is known.
+
+# Implications for threshold calculations
+
+For a fixed threshold $p_t$ and fixed assumed $\sigma$, let $\mu_t$ be the unique value satisfying
+$$
+p_t=\mathbb{E}\{\operatorname{logit}^{-1}(\mu_t+\sigma Z)\}.
+$$
+The score at the threshold for an observed histogram is
+$$
+U(\mu_t)=\sum_{k=0}^{v}n_k u_k.
+$$
+Under the usual concavity of the log-likelihood in $\mu$, the sign of this score determines whether the maximum likelihood estimate lies above or below $\mu_t$, subject to boundary and tie conventions.
+
+The ordering $u_0\leq \cdots\leq u_v$ means that changing one location's result from $k$ to $k+1$ positive pools cannot decrease the score at the threshold. This provides a useful monotonicity property for exact probability calculations and may support branch-and-bound or other structured enumeration algorithms. It does not, by itself, remove the need to account for the distribution of location-level outcomes.
+
+# Discussion
+
+The clustered model changes the statistical unit that carries independent information: it is the trapping location, not the individual pool. The location-level count $K_j$ has a finite support of size $v+1$, and its histogram across locations is sufficient for inference on marginal prevalence when the random-effects variance is fixed.
+
+Finally, the MLR result establishes an ordering of the evidence contributed by locations with different numbers of positive pools. This is a useful theoretical foundation for developing efficient calculations of the probability that the prevalence MLE exceeds a specified threshold. Computational methods for exploiting this structure, and extensions to unknown random-effects variance, are natural topics for further work.

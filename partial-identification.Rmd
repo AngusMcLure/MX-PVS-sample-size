@@ -1,0 +1,1563 @@
+---
+title: "Partial identification of prevalence from clustered group tests"
+abstract: |
+  When several pools are drawn from the same location, the distribution of positive-pool counts can be known exactly while mean individual prevalence remains uncertain. We characterise what the joint count law identifies under conditionally independent infections and perfect testing. The prevalence obtained by ignoring clustering has a downward population bias. The sharp range of compatible prevalences is a moment problem whose endpoints are attained by discrete mixing distributions. We show when smaller pools tighten this range and give a mixed-design counterexample. For a finite number of locations we construct feasible estimates and a confidence envelope, and place priors directly on feasible moment vectors for a Bayesian sensitivity analysis. With two pools of 25 individuals per location, beta and logit-normal working models can give identical count probabilities and imply prevalences of 1.00% and 1.65%, respectively. The same probabilities are compatible with prevalences from 0.72% to 7.27%. We compare pooling designs under location, assay, and individual collection costs by their expected finite-survey interval width, and derive a uniform width guarantee for surveys without a planning population.
+documentclass: article
+fontsize: 11pt
+geometry: margin=1in
+bibliography: partial-identification.bib
+link-citations: true
+output:
+  pdf_document:
+    latex_engine: xelatex
+    number_sections: true
+    fig_caption: true
+  html_document:
+    number_sections: true
+    toc: true
+    toc_depth: 2
+    fig_caption: true
+---
+
+```{r setup, include=FALSE}
+library(poolidentify)
+knitr::opts_chunk$set(echo = FALSE, fig.align = "center", fig.width = 7,
+                      fig.height = 3.8, out.width = "100%", dpi = 144)
+```
+
+# Introduction
+
+A surveillance survey that reports two positive pools out of ten can conceal two different patterns. The positive pools may come from the same trapping location or from different locations. The pattern matters because the target is the mean probability of infection for an individual drawn from a randomly selected location. Even the full distribution of location counts can leave this mean uncertain. For example, with two pools of 25 individuals per location, a population with 1% prevalence and individual intraclass correlation 0.10 under beta mixing generates the same count distribution as populations with prevalences ranging from 0.72% to 7.27%.
+
+We ask three questions. Which features of local prevalence can a given pooling design recover? How much uncertainty remains when the survey samples finitely many locations? What error can arise when a working model selects a single prevalence within or outside the compatible interval? In each case the independent sampling unit is the location.
+
+Mixed effects group-testing models account for the dependence between pools from
+a common site [@Chen2009], and software supports such analyses in molecular
+xenomonitoring [@McLure2021]. For beta-distributed location prevalence,
+@Montesinos2014 derived the pool positivity probability and the exact
+distribution of the number of positive pools at a location. A separate source
+of bias arises even with homogeneous prevalence. The finite-sample pooled
+maximum likelihood estimator can be biased upwards under independence
+[@HepworthBiggerstaff2017]. The downward discrepancy studied here persists
+as the number of locations grows. @Clark2024 give a related example in
+biosecurity where misspecifying within-group clustering changes estimated
+unit prevalence even when estimated consignment risks change little.
+
+The location histogram links this problem to inference from exchangeable
+binary responses [@GeorgeBowman1995] and to the convex geometry of binomial
+mixtures [@Wood1999]. In a closely related application, @DHaultfoeuilleRathelot2017
+used the finitely many moments identified by a binomial mixture to bound
+segregation indices and developed inference for their bounds. Here the
+functional of the mixing distribution is determined by the group-testing
+design. Principal representations of moment spaces supply extremal distributions
+[@KarlinStudden1966; @KreinNudelman1977; @DetteSchorning2013]. Polynomial
+majorants and minorants give a complementary description in terms of
+inequalities on expectations [@BertsimasPopescu2005].
+
+The identification interval answers a population question. With finitely
+many locations, a confidence interval can target either a particular value
+of prevalence or the whole set of values compatible with the population
+count law [@ImbensManski2004]. The distinction also matters in Bayesian
+analysis. The count likelihood updates beliefs about the observable
+probabilities, while the conditional prior assigns weight to the different
+prevalences compatible with a given count law [@MoonSchorfheide2012].
+Varying that conditional prior is the basis of robust Bayesian inference
+for set-identified models [@GiacominiKitagawa2021].
+
+# Sampling model and estimand
+
+## Sampling structure and conditional model
+
+Suppose sampling is organised into $w$ independent trapping locations, with $v$ non-overlapping pools of size $s$ collected at each location. The total number of pools is $vw$, and the total number of sampled individuals is $svw$.
+
+Let the location-specific prevalences $P_1,\ldots,P_w$ be iid draws from a probability distribution $F$ supported on $[0,1]$, with marginal prevalence
+$$
+p=\mathbb E(P_j),\qquad 0<p<1.
+$$
+Conditional on $P_j$, assume that individuals at location $j$ are infected independently with probability $P_j$ and that pool tests are perfectly sensitive and specific. Define
+$$
+Q_j=1-(1-P_j)^s.
+$$
+If $K_j$ denotes the number of positive pools at location $j$, then
+$$
+K_j\mid P_j\sim\operatorname{Binomial}(v,Q_j),
+\qquad
+X=\sum_{j=1}^w K_j.
+$$
+The individual intraclass correlation is $\rho=\operatorname{Var}(P_j)/\{p(1-p)\}$. An individual selected from a randomly sampled location has prevalence $p$. Informative site selection or site sizes would require different weights.
+
+## Marginal location-count distribution
+
+For $r=0,\ldots,v$, the marginal probability of observing $r$ positive pools at a location is
+$$
+\pi_r(F)=\Pr(K_j=r)
+=\mathbb E_F\left[\binom{v}{r}Q_j^r(1-Q_j)^{v-r}\right].
+$$
+For a parametric family $F_\eta$, the correctly specified location-level likelihood is
+$$
+L(\eta;\boldsymbol K)=\prod_{j=1}^w\pi_{K_j}(F_\eta).
+$$
+The locations are independent, but pools from the same location are generally dependent after marginalising over $P_j$.
+
+# Bias from treating pools as independent
+
+The ordinary estimator treats all $vw$ pools as though they had a common positive probability. It is
+$$
+\widehat p_{\mathrm{ind}}
+=1-\left(1-\frac{X}{vw}\right)^{1/s}.
+$$
+Under the clustered model as the number of locations $w$ increases (with $v$ fixed)
+$$
+\frac{X}{vw}\ \xrightarrow[]{\mathrm{a.s.}}\
+\frac{\mathbb{E}(K_j)}{v}
+=\mathbb{E}(Q_j)
+=1-\mathbb{E}\{(1-P_j)^s\},
+$$
+so the probability limit of the ordinary estimator is
+$$
+p_{\mathrm{ind}}^*
+=1-\left[\mathbb{E}\{(1-P_j)^s\}\right]^{1/s}.
+$$
+In general,
+$$
+p_{\mathrm{ind}}^*\ne \mathbb{E}(P_j)=p.
+$$
+Its probability limit is a power mean of local uninfected fractions, subtracted from one.
+
+For $s=1$, the two quantities coincide. For $s>1$, strict convexity of $x\mapsto x^s$ on the positive half-line, applied to $1-P_j$, gives
+$$
+\mathbb{E}\{(1-P_j)^s\}\geq \{1-\mathbb{E}(P_j)\}^s.
+$$
+It follows that
+$$
+p_{\mathrm{ind}}^*\leq p,
+$$
+with strict inequality whenever $P_j$ is non-degenerate and $s>1$. Thus, under this model, ignoring between-location heterogeneity leads to an asymptotic downward bias for the marginal individual prevalence.
+
+For equally sized pools, adding pools at a location changes the dispersion of the estimate while leaving its probability limit fixed. Under unequal sizes, the limiting working score gives a unique prevalence between the single-size limits for the largest and smallest pools. The appendix gives the score equation, conditions for strictness, the finite-sample Jensen correction, sharp bounds at fixed individual ICC, and rare-prevalence expansions.
+
+```{r bias-by-design, fig.height=3.25, fig.cap="Asymptotic percentage underestimation by an independent-pool analysis. Each panel fixes true prevalence. Lines use beta mixing with the specified individual ICC. Shading gives the sharp range across all mixing distributions for ICC 0.10. Each curve starts at zero for individual testing."}
+sizes <- c(1, 2, 5, 10, 20, 40)
+rates <- c(.001, .01, .1)
+rhos <- c(.01, .1, .3)
+cols <- c("#286a8a", "#a34424", "#495e1a")
+op <- par(mfrow = c(1, 3), mar = c(3.6, 3.8, 2, .6), mgp = c(2.3, .7, 0))
+for (p in rates) {
+  plot(range(sizes), c(0, 100), type = "n", xlab = "Pool size",
+       ylab = "Underestimation (%)", main = sprintf("Prevalence %g%%", 100*p))
+  bounds <- sapply(sizes, function(s) -100 * naive_bias_bounds(p, .1, s) / p)
+  polygon(c(sizes, rev(sizes)), c(bounds[1, ], rev(bounds[2, ])),
+          col = "grey90", border = NA)
+  for (j in seq_along(rhos)) {
+    losses <- vapply(sizes, function(s) {
+      law <- mixing_counts(s, 1, "beta", c(p, rhos[j]))
+      estimate <- -expm1(log(law$probabilities[1]) / s)
+      100 * (1 - estimate / p)
+    }, numeric(1))
+    lines(sizes, losses, type = "o", pch = j + 14, lty = j, col = cols[j])
+  }
+  if (p == rates[1]) legend("topleft", paste("ICC", rhos), col = cols,
+                            pch = 15:17, lty = 1:3, bty = "n", cex = .77)
+}
+par(op)
+```
+
+# What prevalence does the count law identify?
+
+First suppose the population count probabilities are known. We seek every marginal prevalence compatible with them under an arbitrary mixing law.
+
+## Binomial mixtures and the truncated moment problem
+
+As before we write
+$$
+Q_j=1-(1-P_j)^s,\qquad
+f_s(q)=1-(1-q)^{1/s},\quad 0\leq q\leq1.
+$$
+Then
+$$
+K_j\mid Q_j\sim\operatorname{Binomial}(v,Q_j),
+\qquad p=\mathbb E(P_j)=\mathbb E\{f_s(Q_j)\}.
+$$
+The first relation defines a binomial mixture. Given the location-specific success probability, the $v$ pool outcomes are independent Bernoulli trials. The identifiability limitations of such models are well established [@GeorgeBowman1995; @Wood1999, Section 4]. Specifically, the distribution of the $K_j$ identifies the first $v$ moments of its mixing distribution, but not in general the mixing distribution itself.
+
+The binomial factorial-moment identity gives
+$$
+\mathbb E\left\{\binom{K_j}{k}\,\middle|\,Q_j\right\}
+=\binom vk Q_j^k.
+$$
+Thus the known count probabilities $\boldsymbol\pi=(\pi_0,\ldots,\pi_v)$ determine the first $v$ moments of $Q_j$
+$$
+m_k=\mathbb E(Q_j^k)
+=\frac{\displaystyle\sum_{r=k}^v\binom rk\pi_r}{\binom vk},
+\qquad k=1,\ldots,v.
+$$
+Conversely, $\pi_r=\binom vr\mathbb E\{Q_j^r(1-Q_j)^{v-r}\}$ depends only on $m_0,\ldots,m_v$. Knowledge of $\boldsymbol\pi$ is therefore equivalent to the first $v$ moments of $Q_j$. This is the familiar finite-binomial-mixture result; see @Wood1999 [Section 4] for its consequences for nonidentifiability and a geometric account of compatible mixing distributions.
+
+For *unpooled* binary observations ($s=1$), $Q_j=P_j$, so the marginal prevalence is the identified first moment, $p=m_1$. With pooling ($s>1$), $Q_j$ is still described by a binomial mixture, but the target is instead the **nonlinear functional**
+$$
+p=\int_0^1 f_s(q)\,d\xi(q),
+$$
+where $\xi$ denotes a candidate mixing distribution of $Q_j$. Since $f_s$ is not a polynomial of degree at most $v$ for $s>1$, this integral is not generally determined by the first $v$ moments. Our problem is consequently an instance of the *truncated Hausdorff moment problem*: bound an integral over all probability measures on $[0,1]$ consistent with finitely many moments.
+
+## Sharp distribution-free identification bounds
+
+For a feasible vector of count probabilities $\boldsymbol\pi$, write
+$$
+\mathcal M_v(\boldsymbol\pi)
+=\left\{\xi\text{ a probability measure on }[0,1]:
+\int_0^1q^k\,d\xi(q)=m_k,\quad k=0,\ldots,v\right\},
+$$
+where $m_0=1$ and the remaining moments are obtained from $\boldsymbol\pi$ as above.
+
+**Theorem (Sharp identification interval for marginal prevalence).** The sharp identified set is the closed interval $[p_{\min}(\boldsymbol\pi),p_{\max}(\boldsymbol\pi)]$, with endpoints
+$$
+p_{\min}(\boldsymbol\pi)=\min_{\xi\in\mathcal M_v(\boldsymbol\pi)}\int_0^1 f_s(q)\,d\xi(q),
+\qquad
+p_{\max}(\boldsymbol\pi)=\max_{\xi\in\mathcal M_v(\boldsymbol\pi)}\int_0^1 f_s(q)\,d\xi(q).
+$$
+For $s>1$ and a moment vector in the relative interior of the feasible moment space, let
+$$
+\xi^-=\sum_{i=1}^{N_-}w_i^-\delta_{x_i^-},
+\qquad
+\xi^+=\sum_{i=1}^{N_+}w_i^+\delta_{x_i^+}
+$$
+denote its lower and upper principal representations, respectively. Here $\delta_x$ denotes unit mass at $x$. Each representation is uniquely determined by the support pattern below and by the requirement that its positive weights reproduce $m_0,\ldots,m_v$. The sharp bounds are
+$$
+p_{\min}(\boldsymbol\pi)=\sum_{i=1}^{N_-}w_i^-f_s(x_i^-),
+\qquad
+p_{\max}(\boldsymbol\pi)=\sum_{i=1}^{N_+}w_i^+f_s(x_i^+).
+$$
+
+| Available moments | Lower principal representation $\xi^-$ | Upper principal representation $\xi^+$ |
+|:--|:--|:--|
+| $v=2n-1$ (odd) | $n$ interior nodes (Gauss) | Endpoints $0,1$ and $n-1$ interior nodes (Gauss–Lobatto) |
+| $v=2n$ (even) | Endpoint $0$ and $n$ interior nodes (left Gauss–Radau) | Endpoint $1$ and $n$ interior nodes (right Gauss–Radau) |
+
+Each endpoint can be attained with at most $\lfloor(v+3)/2\rfloor$ support points. For a boundary moment vector the compatible distribution is unique and the bounds coincide. For $s=1$ both bounds equal $m_1$ for every feasible moment vector.
+
+**Proof.** The binomial-mixture moment correspondence shows that $\mathcal M_v(\boldsymbol\pi)$ contains exactly the mixing distributions compatible with the count law. Each induces a distribution of $P_j=f_s(Q_j)$. The feasible set is weakly compact, and integrating the continuous function $f_s$ over it gives attained extrema. Mixtures of two feasible distributions preserve every identified moment and interpolate linearly between their prevalence values. Hence every value between the extrema is attainable.
+
+To identify the extremisers for $s>1$, first observe that $1,q,\ldots,q^v$ is a positively oriented Chebyshev system on $[0,1]$ by the Vandermonde determinant formula. Appending $f_s$ preserves this orientation. Indeed, writing $\alpha=1/s\in(0,1)$ gives
+$$
+f_s^{(v+1)}(q)
+=\alpha\prod_{j=1}^{v}(j-\alpha)(1-q)^{\alpha-v-1}>0,
+\qquad 0<q<1.
+$$
+For any $v+2$ distinct increasing nodes in $[0,1]$, the determinant of the augmented system is the positive Vandermonde determinant times the divided difference of $f_s$ of order $v+1$. By the mean value theorem for divided differences, this last factor equals $f_s^{(v+1)}(c)/(v+1)!$ for some $c$ strictly between the extreme nodes. This argument includes nodes at $0$ or $1$, since $f_s$ is continuous on the closed interval.
+
+The Markov–Krein principal-representation theorem now gives the minimum at $\xi^-$ and the maximum at $\xi^+$, with the interior support patterns in the table [@KarlinStudden1966, pp. 55--56; @KreinNudelman1977]. Counting the nodes gives the stated support bound. On the boundary the moment vector has a unique representation of smaller index, where each interior node counts as one and each endpoint as one half. Its index is less than $(v+1)/2$, so its support also satisfies the bound. Finally, for $s=1$ we have $f_1(q)=q$ and every compatible distribution, including each principal representation, gives $p=m_1$. $\square$
+
+For example, when $v\geq2$ and the only possible counts are $0$ and $v$, the count law gives $m_1=m_2=\pi_v$. Hence $\mathbb E[Q_j(1-Q_j)]=0$, so the unique mixing distribution is $(1-\pi_v)\delta_0+\pi_v\delta_1$ and $p=\pi_v$.
+
+**Computation.** For an interior moment vector, construct the two quadrature rules in the table for the moment functional $L(q^k)=m_k$. The nodes and weights are determined entirely by those moments. Evaluating $f_s$ at the nodes and summing with the corresponding weights gives the sharp bounds. For moment-to-quadrature algorithms see @Gautschi2004 [Section 1.4.2] and, for a binomial-mixture application, @DHaultfoeuilleRathelot2017 [Section 2.3]. At larger $v$, direct inversion of raw-moment matrices can be ill-conditioned. Algorithms based on orthogonal-polynomial recurrences are preferable, with checks that the reconstructed moments agree with $m_0,\ldots,m_v$, all nodes lie in $[0,1]$, and weights are nonnegative [@Gautschi2004].
+
+For $v=1$ the interval is $[f_s(m_1),m_1]$. At fixed $s$, increasing $v$ adds a moment, nesting the intervals. Their maximum width over count laws equals twice the best degree-$v$ uniform polynomial approximation error for $f_s$, and tends to zero. The appendix derives the one- and two-pool formulas, the width result, and its rate.
+
+For two pools of 25, the interval in our opening example extends more than six percentage points above the true prevalence. The following figure varies the population generating the count law as well as the pool size. Each vertical interval is computed from the two observed moments alone.
+
+```{r interval-by-design, fig.height=3.9, fig.cap="Sharp population identification intervals for two pools per location. The dashed line is true prevalence. Within each size group the three vertical intervals correspond, from left to right, to individual ICCs of 0.01, 0.10 and 0.30. Beta mixing generates each observable count law. Every distribution compatible with that law is admitted in the interval. The vertical axis uses a logarithmic scale."}
+isizes <- c(1, 5, 10, 25, 40)
+op <- par(mfrow = c(1, 3), mar = c(3.6, 4.1, 2, .5), mgp = c(2.5, .7, 0))
+for (p in rates) {
+  design <- expand.grid(size = isizes, icc = rhos)
+  iv <- vapply(seq_len(nrow(design)), function(i) {
+    s <- design$size[i]
+    law <- mixing_counts(s, 2, "beta", c(p, design$icc[i]))
+    identification_interval(probabilities = law$probabilities, pool_size = s)
+  }, numeric(2))
+  x <- match(design$size, isizes) + (match(design$icc, rhos) - 2) * .20
+  color <- cols[match(design$icc, rhos)]
+  plot(c(.5, length(isizes) + .5), range(iv)*100, log = "y", type = "n",
+       xaxt = "n", xlab = "Pool size", ylab = "Compatible prevalence (%)",
+       main = sprintf("Prevalence %g%%", 100*p))
+  axis(1, seq_along(isizes), isizes)
+  abline(h = 100*p, lty = 2, col = "grey45")
+  segments(x, 100*iv[1, ], x, 100*iv[2, ], col = color, lwd = 2)
+  points(x, 100*iv[1, ], pch = 16, cex = .45, col = color)
+  points(x, 100*iv[2, ], pch = 16, cex = .45, col = color)
+}
+par(op)
+```
+
+## Identification with multiple pool sizes
+
+Suppose each location contributes $v_a\geq1$ pools of size $s_a$, for $a=1,\ldots,k$, with fixed allocations across locations. Conditional on location prevalence $P_j$, the class-specific positive counts $K_{ja}$ are independent, with
+$$
+K_{ja}\mid P_j\sim\operatorname{Binomial}\left(v_a,1-(1-P_j)^{s_a}\right).
+$$
+Set $X_j=1-P_j$ and let $N_{ja}=v_a-K_{ja}$ be the number of *negative* pools in class $a$. Then
+$$
+N_{ja}\mid X_j\sim\operatorname{Binomial}(v_a,X_j^{s_a}),
+\qquad p=1-\mathbb E(X_j).
+$$
+As before, we consider $w\to\infty$ with all $v_a$ and $s_a$ fixed, so that the full joint distribution of $(N_{j1},\ldots,N_{jk})$ is known.
+
+**Proposition (Identifiable moments for mixed pool sizes).** Define the set of distinct exponents
+$$
+\mathcal A=
+\left\{\sum_{a=1}^k r_as_a:
+r_a\in\{0,\ldots,v_a\},\ a=1,\ldots,k\right\}
+=\{0=\lambda_0<\lambda_1<\cdots<\lambda_d\}.
+$$
+The limiting joint count distribution identifies exactly the moments
+$$
+m_{\lambda_i}=\mathbb E(X_j^{\lambda_i}),
+\qquad i=0,\ldots,d.
+$$
+Specifically, for each admissible vector $\boldsymbol r=(r_1,\ldots,r_k)$,
+$$
+m_{\sum_a r_as_a}
+=
+\frac{\displaystyle\mathbb E\left\{\prod_{a=1}^k
+\binom{N_{ja}}{r_a}\right\}}
+{\displaystyle\prod_{a=1}^k\binom{v_a}{r_a}}.
+$$
+Repeated exponents give the same moment and hence do not supply additional independent moment constraints.
+
+**Proof.** Conditional independence and the binomial factorial-moment identity give
+$$
+\mathbb E\left\{\prod_a\binom{N_{ja}}{r_a}\,\middle|\,X_j\right\}
+=X_j^{\sum_a r_as_a} \prod_a\binom{v_a}{r_a} .
+$$
+Taking expectations with respect to $X_j$ proves the displayed formula. Conversely, for any possible count vector $\boldsymbol n$, its probability is
+$$
+\Pr(\boldsymbol N_j=\boldsymbol n)
+=\left\{\prod_a\binom{v_a}{n_a}\right\}
+\mathbb E\left\{\prod_a X_j^{s_an_a}
+(1-X_j^{s_a})^{v_a-n_a}\right\}.
+$$
+Expanding the product shows that every such probability is a linear combination of the moments indexed by $\mathcal A$. Thus the moment vector and the joint count distribution determine one another. $\square$
+
+If any $s_a=1$, then $1\in\mathcal A$ and the mean prevalence is point-identified: $p=1-m_1$. We therefore focus below on $s_a>1$ for every class, in which case $\lambda_1>1$ and $m_1$ is not among the directly identified moments.
+
+### Sharp bounds from a generalised moment problem
+
+Let $\boldsymbol m_{\mathcal A}=(m_{\lambda_0},\ldots,m_{\lambda_d})$ denote a feasible moment vector, and define
+$$
+\mathcal M_{\mathcal A}(\boldsymbol m_{\mathcal A})
+=\left\{\xi\text{ a probability measure on }[0,1]:
+\int_0^1x^{\lambda_i}\,d\xi(x)=m_{\lambda_i},
+\ i=0,\ldots,d\right\}.
+$$
+The monomials $1,x^{\lambda_1},\ldots,x^{\lambda_d}$ form a *Müntz (generalised polynomial) Chebyshev system* on $[0,1]$ for strictly increasing nonnegative exponents. This brings the mixed-size problem within the classical theory of moment spaces and principal representations [@KarlinStudden1966; @KreinNudelman1977].
+
+**Theorem (Sharp prevalence bounds for mixed pool sizes).** Suppose all $s_a>1$ and $\boldsymbol m_{\mathcal A}$ is feasible. Let $\xi^-$ and $\xi^+$ denote the lower and upper principal representations of $\boldsymbol m_{\mathcal A}$ relative to the ordered system
+$$
+1,x^{\lambda_1},\ldots,x^{\lambda_d}.
+$$
+For an interior moment vector these representations are unique and are determined entirely by $\boldsymbol m_{\mathcal A}$. Write
+$$
+\mu^-=\int_0^1x\,d\xi^-(x),
+\qquad
+\mu^+=\int_0^1x\,d\xi^+(x).
+$$
+Then the sharp prevalence bounds are
+$$
+\boxed{
+\begin{array}{ll}
+d\text{ odd}:&
+1-\mu^-\ \leq\ p\ \leq\ 1-\mu^+,\\[3pt]
+d\text{ even}:&
+1-\mu^+\ \leq\ p\ \leq\ 1-\mu^-.
+\end{array}
+}
+$$
+For a boundary moment vector the representing measure is unique and both bounds coincide. The principal representations are discrete, and the bounds are attained. In particular, the usual principal-representation support patterns hold: if $d=2n-1$, $\xi^-$ has $n$ interior support points while $\xi^+$ has $n-1$ interior points and both endpoints; if $d=2n$, $\xi^-$ has $n$ interior points and the endpoint $0$, while $\xi^+$ has $n$ interior points and the endpoint $1$.
+
+**Proof.** The proposition shows that $\mathcal M_{\mathcal A}$ is exactly the class of mixing distributions compatible with the joint count law. Hence sharp prevalence bounds are equivalent to extremising the functional $\int x\,d\xi(x)$ over this moment class.
+
+For the stated exponents, both $1,x^{\lambda_1},\ldots,x^{\lambda_d}$ and its augmentation by $x$ form Chebyshev systems. Indeed, ordering the augmented monomials by increasing exponent gives
+$$
+1,x,x^{\lambda_1},\ldots,x^{\lambda_d},
+$$
+which has the positive orientation of a generalised Vandermonde system. Moving $x$ from the second position to the last requires $d$ transpositions. Thus the augmentation
+$$
+1,x^{\lambda_1},\ldots,x^{\lambda_d},x
+$$
+has orientation $(-1)^d$. By the Markov--Krein principal-representation theorem, $\xi^-$ minimises and $\xi^+$ maximises $\int x\,d\xi$ when $d$ is even, and the directions reverse when $d$ is odd. Finally $p=1-\int x\,d\xi$ reverses these inequalities, giving the stated bounds. Both principal representations reproduce the observed moments and therefore attain their respective bounds. The existence, uniqueness, and support structure invoked here are classical consequences of Chebyshev-system moment theory [@KarlinStudden1966]. $\square$
+
+The bounds can likewise be computed from the identified moments by constructing the corresponding *generalised Gaussian quadrature* rules for the Chebyshev system $1,x^{\lambda_1},\ldots,x^{\lambda_d}$. Unlike ordinary quadrature for consecutive polynomial moments, the interior nodes need not be roots of orthogonal polynomials, so the preceding standard Gauss--Radau--Lobatto algorithms do not apply directly. @Huybrechs2022 [Sections 2--3] gives a constructive continuation algorithm for generalised Gaussian quadrature for complete Chebyshev systems, based on successive principal and canonical representations. The required inputs here are precisely the basis functions $x^{\lambda_i}$ and their identified moments $m_{\lambda_i}$; the computed nodes and weights must reproduce these moments and obey the support patterns of the theorem. Thus no new quadrature algorithm is needed for the mixed-pool-size identification problem, although numerical stability and boundary moment vectors still require attention.
+
+For sparse exponents the package also computes **outer bounds over continuous support**. The input is a vector of population moments of $X=1-P_j$. The function `joint_negative_moments()` recovers them from a joint count array by the factorial-moment transform above and checks agreement for repeated exponents. Marginal counts alone generally omit the cross moments.
+
+To upper-bound $E[g(X)]$ for $g(x)=1-x$ or $g(x)=x-1$, let $H(x)=c_0+\sum_j c_j x^{k_j}$. Its expectation is known from the moment vector. On a cell $[l,r]$, linear interpolation of $x^k$ lies above the function by at most
+$$
+ e_k(l,r)=\frac{(r-l)^2}{8} k(k-1) r^{k-2}\quad(k\ge2), \qquad e_1(l,r)=0.
+$$
+This follows from the second derivative bound on the cell. Requiring $H-g\ge\sum_j \max(c_j,0)e_{k_j}(l,r)$ at both ends therefore guarantees $H\ge g$ everywhere on the cell. Splitting the coefficients into positive and negative parts gives a linear program that minimises $E(H)$. The implementation shares constraints between adjacent cells, adds violated constraints as needed and checks the resulting envelope on every cell, shifting its intercept to cover any residual and a numerical rounding allowance. The majorant for $1-x$ gives an upper prevalence bound. Negating the bound from the majorant for $x-1$ gives a lower prevalence bound. Both allow atoms between the grid points.
+
+At a finite resolution these bounds can be wider than the sharp interval. As the maximum cell width vanishes and the coefficient budget grows, the optimal values converge in exact arithmetic. For any $\epsilon>0$, separation of the compact convex hull of $(x^{k_1},\dots,x^{k_d},g(x))$ from the point with the observed moments and final coordinate $\sup E(g)+\epsilon$ gives a polynomial majorant within $\epsilon$ of the sharp upper endpoint. Its fixed coefficients satisfy the budget eventually, and an intercept increase of order the squared cell width suffices for the grid constraints. The lower endpoint follows by changing the sign of $g$. The calculation assumes feasible population moments. A successful numerical interval alone does not certify feasibility.
+
+### How identification improves with smaller pools
+
+Compare two designs applied to the **same population** of locations. Let $A=(a_1,\ldots,a_d)$ and $B=(b_1,\ldots,b_e)$ list their distinct positive exponents in increasing order. Each design also identifies the constant moment. Write $I_A$ and $I_B$ for the resulting sharp prevalence intervals.
+
+**Theorem (exponent comparison).** If $e\ge d$ and $b_i\le a_i$ for $i=1,\ldots,d$, then $I_B\subseteq I_A$. When $b_1=1$, $I_B=\{p\}$.
+
+**The geometry for one pool.** Put $X=1-P_j$. A pool of size $s$ identifies $E(X^s)$. Two functions bound the unobserved $x$ at every $x\in[0,1]$:
+$$
+ x^s\ \le\ x\ \le\ H_s(x;z)
+ =z+\frac{x^s-z^s}{s z^{s-1}},\qquad z=\{E(X^s)\}^{1/s}>0 .
+$$
+The left inequality follows from $x\le1$. Convexity of $x^s$ gives the right inequality by taking its tangent at $z$. The expected bounds are $E(X^s)$ and $z$. A law on $\{0,1\}$ attains the lower bound, and the point mass at $z$ attains the upper one. If $E(X^s)=0$, $X=0$ almost surely.
+
+Now shrink the pool to size $t<s$. The lower curve rises from $x^s$ to $x^t$. Keep the **old** contact point $z$ on the upper curve and replace $s$ by $t$. The new curve still touches $x$ at $z$, but lies closer to $x$ everywhere. Indeed,
+$$
+ H_s(x;z)-z=z\int_1^{x/z}u^{s-1}\,du .
+$$
+When $x>z$ the integrand increases with $s$. When $x<z$ both the integration direction and the ordering of the integrands reverse. Thus $x\le H_t(x;z)\le H_s(x;z)$ in both cases. The new count law determines the expectations of both new curves because they use only $1$ and $x^t$. Optimising the new contact point can tighten the upper bound further. Reflecting the interval about $1/2$ converts bounds on $E(X)$ to bounds on prevalence $1-E(X)$.
+
+```{r interpolation-envelope, fig.width=7, fig.height=3.2, fig.cap="Pointwise bounds on the uninfected fraction for one pool per location. Black shows the target x. The grey dashed curves use pools of size four. Blue curves use pools of size two and retain the original contact points. Expectations of these curves bound the population mean. The dot marks the shared interior contact on the upper bounds."}
+# Uniform X gives E(X^4) = 1/5, hence pool positivity 4/5.
+z <- 1 - unname(poolidentify::identification_interval(moments = 4/5,
+                                                       pool_size = 4)["lower"])
+x <- seq(0, 1, length.out = 401)
+upper <- function(s) z + (x^s - z^s) / (s * z^(s - 1))
+op <- par(mfrow = c(1, 2), mar = c(3.7, 3.8, 2, 0.7), mgp = c(2.2, .65, 0))
+for (side in c("Lower bounds", "Upper bounds")) {
+  old <- if (side == "Lower bounds") x^4 else upper(4)
+  new <- if (side == "Lower bounds") x^2 else upper(2)
+  plot(x, x, type = "l", lwd = 2, xlab = "Uninfected fraction x",
+       ylab = "Function value", main = side, ylim = range(x, old, new))
+  lines(x, old, col = "grey40", lty = 2, lwd = 2)
+  lines(x, new, col = "#0072B2", lty = 3, lwd = 2.5)
+  if (side == "Upper bounds") points(z, z, pch = 19, cex = .85)
+}
+par(op)
+```
+
+**Proof for several exponents.** If $b_1=1$, the proposed design measures $E(X)$ directly. Otherwise all exponents exceed one. It suffices to consider the first $d$ exponents of $B$, since every additional measured moment restricts the feasible distributions further.
+
+*Construct the two old bounds.* First suppose the moments under $A$ are interior. For each of the two principal representations, keep its support points as contacts. Seek $H$ in the span of $1,x^{a_1},\ldots,x^{a_d}$ satisfying $H(x)=x$ at every contact and $H'(x)=1$ at every interior contact. Counting interior contacts twice gives exactly $d+1$ equations. The system is nonsingular by Descartes' rule of signs. A nonzero polynomial with at most $d+1$ terms has at most $d$ positive zeros counted with multiplicity. If zero is a contact, the homogeneous equations remove the constant term, reducing both the number of terms and the required number of positive zeros by one.
+
+For the contact set containing zero, $H(x)-x$ starts with $-x$ and stays nonpositive on $[0,1]$. For the other contact set, its constant coefficient is positive and the error stays nonnegative. To verify the signs, count the positive zeros of $H-x$. There is one fewer prescribed zero than possible terms, counting multiplicity and omitting the zero constant when zero is a contact. Descartes' rule therefore forces every possible coefficient to be present and their signs to alternate. In particular, whenever there is a constant it has opposite sign to the coefficient $-1$ of $x$. The interior zeros are all double and no other positive zeros are available. Hence the sign near zero holds on the whole interval away from contacts. Taking expectations gives sharp bounds, as the respective principal representations are concentrated entirely on their contacts.
+
+*Move one exponent while keeping the contacts fixed.* Replace the exponents in order from smallest to largest, skipping equalities. At a changing step an old exponent $a$ moves to $b<a$ without passing any other current exponent. Write $H_a,H_b$ for the old and new interpolants on **the same** contact set. The sign calculation above applies to both errors, so both curves bound $x$ on the same side. To order the curves, apply the same zero count to $D=H_a-H_b$. This polynomial has one more possible term than either interpolant, since both $x^a$ and $x^b$ may appear. Its coefficient of $x^a$ equals that of $H_a-x$ and is nonzero. Again the prescribed positive zeros force all possible signs to alternate. The ordered exponent list of $D$ is obtained from that of $H_a-x$ by replacing $1$ with $b$, both below $a$. Thus $x^a$ occupies the same position in both lists. Its common coefficient fixes the sign of the first term to be the same in both polynomials. The double interior contacts preserve this sign throughout the interval. Consequently $D$ has the sign of $H_a-x$, which places $H_b$ between $H_a$ and $x$ pointwise.
+
+*Take expectations under the common population.* After all replacements, the new curves depend only on moments available under $B$. Their pointwise ordering ensures that their expectations are at least as tight as the old sharp bounds. Optimising over all laws compatible with $B$ can only tighten them further. This proves nesting for $E(X)$, and hence for $p=1-E(X)$.
+
+For a boundary population law $F$, apply the argument to $F_\varepsilon=(1-\varepsilon)F+\varepsilon U$ for $U$ uniform on $[0,1]$. Full support puts its moments in the interior: a nonnegative polynomial in the moment span with zero integral under $F_\varepsilon$ would vanish identically. Each design's extrema converge to those for $F$. Indeed, mixing an extremiser for $F$ with the same $\varepsilon U$ gives one direction of the bound. In the other direction, compactness gives convergent subsequences of extremisers for $F_\varepsilon$, whose limits reproduce the moments for $F$. Thus nesting passes to the limit. $\square$
+
+**Corollary (shrinking any pools in an initially equal-size design).** Suppose a location originally supplies $v$ pools of size $s$ and now supplies $v$ pools of sizes $t_i\le s$. The partial sums $t_1, t_1+t_2,\ldots,\sum_{i=1}^v t_i$ are distinct identified exponents. The $i$th smallest new exponent is at most $\sum_{j=1}^i t_j\le is$, the $i$th original exponent. The theorem gives interval inclusion. Equality is possible, for example when both designs identify prevalence exactly. For two pools in the beta example ($p=1\%$, $\rho=0.1$), replacing both pools of size 25 by pools of size 5 changes the interval from $[0.719\%,7.275\%]$ to $[0.961\%,1.886\%]$. Individual testing gives $[1\%,1\%]$.
+
+**Why a mixed-size replacement can widen the bounds.** For a mixed design, reducing a pool size can cause previously distinct exponents to coincide. For example, replacing the size-three pool in $(2,3)$ by a size-two pool changes the positive exponents from $\{2,3,5\}$ to $\{2,4\}$. To see the consequence exactly, give $X_j$ equal mass at $0$ and $1/2$. Under the original design the nonnegative polynomial
+$$
+x^2(x-\tfrac12)^2(x+1)=x^5-\tfrac34 x^3+\tfrac14 x^2
+$$
+has known expectation zero. Every compatible distribution is therefore supported on $\{0,1/2\}$, and $m_2=1/8$ fixes the weights, identifying $p=3/4$. Under the new design only the first two moments of $Z=X_j^2$ are known. They are $\mathbb E(Z)=1/8$ and $\mathbb E(Z^2)=1/32$. The law giving $Z$ mass $49/50$ at $3/28$ and $1/50$ at $1$ has these same moments and a different $\mathbb E(\sqrt Z)$. The new prevalence interval thus has positive width.
+
+### Example with two different pool sizes
+
+Consider two pools per location, one of size $10$ and one of size $40$ ($v_1=v_2=1$, $s_1=10$, $s_2=40$). As in the comparison design with two pools of size $25$, a total of 50 individuals is sampled and tested at each location. Here the limiting joint count distribution identifies the exponent set
+$$
+\mathcal A=\{0,10,40,50\},
+$$
+and hence the three nontrivial moments
+$$
+m_{10}=\Pr(N_{j1}=1),\qquad
+m_{40}=\Pr(N_{j2}=1),\qquad
+m_{50}=\Pr(N_{j1}=N_{j2}=1),
+$$
+where $m_r=\mathbb E(X_j^r)$ and $X_j=1-P_j$. In contrast, two pools of size $25$ identify only $m_{25}$ and $m_{50}$.
+
+For a directly comparable numerical illustration, retain the beta mixing model used above: $p=1\%$, $\rho=0.1$, or equivalently
+$$
+P_j\sim\operatorname{Beta}(0.09,8.91),
+\qquad
+X_j\sim\operatorname{Beta}(8.91,0.09).
+$$
+Its moments are $m_r=(8.91)_r/(9)_r$, where $(a)_r$ is the rising factorial, giving
+$$
+(m_{10},m_{40},m_{50})
+\approx(0.9321971323,\ 0.8546368326,\ 0.8403270527).
+$$
+
+Numerically solving the generalised quadrature moment equations for the system $\{1,x^{10},x^{40},x^{50}\}$ gives the two principal representations (with $\delta_x$ denoting unit mass at $x$):
+$$
+\begin{aligned}
+\xi^-&\approx0.0986365\,\delta_{0.9219089}
+       +0.9013635\,\delta_{0.9985584},\\
+\xi^+&\approx0.0234988\,\delta_0
+       +0.1800038\,\delta_{0.9721421}
+       +0.7964974\,\delta_1.
+\end{aligned}
+$$
+Because $d=3$ is odd, the lower prevalence bound is $1-\int x\,d\xi^-(x)$ and the upper bound is $1-\int x\,d\xi^+(x)$. The table also shows the effect of replacing the size-$40$ pool by a second size-$10$ pool.
+
+| Pools per location | Individuals per location | Lower bound | Upper bound | Interval width |
+|:--|--:|--:|--:|--:|
+| Two pools of size $25$ | 50 | $0.7189\%$ | $7.2746\%$ | $6.5557$ percentage points |
+| One pool of size $10$ and one of size $40$ | 50 | $0.9002\%$ | $2.8513\%$ | $1.9511$ percentage points |
+| Two pools of size $10$ | 20 | $0.8905\%$ | $3.4534\%$ | $2.5629$ percentage points |
+
+The comparison theorem guarantees that $(10,40)$ gives an interval contained in that for $(25,25)$ for every population because its two smallest positive exponents, $10$ and $40$, are at most $25$ and $50$, respectively. For this population the width decreases by about 70.2%. Reducing the size-$40$ pool to size $10$ then widens the interval from 1.95 to 2.56 percentage points. The two equal pools identify only exponents $10$ and $20$. These are population identification intervals. With finitely many locations, precision also depends on how accurately the survey estimates the joint count probabilities.
+
+# Inference from finitely many locations
+
+Let $n_r$ count the locations with $K_j=r$, $w=\sum_r n_r$, and $\widehat H(k)=w^{-1}\sum_{r=0}^k n_r$. We first consider a common pool size $s$ and a common number $v$ of pools per location. The sampling units are the $w$ independent locations. The empirical factorial moments are individually unbiased for $m_k$, but their vector can be infeasible. For example, if every two-pool location has one positive pool, the empirical moments are $\widehat m_1=1/2$ and $\widehat m_2=0$. They imply a negative variance for $Q_j$.
+
+## What can a point estimate target?
+
+Write $[L(H),U(H)]$ for the sharp prevalence interval given the population count CDF $H$. If its width is positive, the two extremising laws yield the same distribution of every sample, for every $w$. Any integrable statistic therefore has the same expectation under both laws. Its maximum absolute bias over the two laws is at least $\{U(H)-L(H)\}/2$ for every $w$. This proves that asymptotically unbiased estimation of the true prevalence across arbitrary mixing laws is impossible in a fixed, partially identifying design. The two endpoints and their midpoint, however, are identifiable targets. At known $H$, the midpoint minimises worst-case absolute error over compatible prevalences. Reporting the two endpoints alongside this point summary quantifies its unavoidable error.
+
+To estimate these targets, put nodes $0=u_0<\cdots<u_G=1$ on the individual-prevalence scale. For $0\leq k<v$, define
+$$
+B_k(u)=\Pr\{\mathrm{Binomial}(v,1-(1-u)^s)\leq k\}.
+$$
+Choose probability weights on these nodes to minimise $\max_k|\sum_i a_i B_k(u_i)-\widehat H(k)|$. A linear program gives a fitted CDF $\widetilde H$ arising from a feasible mixing law even when the empirical law is infeasible. Report $L(\widetilde H)$, $U(\widetilde H)$ and their midpoint. The grid weights serve only to fit the observable count probabilities. The endpoints range over the full set of compatible continuous and discrete mixing laws. If quadrature cannot resolve a fitted law numerically, the software reports a grid-based outer approximation and labels it in the returned result. Its midpoint is then an approximation to the identified midpoint.
+
+**Consistency of the endpoint estimates.** Keep $s,v$ fixed and let the largest grid spacing tend to zero as $w$ increases. Rounding the prevalence of each location to its nearest node approximates all $v$ population CDF ordinates uniformly, by continuity on a compact interval. The minimum CDF distance is therefore at most this approximation error plus $\|\widehat H-H\|_\infty$. The empirical CDF converges almost surely, which gives $\widetilde H\to H$. On the relative interior of the feasible count laws, $L$ is bounded and convex, and $U$ is bounded and concave, by mixing feasible laws. Both are continuous there. At a boundary point the representing law is unique. Weak compactness then forces the extremisers of every convergent sequence of feasible count laws to have that same limiting law. Thus both fitted endpoints and their midpoint converge almost surely to their population targets at every feasible law. Boundedness implies convergence of their expectations and hence asymptotic unbiasedness for those targets. When $L=U$, they are also consistent and asymptotically unbiased for prevalence.
+
+An alternative design can aim directly at prevalence. For example, testing one randomly chosen individual at every location gives an unbiased sample mean with variance $p(1-p)/w$. With equal pool sizes and increasing within-location replication, consider $\overline p_{w,v}=w^{-1}\sum_j f_s(K_j/v)$. Conditional Jensen gives a nonnegative bias. Since $|f_s(x)-f_s(y)|\le |x-y|^{1/s}$, conditional binomial variance and Jensen's inequality bound the bias uniformly by $(4v)^{-1/(2s)}$. Independent locations give $\operatorname{Var}(\overline p_{w,v})\le 1/(4w)$. Thus increasing both $w$ and $v$ at fixed $s$ restores consistency without specifying a mixing family, although the uniform bound can decay slowly for large pools.
+
+## A finite-sample confidence interval for the whole identified set
+
+Let $d=\|\widetilde H-\widehat H\|_\infty$ and use
+$$
+r=\max\left\{d,\sqrt{\frac{\log(2/\alpha)}{2w}}\right\},\qquad
+\ell_k=\max\{0,\widehat H(k)-r\},\quad h_k=\min\{1,\widehat H(k)+r\}.
+$$
+The Dvoretzky–Kiefer–Wolfowitz inequality with Massart's constant gives $\Pr\{\ell_k\leq H(k)\leq h_k\ \forall k\}\geq1-\alpha$ for any underlying count law [@massart1990]. Including the fitted distance ensures feasibility for every sample. On the coverage event, **every** mixing law with the true count probabilities satisfies the band. Minimising and maximising prevalence subject to the band therefore covers both true endpoints simultaneously and covers the actual prevalence. No asymptotic approximation, differentiability of the endpoints, or independence between pools at a location is required. For $v=1$, project a Clopper–Pearson interval $[a,b]$ for the positive-pool probability through the monotone sharp endpoints to obtain $[f_s(a),b]$ [@clopper1934].
+
+A naive grid restriction on candidate mixing laws could exclude their true support. To include off-grid laws, let $b_i$ be the mass in the cell from $u_{i-1}$ to $u_i$. Since each $B_k$ is decreasing, every law satisfying the band obeys the following linear inequalities:
+$$
+\sum_i b_i B_k(u_i)\leq h_k,\qquad
+\sum_i b_i B_k(u_{i-1})\geq \ell_k,\qquad
+b_i\geq0,\quad \sum_i b_i=1.
+$$
+Its prevalence lies between $\sum_i b_i u_{i-1}$ and $\sum_i b_i u_i$. Minimise the first expression and maximise the second under these constraints to obtain an outer confidence interval. This calculation preserves coverage even on a coarse grid. Splitting cells in a fixed band can only tighten these outer limits. For a vanishing mesh, a subsequence argument on cell masses gives the continuous-band extrema: every weak limit satisfies the band by uniform continuity, and the objective error per represented law is bounded by the mesh width. The implementation uses two linear programs, each with $2v+1$ constraints on the cell masses. It recovers conservative objective bounds from their dual multipliers. When arithmetic near a saturated count law precludes sharp quadrature, the code uses the same outer-bound program at the fitted CDF, reports this numerical fallback, and returns its midpoint. The grid has equally spaced nodes on both the prevalence and positivity scales to resolve low prevalence when $s$ is large.
+
+For example, with $v=2$, $s=5$ and $(n_0,n_1,n_2)=(88,10,2)$, the following summaries distinguish the uncertainty that would remain at the fitted count law from the uncertainty with only 100 locations. The confidence interval is conservative because it covers the entire identified set using a simultaneous CDF band.
+
+```{r finite-location-example}
+finite_fit <- poolidentify::fit_prevalence(c(88, 10, 2), pool_size = 5)
+knitr::kable(round(100 * rbind("Fitted identification interval" = finite_fit$identified,
+                              "95% confidence interval" = finite_fit$confidence), 2),
+             col.names = c("Lower (%)", "Upper (%)"),
+             caption = "Prevalence bounds from 100 independent locations.")
+```
+
+## Joint counts from several pool sizes
+
+For a fixed mixed-size design, let $n_{\boldsymbol N}$ count independent locations with each possible vector of **negative** pool counts. A joint histogram with $D=\prod_a(v_a+1)$ cells yields $D$ marginal binomial counts across locations. Form a two-sided Clopper–Pearson interval of level $1-\alpha/D$ for each cell probability. The union bound gives probability at least $1-\alpha$ that all intervals cover simultaneously. As above, first fit a feasible joint probability array by minimising the largest cell-probability residual. Widen each interval to include its fitted value. Applying both population moment operations to this fitted array estimates the structural bounds.
+
+For individual prevalence $u$, the probability of outcome $\boldsymbol n$ is the product over pool sizes of $g_a(u)=\Pr\{\mathrm{Binomial}(v_a,(1-u)^{s_a})=n_a\}$. Within a grid cell, each factor is unimodal, with its maximum at $1-(n_a/v_a)^{1/s_a}$ if this value lies in the cell, and otherwise at an endpoint. Its minimum occurs at an endpoint. Products of the separate minima and maxima therefore enclose the joint cell probability throughout that grid cell. Substitute these kernel bounds for the lower and upper CDF ordinates in the preceding linear programs. On the simultaneous coverage event, every compatible population mixing law satisfies the constraints and its mean lies within the returned interval. The outer approximation converges for a fixed probability band as the mesh shrinks by the same compactness argument. This calculation is most practical when $D$ is modest, since each outcome requires its own probability interval and corresponding pair of constraints.
+
+For instance, consider 100 locations with one size-two pool and one size-five pool each. In the following histogram, rows index zero or one negative size-two pool and columns index zero or one negative size-five pool. This illustrates inference directly from the joint count table.
+
+```{r finite-mixed-example}
+mixed_sample <- matrix(c(8, 12, 3, 77), nrow = 2)
+mixed_fit <- poolidentify::mixed_confidence(mixed_sample, c(2, 5))
+knitr::kable(matrix(round(100 * mixed_fit$confidence, 2), nrow = 1),
+             col.names = c("Lower (%)", "Upper (%)"),
+             caption = "95% confidence interval with two pool sizes at 100 locations.")
+```
+
+## Bayesian inference on the feasible moment space
+
+For equal pool sizes, the count likelihood depends on the mixing law through exactly $v$ moments. We can therefore specify a prior in $v$ interpretable coordinates and use the location histogram $h=(h_0,\ldots,h_v)$ directly. Let $a_k$ and $b_k$ be the smallest and largest possible values of $m_k$ given $m_1,\ldots,m_{k-1}$. In the interior define the canonical moment
+$$
+c_k=\frac{m_k-a_k}{b_k-a_k},\quad k=1,\ldots,v .
+$$
+Every point of $(0,1)^v$ specifies exactly one interior moment vector. The closure of these vectors contains every feasible boundary vector. In particular, $c_1=\mathbb E(Q)$ and, when $v\ge2$,
+$c_2=\operatorname{Var}(Q)/\{c_1(1-c_1)\}$. Thus $c_2$ is the intralocation correlation of *pool outcomes*. Individual infection statuses have the different ICC $\rho$ defined earlier. At a boundary value of a canonical coordinate the subsequent moments are fixed. These facts and the quadrature recurrences below follow from canonical moment theory [@DetteStudden1997].
+
+Independent beta priors on the coordinates yield the posterior
+$$
+  d\Pi(c\mid h)\ \propto\
+   \left\{\prod_{r=0}^{v}\pi_r(c)^{h_r}\right\}
+   \prod_{k=1}^{v} c_k^{A_k-1}(1-c_k)^{B_k-1}\,dc_k .
+$$
+Positive shapes give positive prior mass to every relative neighbourhood of a feasible moment vector, including a boundary vector. They assign zero mass to infeasible vectors. For $v\ge2$ the prior gives zero probability to *exactly* homogeneous locations. To assign homogeneity positive probability, a separate point-mass component at $c_2=0$ would be required. Three continuous priors make different assumptions explicit.
+
+* **Uniform canonical coordinates.** $A_k=B_k=1$ gives the same prior probability to the lower and upper halves of each remaining moment range.
+* **Uniform raw-moment volume.** If the density is constant in $(m_1,\ldots,m_v)$, the Jacobian gives independent $\operatorname{Beta}(v-k+1,v-k+1)$ coordinates [@Chang1993]. Early coordinates concentrate around one half as $v$ grows. For example, the implied prior for marginal pool positivity changes when the design adds a pool. Neither uniform prior is invariant to the choice of parameterisation.
+* **Shrinkage toward simpler mixing laws.** Take $A_k=1$ for all $k$, $B_{2j}=1+2j$, and $B_{2j-1}=1$. This makes small $c_2$ plausible while progressively favouring weak higher-order departures from a low-rank moment sequence. To see why, put $\zeta_1=c_1$ and $\zeta_k=(1-c_{k-1})c_k$ for $k>1$. The squared off-diagonal entry linking rows $j$ and $j+1$ of the quadrature Jacobi matrix is $\zeta_{2j-1}\zeta_{2j}$. At $c_{2j}=0$ that link vanishes, and the first $j$ rows suffice to reproduce the moments with at most $j$ support points. Small $c_{2j}$ weakens the link continuously. The chosen shape sequence is a tunable preference for simpler observable moments. It does not estimate the number of distinct prevalences in nature. The package accepts arbitrary positive shape pairs, including separate prior information on pool positivity.
+
+For a draw of $c$, the lower principal quadrature rule reproduces every polynomial through degree $v$. Applying it to the binomial mass functions therefore gives the exact probabilities $\pi_r(c)$ in exact arithmetic. Both principal rules give $L(c)$ and $U(c)$. The package computes quadrature nodes through singular values of bidiagonal factors of the Jacobi matrices of order at most $\lfloor(v+3)/2\rfloor$, with closed forms for $v\le2$. For $v=1$ the posterior for $c_1$ is $\operatorname{Beta}(A_1+h_1,B_1+h_0)$. For $v>1$ we transform each coordinate by its prior cumulative distribution function and use a coordinate slice sampler on the unit cube [@Neal2003]. Each update draws a slice height under the current likelihood, proposes from the unit interval and shrinks that interval toward the current coordinate until acceptance. The prior becomes uniform on this scale. This avoids proposing infeasible moments or fitting an entire mixing density. Independent runs, split-chain diagnostics and Monte Carlo standard errors are useful when higher moments are weakly informed.
+
+What is inferred about prevalence depends on how the unidentified part is treated [@MoonSchorfheide2012; @GiacominiKitagawa2021]. Write $q_t$ for a posterior $t$-quantile. The envelope
+$$
+ \big[q_{\alpha/2}(L),\,q_{1-\alpha/2}(U)\big]
+$$
+contains the entire identified interval with posterior probability at least $1-\alpha$, by the union bound (up to simulation error in estimated quantiles). It consequently applies to every conditional prior supported inside the identified interval for this fixed prior on $c$. This is a posterior probability statement. Frequentist repeated-sampling coverage follows from the separate confidence construction above.
+
+A scalar posterior requires a choice along each interval. Set $p=L(c)+T\{U(c)-L(c)\}$ and independently assign $T\sim\operatorname{Beta}(a,b)$. Every such $p$ has a compatible mixing law, for example the mixture of the two principal representations with weights $1-T$ and $T$. Conditional on $c$, the data leave the distribution of $T$ exactly as specified. Conditional posterior mean prevalence is $(bL+aU)/(a+b)$, so with known moments, changing the prior mean of $T$ from $t$ to $t'$ moves the posterior mean by $(t'-t)(U-L)$. For fixed $v$ the multinomial experiment consistently identifies its cell probabilities. A full-support moment prior puts mass in every likelihood neighbourhood of a true interior count law, yielding posterior concentration on its moments by finite-alphabet likelihood separation. The limiting width $U-L$ can nevertheless be positive. Compare conditional priors and report the envelope when conclusions depend on where the true prevalence lies within it.
+
+As a finite-location example, suppose 30 locations each contribute two pools of 25 individuals. The observed counts of locations with zero, one and two positive pools are $(24,4,2)$. The table shows how the prior on feasible moments changes the 95% envelope. The last two columns give posterior means under two choices for the relative position $T$. These means integrate $T$ analytically for each draw of the endpoints.
+
+```{r bayes-prior-sensitivity, echo=FALSE}
+set.seed(4216)
+bayes_table <- do.call(rbind, lapply(c("uniform", "volume", "shrink"), function(pr) {
+  fit <- poolidentify::bayes_prevalence(c(24, 4, 2), pool_size = 25,
+                                        prior = pr, chains = 4, burn = 200,
+                                        draws = 1000)
+  ends <- fit$draws
+  data.frame(Prior = pr, Lower = 100 * fit$envelope[1],
+             Upper = 100 * fit$envelope[2],
+             'Mean, uniform T' = 100 * mean((ends$lower + ends$upper) / 2),
+             'Mean, Beta(1,4) T' = 100 * mean((4 * ends$lower + ends$upper) / 5),
+             check.names = FALSE, row.names = NULL)
+}))
+knitr::kable(bayes_table, digits = 2, row.names = FALSE,
+             caption = "Posterior envelope endpoints and mean prevalence (%).")
+```
+
+### A joint prior for mixed pool sizes
+
+For a mixed design, put $X=1-P$, write $\mathcal A$ for the observable powers derived above and augment them by the target power $1$. If $d$ is the number of distinct **positive** exponents in $\mathcal A\cup\{1\}$, put $J=1+\lfloor d/2\rfloor$. Every feasible vector of augmented moments has a representation by a probability measure on at most $J$ points. Indeed, the powers (including the constant) form a Chebyshev system, and the lower principal representation has this support count. The count also bounds the unique representation on the boundary [@KarlinStudden1966; @DetteSchorning2013]. This dimension bound permits a prior on the feasible count law and prevalence with no discretisation of prevalence.
+
+Take $J$ independent atom locations $X_i$ with $X_i^{s_{\min}}\sim\operatorname{Beta}(\eta,1)$, where $s_{\min}$ is the smallest pool size. Independently draw the weights $(W_1,\ldots,W_J)\sim\operatorname{Dirichlet}(\gamma/J,\ldots,\gamma/J)$, for $\eta,\gamma>0$. Map them to $m_b=\sum_i W_i X_i^b$ and $p=1-\sum_iW_iX_i$. Every relative neighbourhood of every feasible joint $(\boldsymbol\pi,p)$ has positive prior probability. To prove this, start from its principal representation, allow extra atoms to have weight arbitrarily near zero, and apply continuity of the moment map. All the required neighbourhoods of atom locations and simplex weights have positive probability. Thus the finite representation achieves full support for this *experiment and target*, including approximations to vectors arising from continuous location prevalence.
+
+The rate $\eta$ controls prior negativity in the smallest pool, with prior mean $\eta/(\eta+1)$. The weight concentration $\gamma$ controls complexity. A different construction could place a prior directly on the number of components [@MillerHarrison2018]. Here the fixed maximum $J$ has a design-specific justification. In particular, $\mathbb E[\sum_i W_i^2]=(1+\gamma/J)/(1+\gamma)$ is the prior probability that two independently sampled locations draw the same atom. Lower concentration increases this probability. The reciprocal of $\sum W_i^2$ summarises the effective number of components; the number of distinct biological location types cannot generally be inferred from the histogram. This construction induces a conditional prior for $p$ inside each identified interval, so the reported credible interval can remain sensitive to these hyperparameters as the number of locations grows whenever the population identified set has positive width.
+
+The function `mixed_bayes_prevalence` takes the joint histogram indexed by **negative** counts in each size class. Conditional on the atoms and weights, it allocates the locations in each occupied histogram cell to atoms in one multinomial draw. Assignment probabilities are proportional to $W_i$ times the product of that atom's class-specific binomial probabilities. Weights update by Dirichlet conjugacy. To update atom $i$, let $t_i=-s_{\min}\log X_i$, $b_a=s_a/s_{\min}$, and let $n_{ia}^-,n_{ia}^+$ be the total allocated negative and positive pool counts of class $a$. Its conditional likelihood is proportional to
+$$
+ \exp\!\left(-t_i\sum_a b_a n_{ia}^-\right)
+ \prod_a\{1-\exp(-b_at_i)\}^{n_{ia}^+}.
+$$
+When no positive pool is assigned to the atom this gives a conjugate exponential update. Otherwise the sampler uses a univariate slice under the exponential prior. Computation per sweep depends on the number of occupied histogram cells and the number of atoms, and uses aggregated sufficient statistics for each update. The implementation returns prevalence and observable moments, credible limits, and Monte Carlo diagnostics for these quantities and for the effective number of atoms. Multiple chains are especially important when the likelihood is sharply concentrated near a face or several atoms can explain the same cells. Comparing different $\gamma$ and $\eta$ reveals which conclusions depend on the induced conditional prior.
+
+# Prevalence under a working mixing family
+
+Suppose an analysis selects a two-parameter family $F_\theta$ for local prevalence. Write $\pi_r(\theta)=\int \binom{v}{r}q_s(x)^r\{1-q_s(x)\}^{v-r}\,dF_\theta(x)$, with $q_s(x)=1-(1-x)^s$, and write $g(\theta)=\int x\,dF_\theta(x)$. For a true count law $\pi$, the multinomial log likelihood per location converges to $\sum_r\pi_r\log\pi_r(\theta)$. Under the usual consistency conditions for a unique, separated maximizer, maximum likelihood targets $a=g(\theta^\star)$, where $\theta^\star$ minimizes the count-law divergence $D(\pi\Vert\pi(\theta))$ [@White1982]. With multiple minimizers the following result applies to each selected limit separately.
+
+**Sharp bias given the observable law.** If the sharp identified interval at $\pi$ is $[L,U]$, the attainable asymptotic signed biases of a prevalence-valued estimator converging in probability to $a=a(\pi)$ fill exactly $[a-U,a-L]$. The largest absolute bias is $(U-L)/2+|a-(L+U)/2|$. Since the estimates lie in $[0,1]$, their expectations also converge to $a$. Each compatible mixing law yields the same distribution of the data at every sample size. The principal representations attain the two endpoint biases, and mixtures between them attain all intermediate values. This includes independence with $a=f_s(m_1)$. A family returning an exact fit selects some $a\in[L,U]$. If its count law is only a projection, even membership in this interval requires checking.
+
+For any such law with $p\ne a$, coverage of a confidence interval whose endpoints converge in probability to $a$ tends to zero. To see this, take $\epsilon=|p-a|/2$. With probability tending to one, both endpoints lie within $\epsilon$ of $a$. Correcting a working standard error for misspecification can improve inference about $a$, while the coverage limit for $p\ne a$ persists. Even when $p=a$, under a regular interior fit the actual asymptotic variance involves the sandwich matrix $A^{-1}BA^{-1}$, where $A$ is the expected negative log-likelihood Hessian and $B$ the variance of the location score. An interval using inverse model information can then have a different coverage from its nominal level. A regular parametric Bayesian fit under misspecification can likewise concentrate around the KL projection with credible interval curvature different from the sampling variance [@KleijnVdVaart2012].
+
+## Why two pools cannot distinguish beta and logit-normal heterogeneity
+
+Existing work describes moments of logit-normal probabilities [@FredericLad2008], geographic pooling under beta prevalence models [@Birkner2013; @Montesinos2014], and the performance of beta-binomial and logit-normal approaches to overdispersion [@Harrison2015]. The following result concerns the moments *after* transforming individual prevalence to pool positivity.
+
+**Proposition.** For any fixed $s\ge1$ and interior feasible pair $0<m_1<1$, $m_1^2<m_2<m_1$, each family contains a unique distribution with these two moments of pool positivity. In particular, both families fit exactly the same set of interior count laws for $v=2$.
+
+**Proof.** Write $q=q_s(P)$. For beta mixing, fix concentration $c=\alpha+\beta$ and vary the mean parameter from zero to one. The laws increase strictly in stochastic order (their density ratios are increasing), spanning all values of $E(q)$ between zero and one. Set the mean to the unique value giving $E(q)=m_1$. For logit-normal mixing, fix $\sigma>0$ and adjust the logit location in the same way. Both calibrations vary continuously with the dispersion parameter, by continuity and strict monotonicity.
+
+As $c\to\infty$, the beta variance is at most $1/\{4(c+1)\}$, so in the limit $q$ is constant at $m_1$. As $c\downarrow0$, $E[P(1-P)]\le c/\{4(c+1)\}$, which forces every limiting law to be supported on $\{0,1\}$. Its mass at one must be $m_1$. In the logit-normal family, as $\sigma\downarrow0$ the Lipschitz transformation $z\mapsto q_s(\operatorname{logit}^{-1}z)$ forces concentration at $m_1$. As $\sigma\to\infty$, the chance assigned to any bounded logit interval is at most its length divided by $\sigma\sqrt{2\pi}$. Again the limiting law has masses $1-m_1,m_1$ at the endpoints. Thus in each family $E(q^2)$ varies continuously between $m_1^2$ and $m_1$.
+
+For strictness, consider two calibrated beta laws with $c_2>c_1$. Both shape parameters must increase. If one failed to increase, the other would strictly increase and the resulting stochastic order would contradict equal $E(q)$. The density ratio for the higher concentration is proportional to $P^{\alpha_2-\alpha_1}(1-P)^{\beta_2-\beta_1}$, which peaks once and vanishes at either end. For the logit-normal family the ratio for the smaller logit variance likewise peaks once, since its logarithm is a strictly concave quadratic in $\operatorname{logit}(P)$. These ratios carry over to the $q$ scale. Let $q_a<q_b$ be the two density crossings. The difference between the more concentrated and more dispersed densities is negative, positive and negative on the three successive intervals. Integrating $(q-q_a)(q-q_b)$ against this difference gives a strictly negative result. Equal zeroth and first moments cancel the constant and linear terms, so the more concentrated law has smaller $E(q^2)$. This proves uniqueness. $\square$
+
+With one pool per location the two parameters cannot be fitted jointly from the count law. With three or more pools the higher moments provide restrictions that can expose an inadequate working model. Even perfect agreement on all observed moments leaves the sharp bias range above whenever $L<U$.
+
+## An observationally equivalent pair
+
+Take two pools of 25 per location. Beta mixing with mean 1% and individual ICC 0.10 gives count probabilities $(0.840327,0.086563,0.073110)$. At the same observable law the fitted logit-normal mean prevalence is 1.646%. The next figure gives the errors against every compatible prevalence, including the two extremal discrete laws. If beta is true, fitting logit-normal overestimates by 0.646 percentage points. Reversing the working and generating families gives the same error with opposite sign. Across all compatible laws, the beta estimate can underestimate by 6.27 percentage points and the logit-normal estimate by 5.63 percentage points.
+
+```{r family-bias, fig.cap="Signed population bias in percentage points for three analyses of the same count distribution. The horizontal axis spans all compatible prevalences. The points on the zero line mark the working beta and logit-normal prevalence values."}
+family_truth <- mixing_counts(25, 2, "beta", c(0.01, 0.10))
+law <- family_truth$probabilities
+families <- c("naive", "beta", "logitnormal")
+targets <- vapply(families, function(f) working_projection(law, 25, f)$prevalence,
+                  numeric(1))
+ends <- identification_interval(probabilities = law, pool_size = 25)
+possible <- seq(ends[1], ends[2], length.out = 101)
+errors <- 100 * outer(possible, targets, function(p, a) a - p)
+cols <- c("#424242", "#006E82", "#A84800")
+matplot(100 * possible, errors, type = "l", lwd = 2, lty = 1:3, col = cols,
+        xlab = "Compatible mean prevalence (%)",
+        ylab = "Bias (percentage points)")
+abline(h = 0, col = "grey65")
+points(100 * targets[2:3], c(0, 0), pch = c(16, 17), col = cols[2:3])
+legend("topright", c("Independent pools", "Beta", "Logit-normal"),
+       col = cols, lty = 1:3, lwd = 2, bty = "n")
+```
+
+With four pools the observable counts can also reveal a poor fit. Consider four pools of size eight and prevalences of 1%, 19% and 65% with probabilities 0.6, 0.3 and 0.1. Mean prevalence is 12.8% and the sharp interval is 9.72% to 16.28%. The fitted beta mean is 13.03% and the logit-normal mean is 15.17%. Their count-law divergences are 0.0126 and 0.0146 nats per location, respectively. Even when a larger survey can detect these discrepancies, refining the parametric estimate alone leaves a systematic error in the mean.
+
+The package evaluates working-family bias and coverage for equal pool sizes. The table evaluates nominal 95% intervals when the beta distribution above generates the data. For the independent-pool analysis the package convolves the one-location count law across locations, sums over possible estimates and inverts the working binomial score test. For the family analyses it simulates independent location histograms, refits both parameters and constructs delta-method Wald intervals from the fitted expected information. The Wald procedure issues no interval at an irregular fit. These draws contribute zero to coverage and appear in the last column. Exact binomial intervals quantify Monte Carlo uncertainty in the two family coverage estimates. With 200 replicates even zero covered samples gives an upper 95% Monte Carlo limit of about 1.8%. The calculations compare two survey sizes to expose the consequences of sampling more locations under the same structural assumption.
+
+```{r family-coverage-table}
+set.seed(81704)
+coverage_rows <- lapply(c(200L, 5000L), function(w) do.call(rbind,
+  lapply(families, function(f) {
+    perf <- working_performance(law, family_truth$prevalence, 25, family = f,
+                                locations = w, replicates = 200L)
+    data.frame(Locations = w, Family = f, Bias = 100 * perf$bias,
+               Coverage = perf$coverage,
+               Simulation = if (f == "naive") "exact" else
+                 sprintf("%.3f to %.3f", perf$coverage_mc_interval[1],
+                         perf$coverage_mc_interval[2]),
+               Unreported = perf$failure_fraction)
+  })))
+knitr::kable(do.call(rbind, coverage_rows), digits = 3, row.names = FALSE,
+             caption = "Finite-sample bias in percentage points and coverage for the beta population. Simulation gives 95% Monte Carlo limits from 200 replicates for each family fit.")
+```
+
+# Choosing a pooling design under a survey budget
+
+@NguyenBishBish2021 jointly optimised pool size and number of pools under assay and specimen costs by minimising the asymptotic variance of a common-prevalence estimator. In a clustered survey each location incurs an additional cost, and even an infinite survey can leave an interval of compatible prevalences.
+
+Let a design $d=(s_1,\ldots,s_v)$ specify the sizes of the $v$ pools sampled at **each** location. For a budget $B$, a cost $c_L$ per visited location, a cost $c_P$ per pool tested and a cost $c_U$ per individual collected, the cost per location and the number of affordable independent locations are
+$$
+ C_d=c_L+v c_P+c_U\sum_{i=1}^v s_i,
+ \qquad w_d=\left\lfloor B/C_d\right\rfloor .
+$$
+We compare designs that visit all $w_d$ locations and have at least one affordable location. Costs and permissible pool sizes should be fixed before examining the survey data.
+
+## Expected width under planning scenarios
+
+For a planning distribution $F$ of local prevalence, let $\boldsymbol\pi_d(F)$ be the joint count probabilities at one location. The histogram $H$ from the proposed survey is multinomial with $w_d$ trials and cell probabilities $\boldsymbol\pi_d(F)$. If $[L_d(H),U_d(H)]$ is the finite-sample confidence envelope for the whole identified set, our criterion is
+$$
+ R_F(d)=\mathbb E_{H\mid d,F}\!\left[U_d(H)-L_d(H)\right].
+$$
+This width includes the structural uncertainty left by the moments and the sampling uncertainty across locations. The planning distribution predicts how often each histogram will occur. The confidence procedure used on that histogram still admits every feasible mixing law. When several populations are plausible, minimise either $\sum_j \omega_j R_{F_j}(d)$ with prespecified scenario weights summing to one, or $\max_j R_{F_j}(d)$ to protect against the widest expected interval among the stated scenarios.
+
+For a single pool per location, averaging the projected binomial interval over the binomial count law gives the expected width by a one-dimensional sum. For multiple pools, the package can first screen designs by evaluating the interval at the expected histogram $w_d\boldsymbol\pi_d(F)$. Fractional counts give a deterministic score for screening. The score can differ from the expected width because interval endpoints are nonlinear in the counts. For the shortlisted designs, draw multinomial histograms and average their actual interval widths. Each design reuses its grid of conditional count probabilities across these evaluations. Survey analysis should use the same confidence level and grid resolution as the ranking. The equal-size and mixed-size intervals retain their respective confidence constructions, so a comparison also reflects their different degrees of conservatism. Evaluating all candidates avoids excluding the best design at screening. If the leading estimates are close, increase the replication count and check sensitivity to the grid resolution and planning populations.
+
+Consider an illustrative budget of 50,000, with a cost of 20 per location and 0.5 per individual. Compare assay costs of 5 and 200. In one planning population, half the locations have local prevalence 6% and half have zero prevalence. In the other, one fifth have prevalence 15% and the remainder have zero prevalence. Both have mean prevalence 3%, but the degree of clustering differs. The table gives the two populations equal weight and evaluates every candidate at the 95% confidence level.
+
+```{r design-cost-comparison}
+pool_options <- list("One pool of 5" = 5L, "One pool of 15" = 15L,
+                     "Two pools of 5" = c(5L, 5L),
+                     "Pools of 5 and 15" = c(5L, 15L))
+populations <- list(moderate = list(prevalence = c(0, .06), weights = c(.5, .5)),
+                    concentrated = list(prevalence = c(0, .15), weights = c(.8, .2)))
+set.seed(90317)
+assay_costs <- c(5, 200)
+comparisons <- lapply(assay_costs, function(assay) {
+  fit <- poolidentify::rank_pool_designs(pool_options, budget = 50000,
+            cost_location = 20, cost_pool = assay, cost_unit = .5,
+            scenarios = populations, criterion = "weighted", level = .95,
+            replicates = 128L, shortlist = Inf, grid_size = 64L)
+  fit$ranking[match(names(pool_options), fit$ranking$design), ]
+})
+design_table <- data.frame(Design = names(pool_options),
+                           Sites5 = comparisons[[1]]$locations,
+                           Width5 = 100 * comparisons[[1]]$width,
+                           Sites200 = comparisons[[2]]$locations,
+                           Width200 = 100 * comparisons[[2]]$width)
+knitr::kable(design_table, digits = 2, row.names = FALSE,
+             col.names = c("Pools per site", "Sites (5)", "Width (5)",
+                           "Sites (200)", "Width (200)"),
+             caption = "Affordable locations and expected total interval widths in percentage points. Parentheses give the cost per assay. Multi-pool widths average 128 simulated surveys per population.")
+```
+
+At assay cost 5, the smallest estimated expected width is `r sprintf("%.2f", min(design_table$Width5))` percentage points (`r tolower(design_table$Design[which.min(design_table$Width5)])`). At cost 200 it is `r sprintf("%.2f", min(design_table$Width200))` points (`r tolower(design_table$Design[which.min(design_table$Width200)])`). A second pool supplies information about within-location heterogeneity, but its assay and specimen costs also reduce the number of independent locations the budget can cover.
+
+## A width guarantee without a planning population
+
+A survey with little prior information about heterogeneity can compare designs using a confidence procedure whose width is bounded for every mixing law. Let $b_r(u)$ be the conditional probability of joint count outcome $r$ at site prevalence $u$. Before sampling, choose one score $z_r$ per outcome and bounds $a,b$ satisfying
+$$
+a\le u-\sum_r b_r(u)z_r\le b,\qquad 0\le u\le1.
+$$
+Write $h=\max_r z_r-\min_r z_r$ and $\epsilon_w=\sqrt{\log(2/\alpha)/(2w)}$. For the sample mean score $\bar z$, form the interval
+$$
+[\bar z+a-\epsilon_w h,\ \bar z+b+\epsilon_w h]
+$$
+and clip both endpoints to $[0,1]$. It covers the whole population identification interval with probability at least $1-\alpha$. Indeed, integrating the displayed inequality over any compatible mixing law places its prevalence between $E(z)+a$ and $E(z)+b$. The observed count law fixes $E(z)$, and Hoeffding's inequality [@Hoeffding1963] bounds its estimation error by $\epsilon_w h$ simultaneously for all compatible prevalences. Thus $b-a+2\epsilon_w h$ is the **actual width before clipping** and an upper bound on the realised and expected widths after clipping.
+
+The function `affine_pool_interval()` chooses scores to minimise this width on a grid, then certifies the residual bounds between its nodes. The nodewise constraints are linear after introducing variables for the score and residual ranges. For $M$ individuals per site, the conditional mean score is a degree-$M$ Bernstein polynomial in $u$. Its Bernstein coefficients are conditional means of the score given the total number infected, so their second differences have magnitude at most $2h$. The error of linear interpolation on a cell of width $\Delta$ is consequently at most $M(M-1)h\Delta^2/4$. The implementation intersects these residual bounds with those from the class-specific binomial probability ranges in each cell. This ensures continuous-support coverage at every grid resolution. The constant score always gives the interval $[0,1]$.
+
+There is a simple reason this conservative comparison often favours individual tests. Locations with prevalence zero or one give deterministic outcomes, implying $(b-a)+h\ge1$ for every design. Thus no score can attain width below $\min(1,2\epsilon_w)$ before clipping. If a design includes individual tests, their within-site positive fraction has mean $u$ and attains this bound when $2\epsilon_w<1$. The constant score attains it otherwise. When individual testing is allowed and all costs are nonnegative, sampling one individual per location therefore minimises this uniform criterion at a fixed budget. A scenario-specific comparison can favour pooling by exploiting how rarely extreme counts arise in low-prevalence populations.
+
+# Discussion
+
+Survey design determines which part of the uncertainty can be reduced. Additional locations estimate the existing count probabilities more precisely. Additional pools within each location reveal further moments. Recording pool size and keeping the location identifiers preserves information that a single total of positives cannot recover. In the example with 50 individuals per site, changing two pools of 25 to pools of 10 and 40 reduces the sharp interval width from 6.56 to 1.95 percentage points even though the independence fit becomes more biased.
+
+For surveys with few pools per site, the width of the population interval is an immediate sensitivity measure for a parametric estimate. At two pools, beta and logit-normal distributions can agree exactly on every observable probability. The likelihood then has no means to select between their different prevalence estimates. A feasible fitted interval, a confidence envelope across locations, and an explicitly stated prior for prevalence within the interval describe different parts of this uncertainty.
+
+The model assumes perfect testing, independent locations and conditionally independent infections within each location. Pool dilution, sensitivity that varies with pool size, or sampling more pools at sites known to have elevated prevalence changes the observation law. The budget calculations assume that enough independent locations are available to use the proposed allocation. A survey with a fixed list of eligible sites, volume-dependent assay costs, or site-specific travel costs requires a corresponding change to the cost calculation.
+
+All figures and the finite-sample tables use the accompanying R package **poolidentify**. Its reference pages specify the scales of the input moments, the order of the count cells, and the meaning of each interval. Frequentist examples report coverage of individual prevalence or of the whole set as indicated. Bayesian examples report posterior summaries conditional on the stated prior. The source theory and the preparation of this manuscript received assistance from OpenAI ChatGPT.
+
+\appendix
+
+# Bias calculations for homogeneous and heterogeneous pool sizes
+
+## The homogeneous model
+
+Suppose a sample consists of $N$ individuals, arranged into $m$ non-overlapping pools, each containing $s$ individuals, so that $N=ms$. Let $p$ denote the individual-level prevalence. Under the usual assumptions that individuals are independently infected with common probability $p$, and that the pool test is perfectly sensitive and specific, a pool is positive if and only if at least one member is infected.
+
+Let $X_i$ indicate whether pool $i$ tests positive, and let
+$$
+X=\sum_{i=1}^{m}X_i
+$$
+be the total number of positive pools. The pool-level positive probability is
+$$
+q(p)=1-(1-p)^s.
+$$
+Consequently,
+$$
+X\mid p\sim\operatorname{Binomial}\left(m,1-(1-p)^s\right).
+$$
+
+The likelihood is proportional to
+$$
+\{1-(1-p)^s\}^{X}\{(1-p)^s\}^{m-X}.
+$$
+Maximising this likelihood gives the familiar maximum likelihood estimator
+$$
+\widehat p_{\mathrm{ind}}
+=1-\left(1-\frac{X}{m}\right)^{1/s}.
+$$
+Since $m=N/s$, this can equivalently be written as
+$$
+\widehat p_{\mathrm{ind}}
+=1-\left(1-\frac{X}{N/s}\right)^{1/s}.
+$$
+This estimator targets the common individual prevalence $p$ under the independent, identically distributed individual-level model.
+
+## Finite-location bias and replication within a location
+
+The probability limit above is independent of $v$, but this statement requires a precise asymptotic regime: the number of independent trapping locations $w$ tends to infinity while $v$ and $s$ are fixed. In particular, increasing $v$ cannot remove the inconsistency caused by unmodelled between-location heterogeneity.
+
+For finite $w$, the mean of the naive estimator can depend on both $v$ and $w$. Define the observed positive-pool fraction
+$$
+T=\frac{X}{vw}=\frac{1}{w}\sum_{j=1}^w\frac{K_j}{v},
+\qquad
+g(t)=1-(1-t)^{1/s}.
+$$
+Then $\widehat p_{\mathrm{ind}}=g(T)$ and
+$$
+\mathbb{E}(T)=\mathbb{E}(Q_j)=\bar q
+$$
+regardless of $v$. For $s>1$, however,
+$$
+g''(t)=\frac{s-1}{s^2}(1-t)^{1/s-2}>0
+\quad(0\leq t<1).
+$$
+Consequently, Jensen's inequality gives
+$$
+\mathbb{E}(\widehat p_{\mathrm{ind}})
+=\mathbb{E}\{g(T)\}
+\geq g(\bar q)=p_{\mathrm{ind}}^*.
+$$
+Thus the finite-sample mean is *at least* the asymptotic probability limit; its additional upward Jensen bias depends on the variability of $T$. This does not imply that the finite-sample mean is always below the true marginal prevalence $p$.
+
+The variance of $T$ separates the within-location and between-location components. Since $K_j\mid Q_j\sim\operatorname{Binomial}(v,Q_j)$,
+$$
+\begin{aligned}
+\operatorname{Var}(T)
+&=\frac{1}{w}\operatorname{Var}(K_j/v)\\
+&=\frac{1}{w}\left[
+\operatorname{Var}(Q_j)+
+\frac{\mathbb{E}\{Q_j(1-Q_j)\}}{v}
+\right].
+\end{aligned}
+$$
+The first term persists as $v$ increases, while the second decreases as $1/v$. For sufficiently concentrated $T$ away from 1, a second-order delta-method approximation is
+$$
+\mathbb{E}(\widehat p_{\mathrm{ind}})
+\approx p_{\mathrm{ind}}^*
++\frac{g''(\bar q)}{2w}
+\left[
+\operatorname{Var}(Q_j)+
+\frac{\mathbb{E}\{Q_j(1-Q_j)\}}{v}
+\right].
+$$
+This approximation predicts a $v$-dependent finite-sample correction, but not a $v$-dependent probability limit as $w\to\infty$.
+
+For completeness, when $w$ is fixed and $v\to\infty$, conditional laws of large numbers instead give
+$$
+T\ \longrightarrow\ \frac{1}{w}\sum_{j=1}^w Q_j,
+\qquad
+\widehat p_{\mathrm{ind}}\ \longrightarrow\
+g\left(\frac{1}{w}\sum_{j=1}^w Q_j\right).
+$$
+The limit is generally random because only $w$ independent location effects have been sampled. Taking $w\to\infty$ afterwards recovers $p_{\mathrm{ind}}^*$.
+
+The exact finite-sample mean, if needed, can be calculated from the location-level probabilities $\pi_k(F)$ using the probability-generating function
+$$
+H(z)=\sum_{k=0}^v\pi_k(F) z^k,\qquad
+\Pr(X=x)=[z^x]H(z)^w,
+$$
+and hence
+$$
+\mathbb{E}(\widehat p_{\mathrm{ind}})
+=\sum_{x=0}^{vw}
+\left[1-\left(1-\frac{x}{vw}\right)^{1/s}\right]
+[z^x]H(z)^w.
+$$
+Both $v$ and $w$ enter this finite-sample expression.
+
+## Arbitrary mixtures of pool sizes
+
+The downward asymptotic bias is not restricted to pools of equal size. Consider an arbitrary finite set of pool-size classes $a=1,\ldots,k$. Each of $w$ independently sampled locations contributes $v_a\geq1$ pools of size $s_a\geq1$ in class $a$, where the $s_a$ and $v_a$ are fixed as $w\to\infty$. The pool-size allocation is identical across locations and does not depend on the location-specific prevalence.
+
+As above, the location prevalences $P_1,\ldots,P_w$ are iid from the arbitrary distribution $F$ on $[0,1]$, with true marginal population prevalence $p=\mathbb E(P_j)$. Conditional independence, non-overlapping pools and perfect testing continue to be assumed.
+
+Let $K_{ja}$ be the number of positive pools of size $s_a$ at location $j$, and $X_a=\sum_{j=1}^w K_{ja}$. Conditional on $P_j$,
+$$
+K_{ja}\mid P_j
+\sim\operatorname{Binomial}\left(v_a,1-(1-P_j)^{s_a}\right).
+$$
+An analyst ignoring the location structure, but correctly retaining each pool's actual size, maximises the independent-pool log-likelihood. To distinguish the argument of this likelihood from the true prevalence $p$, let $t\in(0,1)$ denote a *candidate prevalence value* and define
+$$
+q_s(t)=1-(1-t)^s.
+$$
+The naive log-likelihood is
+$$
+\ell_w(t)
+=\sum_{a=1}^k
+\left[
+X_a\log q_{s_a}(t)
++(wv_a-X_a)s_a\log(1-t)
+\right].
+$$
+For unequal $s_a$, its maximiser generally has no closed-form expression.
+
+**Theorem (Asymptotic underestimation for an arbitrary finite mixture of pool sizes).**
+
+Suppose $0<p<1$, the distribution of $P_j$ is non-degenerate, and at least one pool-size class satisfies $s_a>1$. Define, for every positive integer $s$,
+$$
+\bar q_s=1-\mathbb E\{(1-P_j)^s\},
+\qquad
+p_s^*=1-\left[\mathbb E\{(1-P_j)^s\}\right]^{1/s}.
+$$
+Then, as $w\to\infty$ with $k$, $s_a$, and $v_a$ fixed, the naive MLE satisfies
+$$
+\widehat p_{\mathrm{naive},w}
+\xrightarrow{\mathrm{a.s.}}p_{\mathrm{mix}}^*<p,
+$$
+where $p_{\mathrm{mix}}^*$ is the unique solution in $(0,1)$ of
+$$
+\sum_{a=1}^k
+v_as_a
+\frac{\bar q_{s_a}-q_{s_a}(p_{\mathrm{mix}}^*)}
+     {q_{s_a}(p_{\mathrm{mix}}^*)}
+=0,
+$$
+and obeys the bounds
+$$
+p_{s_{\max}}^*
+\ \leq\ p_{\mathrm{mix}}^*
+\ \leq\ p_{s_{\min}}^*
+\ \leq\ p,
+\qquad
+s_{\min}=\min_a s_a,\quad s_{\max}=\max_a s_a.
+$$
+If $s_{\min}<s_{\max}$, both inequalities bounding $p_{\mathrm{mix}}^*$ between the single-size limits are strict.
+
+**Proof.**
+
+The strong law of large numbers across independent locations gives, for every class $a$,
+$$
+\frac{X_a}{wv_a}\xrightarrow{\mathrm{a.s.}}\bar q_{s_a}.
+$$
+For a candidate prevalence $t\in(0,1)$, the normalised naive log-likelihood therefore converges almost surely to
+
+$$
+\begin{aligned}
+\ell(t) :=& \lim_{w \to \infty} \frac{\ell_w(t)}{w}\\
+=& \lim_{w \to \infty} \sum_{a=1}^k
+v_a \left[
+\frac{X_a}{w v_a}\log q_{s_a}(t)
++ \left( 1 - \frac{X_a}{w v_a} \right) s_a \log(1-t)
+\right]\\
+=& \sum_{a=1}^k v_a
+\left[
+\bar q_{s_a}\log q_{s_a}(t)
++(1-\bar q_{s_a})s_a\log(1-t)
+\right].
+\end{aligned}
+$$
+Differentiation with respect to the candidate prevalence gives
+$$
+\ell'(t)=\sum_{a=1}^k v_a
+\left[
+\bar q_{s_a}\frac{q_{s_a}'(t)}{q_{s_a}(t)}
+-\frac{(1-\bar q_{s_a})s_a}{1-t}
+\right].
+$$
+Differentiating again and using $0<\bar q_s < 1$ together with the inequalities
+$$
+q_s(t) = 1-(1-t)^s > 0, \qquad
+q_s'(t)=s(1-t)^{s-1} \geq 0, \qquad
+q_s''(t)=-s(s-1)(1-t)^{s-2} \leq 0,
+$$
+gives
+$$
+\ell''(t)=\sum_{a=1}^k v_a
+\left[
+\bar q_{s_a}\left\{
+\frac{q_{s_a}''(t)}{q_{s_a}(t)}
+-\frac{\{q_{s_a}'(t)\}^2}{q_{s_a}(t)^2}
+\right\}
+-\frac{(1-\bar q_{s_a})s_a}{(1-t)^2}
+\right]<0.
+$$
+Thus $\ell$ is strictly concave in $t$. Moreover, $\ell'(t)\to+\infty$ as $t\downarrow0$ and $\ell'(t)\to-\infty$ as $t\uparrow1$. Hence $\ell$ has exactly one stationary point $p_{\mathrm{mix}}^* \in(0,1)$, which is its unique global maximum.
+
+To establish convergence of the finite-sample naive MLE, note that the strong law also implies $\ell_w'(t)/w\to\ell'(t)$ almost surely at each interior $t$. For any $t_-<p_{\mathrm{mix}}^*<t_+$, strict concavity gives $\ell'(t_-)>0$ and $\ell'(t_+)<0$. Eventually the finite-sample derivatives have these same signs. As the finite-sample log-likelihood is concave in $t$ for every dataset, its maximiser eventually lies in $(t_-,t_+)$. Taking $t_-$ and $t_+$ arbitrarily close to $p_{\mathrm{mix}}^*$ proves
+$$
+\widehat p_{\mathrm{naive},w}
+\xrightarrow{\mathrm{a.s.}}p_{\mathrm{mix}}^*.
+$$
+
+The expression for $\ell'(t)$ can also be written, using $(1-t)^{s_a}=1-q_{s_a}(t)$, as
+$$
+\ell'(t)=\frac{1}{1-t}\sum_{a=1}^k
+v_as_a
+\frac{\bar q_{s_a}-q_{s_a}(t)}{q_{s_a}(t)}.
+$$
+Now evaluate $\ell'$ at the true marginal prevalence $p$. Convexity of $x\mapsto x^{s_a}$ and Jensen's inequality give
+$$
+0 < \bar q_{s_a}
+=1-\mathbb E\{(1-P_j)^{s_a}\}
+\leq1-(1-p)^{s_a}
+=q_{s_a}(p).
+$$
+The inequality is strict when $s_a>1$ and $P_j$ is non-degenerate. Thus every summand in $\ell'(p)$ is non-positive and at least one is strictly negative; hence $\ell'(p)<0$. Since $\ell'$ is strictly decreasing and $\ell'(p_{\mathrm{mix}}^*)=0$, we obtain $p_{\mathrm{mix}}^*<p$.
+
+Finally, $p_s^*$ is precisely the candidate prevalence $t$ for which $\bar q_s=q_s(t)$. Each individual summand in $\ell'(t)$ above is positive for $t < p_{s_a}^*$ and negative for $t > p_{s_a}^*$. Therefore $p_{\mathrm{mix}}^*$, the unique zero of $\ell'(t)$, satisfies
+$$
+\min_a p_{s_a}^*
+\leq p_{\mathrm{mix}}^*
+\leq\max_a p_{s_a}^*.
+$$
+The power-mean inequality applied to the non-negative non-degenerate variable $1-P_j$ shows that
+$$
+\left[\mathbb E\{(1-P_j)^s\}\right]^{1/s}
+$$
+is strictly increasing in $s>0$. Consequently $p_s^*$ is strictly decreasing in $s$ and
+$$
+\min_a p_{s_a}^* = p_{s_{\max}}^*, \quad \max_a p_{s_a}^* = p_{s_{\min}}^* \quad
+$$
+establishing the stated bounds and their strictness when the smallest and largest pool sizes differ. $\square$
+
+**Remark (Equality cases and scope).**
+
+If every pool has size one, then $p_{\mathrm{mix}}^*=p$, even when location prevalence varies. The same equality holds for arbitrary pool sizes if $P_j=p$ almost surely (no between-location heterogeneity). With heterogeneous prevalence and at least one pool of size greater than one, the asymptotic inequality is strict, including when some other pools contain only one individual.
+
+The theorem concerns the limit as the *number of independent locations* increases, not a fixed number of locations with ever more pools per location. It does not assert a deterministic ordering between the naive and correctly specified clustered MLEs for each realised finite sample, or an ordering of their finite-sample expectations. Its conclusion can also fail if the numbers or sizes of pools contributed by a location depend systematically on that location's prevalence: the identical, non-informative pool-size allocation is an explicit assumption.
+
+## Small-ICC approximation to asymptotic bias
+
+For equal pools of fixed size $s$, let
+$$
+\rho=\frac{\operatorname{Var}(P_j)}{p(1-p)}
+$$
+denote the intraclass correlation between infection indicators for two individuals sampled at the same location. Consider a family of location-prevalence distributions with fixed $p\in(0,1)$ and $\rho\downarrow0$. If the heterogeneity is sufficiently concentrated that $\mathbb E|P_j-p|^3=o(\rho)$, the asymptotic **signed bias** and **relative bias** of the naive estimator satisfy
+$$
+p_{\mathrm{ind}}^*-p
+=-\frac{s-1}{2}p\rho+o(\rho),
+\qquad
+\frac{p_{\mathrm{ind}}^*-p}{p}
+=-\frac{s-1}{2}\rho+o(\rho).
+$$
+
+**Proof.**
+
+A second-order Taylor expansion of $(1-P_j)^s$ around $p$, taking expectations and using $\mathbb E(P_j-p)=0$, gives
+$$
+\begin{aligned}
+\mathbb E\{(1-P_j)^s\}
+&=(1-p)^s+\frac{s(s-1)}{2}(1-p)^{s-2}\operatorname{Var}(P_j)+o(\rho)\\
+&=(1-p)^s\left\{1+\frac{s(s-1)p}{2(1-p)}\rho+o(\rho)\right\}.
+\end{aligned}
+$$
+Taking the $1/s$ power and expanding to first order in $\rho$ yields
+$$
+\begin{aligned}
+p_{\mathrm{ind}}^*
+&=1-\left[\mathbb E\{(1-P_j)^s\}\right]^{1/s}\\
+&=1-(1-p)\left\{1+\frac{(s-1)p}{2(1-p)}\rho+o(\rho)\right\}\\
+&=p-\frac{s-1}{2}p\rho+o(\rho).
+\end{aligned}
+$$
+Subtracting $p$ gives the signed bias; dividing by the fixed positive prevalence $p$ gives the relative bias. $\square$
+
+The additional concentration condition is important: a small ICC by itself does not ensure that higher-order moments are negligible at first order in $\rho$ for an arbitrary mixing distribution. The approximation holds, for example, along beta or logit-normal families with fixed $p$ as $\rho\downarrow0$, but need not be accurate for large $s$ or distributions with rare, extreme location prevalences.
+
+## Sharp bounds on asymptotic underestimation for fixed mean and ICC
+
+The asymptotic bias of the naive estimator generally depends on moments of the location-prevalence distribution beyond its mean and variance. Nevertheless, for a fixed pool size $s$, these first two moments give *sharp bounds* on maximum and minimum underestimation, without specifying the distribution of $P_j$. Before we present the bounds recall that the naive estimator asymptotic limit is
+
+$$
+p_{\mathrm{ind}}^*
+=1-\left[\mathbb{E}\{(1-P_j)^s\}\right]^{1/s},
+$$
+
+This asymptotic limit is minimised by minimising the probability that a pool is positive $1 - (1-P_j)^s$. Intuitively this will happen when as many as possible of the positive individuals are placed in the same pools, i.e. for distributions of $P_j$ which concentrate all the positive individuals in a few locations. For fixed population prevalence $p$, but no other restrictions, this is achieved when $P(P_j = 1) = p$ and $P(P_j  = 0) = 1-p$, i.e. where the individuals at the same locations are perfectly correlated. However, for a given population prevalence ($p$) and ICC ($\rho$) we can prove that this is achieved by another two-point discrete distribution that concentrates all positive individuals in a subset of locations. Namely
+$$
+\Pr(P_j=0)=1-\frac pb,\qquad \Pr(P_j=b)=\frac pb
+$$
+with $b$ chosen to satisfy the constraints on ICC.
+
+Conversely, the asymptotic limit is maximised by maximising the probability that a pool is positive, which will happen when the local prevalence is most 'evenly spread' across locations. For a fixed, positive, ICC ($\rho$) this is achieved where the local prevalence in most locations is close to (but somewhat less than) the population average, but a minority of locations have prevalence 1 to impose the required ICC. Specifically, we can prove it is attained by a two-point distribution supported at $a=p(1-\rho)$ and $1$.
+
+**Theorem (Sharp bounds on asymptotic underestimation at fixed prevalence and ICC).**
+
+Let $P_j$ have any distribution on $[0,1]$ with mean $p\in(0,1)$ and intraclass correlation $\rho\in[0,1]$, so that $\operatorname{Var}(P_j)=\rho p(1-p)$. For fixed integer pool size $s\geq1$, set
+$$
+a=p(1-\rho),\qquad b=p+\rho(1-p),
+$$
+and define
+$$
+\begin{aligned}
+p_{\mathrm{ind,worst}}^*
+&=1-\left[
+1-\frac{p}{b}\left\{1-(1-b)^s\right\}
+\right]^{1/s},\\
+p_{\mathrm{ind,best}}^*
+&=1-\left[(1-p)(1-a)^{s-1}\right]^{1/s}.
+\end{aligned}
+$$
+Then the probability limit of the naive estimator satisfies
+$$
+p_{\mathrm{ind,worst}}^*
+\leq p_{\mathrm{ind}}^*
+\leq p_{\mathrm{ind,best}}^*
+\leq p.
+$$
+Both bounds are sharp. The final inequality is strict when $\rho>0$ and $s>1$. The first bound (greatest underestimation) is attained when location-level prevalence is distributed as
+$$
+\Pr(P_j=0)=1-\frac{p}{b},
+\qquad
+\Pr(P_j=b)=\frac{p}{b},
+$$
+while the second bound (least underestimation) is attained by
+$$
+\Pr(P_j=a)=\frac{1-p}{1-a},
+\qquad
+\Pr(P_j=1)=\frac{p-a}{1-a}.
+$$
+
+
+**Proof.**
+
+*Worst-case bound.* Recall that
+$$
+p_{\mathrm{ind}}^*
+=1-\left[\mathbb E\{(1-P_j)^s\}\right]^{1/s}.
+$$
+To minimise $p_{\mathrm{ind}}^*$, we must maximise the probability $\mathbb E\{(1-P_j)^s\}$ that a pool tests negative, or equivalently minimise the probability that it tests positive:
+$$
+\bar q_s=\mathbb E\{1-(1-P_j)^s\}.
+$$
+
+Define
+$$
+h_s(x)=\sum_{r=0}^{s-1}(1-x)^r,\qquad 0\leq x\leq1.
+$$
+By the geometric-series identity,
+$$
+1-(1-x)^s=xh_s(x),
+$$
+and therefore
+$$
+\bar q_s=\mathbb E\{P_jh_s(P_j)\}.
+$$
+The function $h_s$ is convex on $[0,1]$, since
+$$
+h_s''(x)=\sum_{r=2}^{s-1}r(r-1)(1-x)^{r-2}\geq0
+$$
+(the sum is empty when $s\leq2$). A differentiable convex function lies above each of its tangent lines. In particular, for every $x\in[0,1]$,
+$$
+h_s(x)\geq h_s(b)+h_s'(b)(x-b).
+$$
+Multiplying by $x\geq0$ and then substituting $x=P_j$ gives
+$$
+P_jh_s(P_j)
+\geq P_jh_s(b)+h_s'(b)P_j(P_j-b).
+$$
+Taking expectations,
+$$
+\bar q_s
+\geq p\,h_s(b)
++h_s'(b)\left\{\mathbb E(P_j^2)-b\mathbb E(P_j)\right\}.
+$$
+Now, from the specified mean and ICC,
+$$
+\begin{aligned}
+\mathbb E(P_j^2)
+&=p^2+\operatorname{Var}(P_j)\\
+&=p^2+\rho p(1-p)\\
+&=pb,
+\end{aligned}
+$$
+and thus the term in braces is zero. Using the definition of $h_s(x)$,
+$$
+\bar q_s\geq p\,h_s(b)
+=\frac{p}{b}\left\{1-(1-b)^s\right\}.
+$$
+Equivalently,
+$$
+\mathbb E\{(1-P_j)^s\}
+\leq1-\frac{p}{b}\left\{1-(1-b)^s\right\},
+$$
+which, by the expression for $p_{\mathrm{ind}}^*$, proves the stated lower bound.
+
+It remains to show the bound is attainable. Since $p\leq b\leq1$, the proposed two-point distribution is valid. Its first two moments are
+$$
+\mathbb E(P_j)=b\frac pb=p,
+\qquad
+\mathbb E(P_j^2)=b^2\frac pb=pb,
+$$
+so it has the specified mean and ICC. For this distribution,
+$$
+\begin{aligned}
+\bar q_s
+&=\left(1-\frac pb\right)\left\{1-(1-0)^s\right\}
++\frac pb\left\{1-(1-b)^s\right\}\\
+&=\frac pb\left\{1-(1-b)^s\right\},
+\end{aligned}
+$$
+attaining equality in the bound.
+
+*Best-case bound.* To maximise $p_{\mathrm{ind}}^*$, we must minimise the probability that a pool tests negative. Write $Y_j=1-P_j$ and $c=1-a=1-p+\rho p$. The specified mean and ICC imply
+$$
+\begin{aligned}
+\mathbb E(Y_j)&=1-p,\\
+\mathbb E(Y_j^2)
+&=(1-p)^2+\rho p(1-p)\\
+&=(1-p)c.
+\end{aligned}
+$$
+For $s\geq1$, the function $g_s(y)=y^{s-1}$ is convex on $[0,1]$ (constant for $s=1$ and linear for $s=2$). Its tangent inequality at $c$ gives
+$$
+g_s(y)\geq g_s(c)+g_s'(c)(y-c).
+$$
+Multiplying by $y\geq0$, substituting $y=Y_j$, and taking expectations yields
+$$
+\begin{aligned}
+\mathbb E\{(1-P_j)^s\}
+=\mathbb E\{Y_jg_s(Y_j)\}
+&\geq (1-p)g_s(c)
++g_s'(c)\left\{\mathbb E(Y_j^2)-c\mathbb E(Y_j)\right\}\\
+&=(1-p)c^{s-1}\\
+&=(1-p)(1-a)^{s-1}.
+\end{aligned}
+$$
+The term in braces vanishes by the second-moment identity above. Since $p_{\mathrm{ind}}^*=1-[\mathbb E\{(1-P_j)^s\}]^{1/s}$, this proves the stated upper bound.
+
+To show it is attainable, note that $0\leq a\leq p<1$, so the proposed distribution on $\{a,1\}$ is valid. Equivalently, $Y_j$ takes the values $c=1-a$ and $0$ with probabilities $(1-p)/c$ and $1-(1-p)/c$, respectively. Hence
+$$
+\mathbb E(Y_j)=c\frac{1-p}{c}=1-p,\qquad
+\mathbb E(Y_j^2)=c^2\frac{1-p}{c}=(1-p)c,
+$$
+which gives the required mean and ICC for $P_j$, and
+$$
+\mathbb E\{(1-P_j)^s\}
+=\mathbb E(Y_j^s)
+=c^s\frac{1-p}{c}
+=(1-p)(1-a)^{s-1},
+$$
+attaining equality in the upper bound.
+
+Finally, Jensen's inequality gives $\mathbb E\{(1-P_j)^s\}\geq(1-p)^s$, and therefore $p_{\mathrm{ind}}^*\leq p$. For $s>1$ and $\rho>0$, $P_j$ is non-degenerate and Jensen's inequality is strict, so $p_{\mathrm{ind}}^*<p$. $\square$
+
+**Remark.** These bounds concern the *asymptotic* downward bias $p-p_{\mathrm{ind}}^*$, not the bias of the estimator at a finite number of locations. Both bounds are exact for every $s$. For $s=1$, the probability limit equals $p$ for every prevalence distribution. For $s=2$, it depends only on the first two moments, so every distribution with the specified mean and ICC attains both bounds. For $s\geq3$, the strict convexity of $h_s$ and $g_s$ makes the respective two-point distributions the unique extremisers (apart from equivalent descriptions). At $\rho=0$ the bounds both equal $p$, and at $\rho=1$ the two extremal distributions coincide.
+
+
+## Beta mixing
+
+The asymptotic-bias results apply to arbitrary location-level prevalence distributions on $[0,1]$. Beta mixing is a tractable specialisation because its moments have closed forms, but the underlying clustered group-testing model is well established. In particular, @Montesinos2014 modelled cluster-specific individual positivity probabilities using a beta distribution, derived exact pool-positivity and location-count probabilities, and demonstrated why conventional binomial group-testing analyses can be misleading when within-cluster dependence is ignored. The following calculations build on that work by making explicit the naive estimator's probability limit and rare-prevalence expansions, including for mixtures of pool sizes.
+
+Suppose that
+$$
+P_j\overset{\mathrm{iid}}{\sim}\operatorname{Beta}(\alpha,\beta),
+\qquad \alpha,\beta>0,
+$$
+with the same conditional independent-infection and perfect-testing assumptions as above. The marginal prevalence is
+$$
+p=\mathbb E(P_j)=\frac{\alpha}{\alpha+\beta}.
+$$
+Two distinct individuals sampled from the same location have infection indicators with intraclass correlation
+$$
+\rho
+=\frac{\operatorname{Var}(P_j)}{p(1-p)}
+=\frac{1}{\alpha+\beta+1}.
+$$
+Thus a beta mixing distribution is uniquely parameterised by $p\in(0,1)$ and $\rho\in(0,1)$, through
+$$
+\alpha=p\frac{1-\rho}{\rho},
+\qquad
+\beta=(1-p)\frac{1-\rho}{\rho}.
+$$
+
+**Proposition (Exact naive-estimator limit under beta mixing).**
+
+For fixed pool size $s\geq1$ and number of pools per location $v\geq1$, as the number of independently sampled locations $w\to\infty$, the naive estimator converges almost surely to
+$$
+p_{\mathrm{ind},\mathrm{Beta}}^*
+=
+1-
+\left\{
+\frac{(\beta)_s}{(\alpha+\beta)_s}
+\right\}^{1/s}
+=
+1-\left[
+\prod_{k=0}^{s-1} \left(
+1 - p\frac{1-\rho}
+     {1-\rho+k\rho} \right)
+\right]^{1/s},
+$$
+where $(a)_s=a(a+1)\cdots(a+s-1)$ denotes the rising factorial. Moreover,
+$$
+p_{\mathrm{ind},\mathrm{Beta}}^*\leq p,
+$$
+with equality for $s=1$ and strict inequality for $s>1$ when $0<\rho<1$.
+
+**Proof.**
+
+The general probability-limit formula proved above gives
+$$
+p_{\mathrm{ind}}^*
+=1-\left[\mathbb E\{(1-P_j)^s\}\right]^{1/s}.
+$$
+Under the beta distribution, evaluating the integral against its density yields
+$$
+\begin{aligned}
+\mathbb E\{(1-P_j)^s\}
+&=\frac{1}{B(\alpha,\beta)}
+\int_0^1 x^{\alpha-1}(1-x)^{\beta+s-1}\,dx\\
+&=\frac{B(\alpha,\beta+s)}{B(\alpha,\beta)}\\
+&=\frac{(\beta)_s}{(\alpha+\beta)_s}.
+\end{aligned}
+$$
+Substituting the expressions for $\alpha$ and $\beta$, and multiplying numerator and denominator of each product factor by $\rho$, gives the displayed expression in terms of $p,\rho,s$. Finally, for $s>1$, strict Jensen inequality for the non-degenerate variable $1-P_j$ gives
+$$
+\mathbb E\{(1-P_j)^s\}>(1-p)^s,
+$$
+and hence $p_{\mathrm{ind},\mathrm{Beta}}^*<p$. If $s=1$, the expectation is $1-p$, so equality holds. $\square$
+
+**Corollary (Rare-prevalence approximation).**
+
+For fixed $s$ and $0<\rho<1$, as $p\downarrow0$,
+$$
+\frac{p_{\mathrm{ind},\mathrm{Beta}}^*}{p}
+\longrightarrow
+\frac{1}{s}\sum_{k=0}^{s-1}
+\frac{1-\rho}{1-\rho+k\rho}.
+$$
+In particular, the leading-order *relative* asymptotic bias depends only on $s$ and $\rho$.
+
+**Proof.**
+
+Writing $c=(1-\rho)/\rho$, the product in the proposition expands to
+$$
+\begin{aligned}
+M_s(p)
+&= \prod_{k=0}^{s-1}\left(1 - p\frac{c}{c+k} \right)\\
+&= 1-p\sum_{k=0}^{s-1}\frac{c}{c+k}+O(p^2).
+\end{aligned}
+$$
+The first-order binomial expansion of $1-M_s(p)^{1/s}$ yields
+$$
+p_{\mathrm{ind},\beta}^*
+=\frac{p}{s}\sum_{k=0}^{s-1}\frac{c}{c+k}+O(p^2).
+$$
+Dividing by $p$ and substituting for $c$ proves the result. $\square$
+
+**Corollary (Rare-prevalence limit for an arbitrary beta-mixed pool-size design).**
+
+Under the arbitrary-$k$ design described in **Arbitrary mixtures of pool sizes**, suppose that $P_j\sim\operatorname{Beta}(\alpha,\beta)$, parameterised by marginal prevalence $p$ and fixed individual-level ICC $\rho\in(0,1)$ as above. Then, as $p\downarrow0$ with $\rho$, $s_a$, and $v_a$ fixed,
+$$
+\frac{p_{\mathrm{mix},\beta}^*}{p}
+\longrightarrow
+\frac{\displaystyle\sum_{a=1}^k v_a
+\sum_{m=0}^{s_a-1}
+\frac{1-\rho}{1-\rho+m\rho}}
+{\displaystyle\sum_{a=1}^k v_a s_a}.
+$$
+Equivalently, the limiting relative prevalence estimate is a weighted average of the single-pool-size rare-prevalence ratios, with weights proportional to $v_as_a$, the number of individuals sampled in each pool-size class per location.
+
+**Proof.**
+
+Set $c=(1-\rho)/\rho$, and write
+$$
+A_s=\sum_{m=0}^{s-1}\frac{c}{c+m}.
+$$
+The beta moment calculation above gives
+$$
+\bar q_s
+=1-\prod_{m=0}^{s-1}\frac{(1-p)c+m}{c+m}
+=pA_s+O(p^2).
+$$
+By the bounds in the arbitrary-mixture theorem and the preceding rare-prevalence corollary, each single-size limit $p_s^*/p$ tends to a strictly positive finite constant. Consequently $p_{\mathrm{mix},\beta}^*$ is of order $p$, and
+$$
+q_{s_a}(p_{\mathrm{mix},\beta}^*)
+=s_a p_{\mathrm{mix},\beta}^*+O(p^2).
+$$
+The limiting naive score equation, written entirely on the prevalence scale, is
+$$
+\sum_{a=1}^k v_as_a
+\frac{\bar q_{s_a}}
+     {q_{s_a}(p_{\mathrm{mix},\beta}^*)}
+=\sum_{a=1}^k v_as_a.
+$$
+Substituting the expansions gives
+$$
+\frac{p}{p_{\mathrm{mix},\beta}^*}
+\sum_{a=1}^k v_aA_{s_a}
++O(p)
+=\sum_{a=1}^k v_as_a.
+$$
+It follows that
+$$
+p_{\mathrm{mix},\beta}^*
+=p\,\frac{\sum_a v_aA_{s_a}}{\sum_a v_as_a}
++O(p^2).
+$$
+Dividing by $p$ and substituting for $c$ proves the result. $\square$
+
+**Numerical illustration (two pool sizes).**
+
+Take true marginal prevalence $p=0.01$, ICC $\rho=0.1$, and one pool of size $10$ and one of size $40$ per location ($v_1=v_2=1$, $s_1=10$, $s_2=40$). Thus each location contributes two pools containing a total of $50$ individuals. The location prevalence distribution is $P_j\sim\operatorname{Beta}(0.09,8.91)$, and the exact negative-pool probabilities are
+$$
+\mathbb E\{(1-P_j)^{10}\}\approx0.9321971323,\qquad
+\mathbb E\{(1-P_j)^{40}\}\approx0.8546368326.
+$$
+Using the corresponding beta moments in the single-size formula and in the limiting-score equation gives
+$$
+\begin{aligned}
+p_{10}^*&\approx0.006996507,\\
+p_{\mathrm{mix},\beta}^*&\approx0.004557818,\\
+p_{40}^*&\approx0.003919266.
+\end{aligned}
+$$
+Thus, when the clustering is ignored, the mixed-size design gives an asymptotic prevalence estimate of **$0.45578\%$**, compared with the true prevalence of $1\%$. The rare-prevalence approximation from the preceding corollary gives $p_{\mathrm{mix},\beta}^*\approx0.004532744$ ($0.45327\%$).
+
+For comparison, two pools of size $25$ also sample $50$ individuals per location and have the independence-based limit $p_{25}^*\approx0.004937423$ ($0.49374\%$). Therefore, in this example, the $10+40$ design has slightly *more* asymptotic downward bias in the naive estimator than the $25+25$ design, even though the partial-identification analysis above gives a much *narrower* sharp prevalence interval for $10+40$. The naive-estimator bias and the width of the distribution-free identification interval are distinct properties of the designs.
+
+## Comparing beta and logit-normal mixing at matched prevalence and ICC
+
+**Remark (Dependence on the random-effects distribution).**
+
+For $p=0.001$, $\rho=0.10$, and $s=50$, the exact beta-mixing expression gives
+$$
+p_{\mathrm{ind},\beta}^*\approx0.00034713
+\quad (0.034713\%),
+$$
+or approximately $34.7\%$ of the true prevalence. For comparison, the logit-normal distribution calibrated to the same marginal prevalence and individual-level ICC gives approximately $p_{\mathrm{ind},\mathrm{LN}}^*=0.00053071$ ($0.053071\%$). Thus matching the first two moments of the location-level prevalence distribution does not determine the nonlinear moment $\mathbb E\{(1-P_j)^s\}$, and hence does not determine the naive estimator's asymptotic bias. Both limits are independent of the number of pools per location $v$ under the stated $w\to\infty$ regime.
+
+The boundary cases are also informative. With $s=1$, the naive estimator is asymptotically unbiased under either mixing model. As $\rho\downarrow0$ at fixed $p$, the beta distribution concentrates at $p$, so $p_{\mathrm{ind},\beta}^*\to p$. Conversely, as $\rho\uparrow1$, the beta mixing distribution approaches a distribution concentrated at zero and one; because $\mathbb E\{(1-P_j)^s\}\to1-p$, the naive-estimator limit approaches $1-(1-p)^{1/s}$.
+
+# Explicit bounds and convergence with increasing replication
+
+## Explicit sharp bounds for one or two pools per location
+
+For $v\leq 2$, the support patterns in the sharp identification theorem yield closed-form expressions for the sharp bounds. We obtain the quadrature nodes and weights by matching the identified moments; extremality follows directly from the principal-representation theorem.
+
+**One pool per location ($v=1$).** The only nontrivial identified moment is $m_1=\mathbb E(Q_j)=\pi_1$. The one-node Gauss rule places unit mass at $m_1$. The upper principal representation is the two-endpoint Gauss–Lobatto rule, i.e. each location either has prevalence of one or zero.  Its weights follow from $w_1^++w_2^+=1$ and $w_2^+=m_1$. Together we have
+$$
+\xi^-=\delta_{m_1},
+\qquad
+\xi^+=(1-m_1)\delta_0+m_1\delta_1.
+$$
+Since $f_s(0)=0$ and $f_s(1)=1$, evaluating the two rules gives the sharp bounds
+$$
+p_{\min}=f_s(m_1)=1-(1-m_1)^{1/s},
+\qquad
+p_{\max}=m_1.
+$$
+The lower endpoint is also the probability limit $p_{\mathrm{ind}}^*$ of the naive estimator. For $s=1$, both endpoints coincide at $m_1$.
+
+**Two pools per location ($v=2$).** For interior moments, the observed quantities are $m_1=\mathbb E(Q_j)$ and $m_2=\mathbb E(Q_j^2)$. The lower principal representation is a left Gauss--Radau rule supported on $x_1^-=0$ and an interior node $x_2^-$. Matching the moments gives
+$$
+m_1=w_2^-x_2^-,\qquad m_2=w_2^-(x_2^-)^2
+\quad\Longrightarrow\quad
+x_2^-=\frac{m_2}{m_1},\qquad
+w_2^-=\frac{m_1^2}{m_2},\qquad
+w_1^-=1-\frac{m_1^2}{m_2}.
+$$
+Hence
+$$
+\xi^-=\left(1-\frac{m_1^2}{m_2}\right)\delta_0
++\frac{m_1^2}{m_2}\delta_{\frac{m_2}{m_1}}.
+$$
+The upper principal representation is a right Gauss–Radau rule supported on an interior node $x_1^+$ and $x_2^+=1$. Its moment equations are
+$$
+m_1=w_1^+x_1^++w_2^+,\qquad
+m_2=w_1^+(x_1^+)^2+w_2^+,\qquad
+w_1^++w_2^+=1.
+$$
+Solving them gives
+$$
+x_1^+=\frac{m_1-m_2}{1-m_1},\qquad
+w_1^+=\frac{(1-m_1)^2}{1-2m_1+m_2},\qquad
+w_2^+=\frac{m_2-m_1^2}{1-2m_1+m_2}.
+$$
+Therefore
+$$
+\xi^+=\frac{(1-m_1)^2}{1-2m_1+m_2}\,
+\delta_{\frac{m_1-m_2}{1-m_1}}
++\frac{m_2-m_1^2}{1-2m_1+m_2}\delta_1.
+$$
+Evaluating $f_s$ under the two rules gives
+$$
+\begin{aligned}
+p_{\min}&=\frac{m_1^2}{m_2}
+\left\{1-\left(1-\frac{m_2}{m_1}\right)^{1/s}\right\},\\
+p_{\max}&=1-(1-m_1)
+\left(\frac{1-2m_1+m_2}{1-m_1}\right)^{1/s-1}.
+\end{aligned}
+$$
+
+At boundary moments the unique representing law supplies both endpoints. In particular, $m_1=0$ gives zero prevalence and $m_1=1$ gives unit prevalence.
+
+As an illustration, suppose that the *true* mixing distribution is beta, such that $p=1\%$, $\rho=0.1$, and $s=25$. If we use  this distribution to generate the $\boldsymbol \pi ^{(v)}$, the resulting sharp prevalence intervals are approximately $[0.494\%,\,11.639\%]$ for $v=1$, and $[0.719\%,\,7.275\%]$ for $v=2$. The true prevalence from the underlying Beta distributed prevalence falls towards the bottom end of these intervals, but the intervals are remarkably wide, illustrating that the partial-identification uncertainty can be substantial.
+
+## How identification improves with more pools per location
+
+**Theorem (Nested identification intervals and their width).** Fix the pool size $s$ and a distribution of $Q_j$ with marginal prevalence $p=\mathbb E\{f_s(Q_j)\}$. Let $\boldsymbol\pi^{(v)}$ denote the corresponding count distribution for $v$ pools per location. For every $v\geq1$,
+$$
+p_{\min}(\boldsymbol\pi^{(v)})
+\leq p_{\min}(\boldsymbol\pi^{(v+1)})
+\leq p
+\leq p_{\max}(\boldsymbol\pi^{(v+1)})
+\leq p_{\max}(\boldsymbol\pi^{(v)}).
+$$
+Both endpoints converge to $p$ as $v\to\infty$. For $s=1$, both equal $p$ already at $v=1$.
+
+More precisely, let $E_v(f_s)$ denote the best uniform approximation error on $[0,1]$ by polynomials of degree at most $v$,
+$$
+E_v(f_s)=\inf_{\deg h\leq v}\sup_{q\in[0,1]}|f_s(q)-h(q)|.
+$$
+Then
+$$
+0\leq p_{\max}(\boldsymbol\pi^{(v)})
+-p_{\min}(\boldsymbol\pi^{(v)})
+\leq2E_v(f_s).
+$$
+Equality is attained for some feasible count distribution at each $v$. For each fixed $s\geq2$, the worst-case width satisfies
+$$
+\sup_{\boldsymbol\pi\text{ feasible}}
+\{p_{\max}(\boldsymbol\pi)-p_{\min}(\boldsymbol\pi)\}
+=O(v^{-2/s}),\qquad v\to\infty.
+$$
+
+**Proof.** The count law for $v+1$ pools identifies the same first $v$ moments as the count law for $v$ pools, together with $m_{v+1}$. Its feasible set of mixing distributions is therefore contained in the feasible set for $v$ pools. Taking the minimum and maximum prevalence over these sets gives the nesting inequalities, since the true distribution belongs to both.
+
+Any two feasible distributions $\xi_1$ and $\xi_2$ for the same count law agree on the integral of every polynomial $h$ of degree at most $v$. Thus
+$$
+\left|\int f_s\,d\xi_1-\int f_s\,d\xi_2\right|
+=\left|\int(f_s-h)\,d\xi_1-\int(f_s-h)\,d\xi_2\right|
+\leq2\|f_s-h\|_\infty.
+$$
+Taking $\xi_1$ and $\xi_2$ to be the two extremisers and then taking the infimum over $h$ gives the width bound. Since $f_s$ is continuous on $[0,1]$, the Weierstrass approximation theorem gives $E_v(f_s)\to0$. The nested intervals all contain $p$, so both endpoints converge to $p$. When $s=1$, $f_1(q)=q$ and the first moment alone identifies $p$.
+
+To see that the width bound is sharp, consider $s>1$ (for $s=1$ the width and approximation error are both zero). By Hahn–Banach duality for uniform approximation, there is a signed measure of total variation norm one that annihilates every polynomial of degree at most $v$ and whose integral of $f_s$ equals $E_v(f_s)$. Since it annihilates constants, its positive and negative parts each have mass $1/2$. Doubling each part gives two probability distributions with the same first $v$ moments and hence the same count law. Their prevalences differ by $2E_v(f_s)$, so this count law attains the bound.
+
+Finally, fix $s\geq2$ and set $\alpha=1/s$. Substitute $q=(1+\cos\theta)/2$, so $(1-q)^\alpha=\sin^{2\alpha}(\theta/2)$ for $0\leq\theta\leq\pi$. Its cosine-series coefficients for $k\geq1$ are
+$$
+a_k=-\frac{2^{1-2\alpha}\Gamma(2\alpha+1)\sin(\pi\alpha)}{\pi}
+\frac{\Gamma(k-\alpha)}{\Gamma(k+\alpha+1)},
+$$
+and therefore $|a_k|=O(k^{-1-2\alpha})$. Since $\cos(k\theta)=T_k(2q-1)$, where $T_k$ is the $k$th Chebyshev polynomial, truncating the series at $k=v$ gives a polynomial of degree at most $v$ in $q$. Subtracting this polynomial from one approximates $f_s$ with uniform error
+$$
+O\left(\sum_{k>v}k^{-1-2\alpha}\right)=O(v^{-2\alpha}).
+$$
+The width bound now gives the asserted rate. $\square$
+
+**Interpretation.** The worst-case width $2E_v(f_s)$ ranges over all feasible count laws. To see how much the count law matters, compare two beta mixing distributions with the same $\rho=0.1$ and pool size $s=25$. At mean prevalence $p=1\%$, $P_j\sim\operatorname{Beta}(0.09,8.91)$, while at $p=50\%$, $P_j\sim\operatorname{Beta}(4.5,4.5)$. For the calculation, if $P_j\sim\operatorname{Beta}(a,b)$, then $\mathbb E[(1-Q_j)^k]=B(a,b+25k)/B(a,b)$, where $B$ is the beta function. These moments for $k=0,\ldots,v$ determine the two principal representations and thus the sharp intervals for prevalence compatible with that law. The worst-case column uses the Remez algorithm for minimax polynomial approximation [@PachonTrefethen2009, Section 2] to evaluate $2E_v(f_{25})$.
+
+| Pools per location $v$ | Sharp interval ($p=1\%$) | Width (pp) | Sharp interval ($p=50\%$) | Width (pp) | Worst-case width $2E_v(f_{25})$ (pp) |
+|--:|--:|--:|--:|--:|--:|
+| 1 | 0.494%–11.639% | 11.15 | 25.426%–99.935% | 74.51 | 83.95 |
+| 2 | 0.719%–7.275% | 6.56 | 25.642%–99.171% | 73.53 | 79.54 |
+| 4 | 0.844%–3.982% | 3.14 | 26.966%–98.624% | 71.66 | 75.28 |
+| 8 | 0.919%–2.412% | 1.49 | 28.416%–97.768% | 69.35 | 71.23 |
+
+The marginal probability that a pool tests positive is 11.64% in the low-prevalence example and 99.935% in the high-prevalence example. As location prevalence increases, $Q_j=1-(1-P_j)^{25}$ approaches one so quickly that locations with substantially different prevalences can have nearly identical pool positivity. Even with the count law known exactly for $v=8$, the high-prevalence example admits marginal prevalences from 28.42% to 97.77%. Its width of 69.35 percentage points is close to the worst-case width of 71.23, whereas the low-prevalence example has width 1.49.
+
+The width need not increase monotonically with prevalence. For $v=1$ the identified width is $m_1-f_{25}(m_1)$, where $m_1$ is the probability of a positive pool. This width peaks at $m_1=1-25^{-25/24}\approx0.965$ and falls to zero at $m_1=1$, since certainty of a positive pool requires $P_j=1$ almost surely under the model.
+
+Increasing the number of locations $w$ at fixed $v$ improves estimation of the same count law. Even with infinitely many locations, the identification widths in the table persist. With finitely many locations, confidence intervals must also account for uncertainty in the observed count frequencies.
+
+# References {-}
+
+::: {#refs}
+:::
