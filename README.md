@@ -53,7 +53,8 @@ numerical outer bounds over unrestricted mixing distributions. For a finite join
 histogram, use `mixed_confidence()` for simultaneous confidence limits or
 `mixed_bayes_prevalence()` for posterior inference.
 
-To choose the number and sizes of pools, give each candidate as the allocation
+Working-model bias and coverage calculations use equal-sized pools. The design
+planner accepts both equal and mixed sizes. To choose the number and sizes of pools, give each candidate as the allocation
 at **one** location. The budget determines how many independent locations the
 survey can afford. This example compares the expected width of a 95% interval
 under two possible populations.
@@ -75,6 +76,12 @@ designs and simulates the best five. Use `shortlist = Inf` to simulate every
 multi-pool candidate. Single-pool expected widths are calculated directly.
 With no planning population, the same function compares conservative width
 guarantees for the package's affine interval procedure.
+
+When the survey is completed, use the confidence level and grid from the
+ranking. For equal sizes, use `fit_prevalence(h, s, level = plan$level, grid_size = plan$grid_size)` with a positive-count histogram. For mixed
+sizes, pass the joint negative-count array and its size classes to `mixed_confidence(h, sizes, level = plan$level, grid_size = plan$grid_size)`.
+If you planned without scenarios, use `affine_pool_interval()` with the chosen allocation, number
+of locations, level, grid, and observed negative-count histogram.
 
 See the [package](poolidentify) for function documentation and verification
 examples. To run the package checks from the repository root:
