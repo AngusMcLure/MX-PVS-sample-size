@@ -77,6 +77,10 @@ multi-pool candidate. Single-pool expected widths are calculated directly.
 With no planning population, the same function compares conservative width
 guarantees for the package's affine interval procedure.
 
+For a survey with a 50,000 budget and prevalence below 2%, a worked comparison
+shows how a scientific upper bound on individual ICC changes the allocation
+and the attainable 95% interval width. [Design comparison and interval lookup](documentation/low-prevalence-design.md)
+
 When the survey is completed, use the confidence level and grid from the
 ranking. For equal sizes, use `fit_prevalence(h, s, level = plan$level, grid_size = plan$grid_size)` with a positive-count histogram. For mixed
 sizes, pass the joint negative-count array and its size classes to `mixed_confidence(h, sizes, level = plan$level, grid_size = plan$grid_size)`.
