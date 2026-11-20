@@ -38,8 +38,8 @@ affine_pool_interval <- function(design, locations, level = 0.95, grid_size = 64
   pools <- tabulate(match(design, sizes))
   shape <- pools + 1L
   cells <- prod(shape)
-  if (cells > .Machine$integer.max)
-    stop("Joint count array is too large; use fewer distinct sizes or pools.")
+  if (cells > 2e6)
+    stop("Joint count score array is too large; use fewer distinct sizes or pools.")
   if (!is.null(histogram)) {
     dimensions <- dim(histogram)
     if (is.null(dimensions)) dimensions <- length(histogram)
@@ -64,6 +64,7 @@ affine_pool_interval <- function(design, locations, level = 0.95, grid_size = 64
     score <- c(slope, 0)
     remainder <- c(1 - slope - gap, 1 - slope)
   } else {
+    .check_planning_grid(cells, grid_size)
     grid <- confidence_grid(locations, max(sizes), grid_size)
     kernels <- mixed_count_grid(shape, sizes, grid)
     score <- affine_grid_score(kernels$design, grid, penalty)

@@ -1,3 +1,8 @@
+.check_planning_grid <- function(cells, grid_size) {
+  if (any(cells * (2 * as.double(grid_size) + 1) > 2e6))
+    stop("Joint count grid is too large. Reduce distinct pool sizes or grid_size.")
+}
+
 # The first cell of a one-pool negative-count histogram is the number of
 # positive pools. This vectorized version also permits fractional screening counts.
 planning_one_width <- function(positives, locations, pool_size, level = 0.95) {

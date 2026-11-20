@@ -36,3 +36,6 @@ expected <- optimize(function(score) {
 stopifnot(abs(affine_pool_interval(s, w)$width_bound - expected) < 1e-5)
 stopifnot(inherits(try(affine_pool_interval(c(7, 3, 3), 200, histogram = t(h)),
                        silent = TRUE), "try-error"))
+
+# A numerical mixed grid is rejected before allocating millions of entries.
+stopifnot(inherits(try(affine_pool_interval(2:18, 100), silent = TRUE), "try-error"))

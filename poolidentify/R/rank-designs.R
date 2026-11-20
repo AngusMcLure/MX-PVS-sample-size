@@ -1,12 +1,24 @@
 # Average widths over independent simulated surveys, reusing results whenever
 # the same histogram recurs (in particular for sparse or small surveys).
 .planning_mc <- function(law, locations, replicates, width) {
-  counts <- stats::rmultinom(replicates, locations, as.numeric(law))
-  keys <- apply(counts, 2L, paste, collapse = ",")
-  first <- which(!duplicated(keys))
-  unique_widths <- vapply(first, function(i) width(counts[, i]), numeric(1))
-  widths <- unique_widths[match(keys, keys[first])]
-  c(width = mean(widths), mcse = stats::sd(widths) / sqrt(replicates))
+  # Batch the draws to cap memory for the count matrix and the histogram keys.
+  # Combine block sums of squared deviations to retain the sample variance.
+  batch_limit <- max(1, floor(250000 / length(law)))
+  n <- average <- sum_sq <- 0
+  while (n < replicates) {
+    batch <- min(replicates - n, batch_limit)
+    counts <- stats::rmultinom(batch, locations, as.numeric(law))
+    keys <- apply(counts, 2L, paste, collapse = ",")
+    first <- which(!duplicated(keys))
+    unique_widths <- vapply(first, function(i) width(counts[, i]), numeric(1))
+    widths <- unique_widths[match(keys, keys[first])]
+    block_mean <- mean(widths)
+    delta <- block_mean - average
+    sum_sq <- sum_sq + sum((widths - block_mean)^2) + delta^2 * (n / (n + batch)) * batch
+    average <- average + delta * (batch / (n + batch))
+    n <- n + batch
+  }
+  c(width = average, mcse = sqrt(sum_sq / (replicates - 1) / replicates))
 }
 
 .planning_inputs <- function(designs, budget, cost_location, cost_pool, cost_unit) {
@@ -65,8 +77,7 @@ rank_pool_designs <- function(designs, budget, cost_location, cost_pool, cost_un
   # Score optimisation and confidence envelopes use dense joint-outcome
   # matrices. Check size before constructing an exponentially large count law.
   cells <- vapply(designs, function(d) prod(as.double(table(d)) + 1), numeric(1))
-  if (any(cells * (2 * grid_size + 1) > 2e6))
-    stop("Candidate joint count grid is too large. Reduce distinct pool sizes or grid_size.")
+  if (!is.null(scenarios)) .check_planning_grid(cells[lengths(designs) > 1L], grid_size)
   tab$screen_width <- NA_real_
   tab$width <- NA_real_
   tab$mcse <- NA_real_

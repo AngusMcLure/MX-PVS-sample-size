@@ -6,7 +6,7 @@
 }
 
 candidate_pool_designs <- function(pool_sizes, max_pools, equal_only = FALSE,
-                                   max_designs = 10000L) {
+                                   max_designs = 10000L, max_entries = 1e7) {
   sizes <- sort(unique(.planning_sizes(pool_sizes)))
   if (!.pi_positive_integer(max_pools) || max_pools > .Machine$integer.max)
     stop("max_pools must be a positive integer.")
@@ -14,11 +14,20 @@ candidate_pool_designs <- function(pool_sizes, max_pools, equal_only = FALSE,
     stop("equal_only must be TRUE or FALSE.")
   if (!.pi_positive_integer(max_designs))
     stop("max_designs must be a positive integer.")
+  if (!.pi_positive_integer(max_entries))
+    stop("max_entries must be a positive integer.")
   n <- length(sizes)
   count <- if (equal_only || n == 1L) as.double(n) * max_pools else
     choose(n + as.double(max_pools), n) - 1
   if (!is.finite(count) || count > max_designs)
     stop("Candidate count exceeds max_designs. Narrow the search or increase the limit.")
+  # Count the lengths of the vectors themselves, even if there is only
+  # one allowed size and the number of designs is modest.
+  v_max <- as.double(max_pools)
+  entries <- if (equal_only || n == 1L) n * v_max * (v_max + 1) / 2 else
+    n * choose(n + v_max, n + 1)
+  if (!is.finite(entries) || entries > max_entries)
+    stop("Pool entries across candidates exceed max_entries. Narrow the search or increase the limit.")
   out <- vector("list", count)
   i <- 0L
   for (v in seq_len(max_pools)) {

@@ -3,12 +3,13 @@
 \title{Generate candidate pooling designs for each location}
 \usage{
 candidate_pool_designs(pool_sizes, max_pools, equal_only = FALSE,
-                       max_designs = 10000L)
+                       max_designs = 10000L, max_entries = 1e7)
 }
 \arguments{
 \item{pool_sizes}{Permitted positive integer numbers of individuals per pool. Duplicates are ignored.}
 \item{max_pools}{Maximum total number of pools at one location.}
 \item{equal_only}{If true, all pools within a candidate have the same size.}
+\item{max_entries}{Maximum total number of pool sizes stored across all candidate vectors. This controls the size of the returned list when a candidate contains many pools.}
 \item{max_designs}{Maximum number of designs to generate. The function checks this limit before enumeration.}
 }
 \description{
